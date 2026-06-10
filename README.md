@@ -1,0 +1,2 @@
+# oracle
+Sistema Logicial Autoentrepreneur
