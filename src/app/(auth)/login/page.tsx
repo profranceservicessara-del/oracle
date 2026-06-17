@@ -14,7 +14,7 @@ export default function LoginPage() {
       </Suspense>
       <p className="mt-6 text-center text-sm text-muted">
         Ainda não tem conta?{" "}
-        <Link className="font-semibold text-brand hover:text-teal-800" href="/cadastro">
+        <Link className="font-semibold text-brand hover:text-[#003a94]" href="/cadastro">
           Criar cadastro
         </Link>
       </p>

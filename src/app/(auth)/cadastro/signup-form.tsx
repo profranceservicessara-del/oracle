@@ -88,7 +88,7 @@ export function SignupForm() {
         />
       </label>
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
-      {message ? <p className="text-sm text-teal-700">{message}</p> : null}
+      {message ? <p className="text-sm text-emerald-700">{message}</p> : null}
       <Button className="w-full" disabled={isLoading} type="submit">
         {isLoading ? "Criando..." : "Criar conta"}
       </Button>
