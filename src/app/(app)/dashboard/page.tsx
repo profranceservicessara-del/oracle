@@ -275,7 +275,7 @@ export default async function DashboardPage() {
   ].filter((item) => item.count > 0);
 
   return (
-    <main className="mx-auto max-w-7xl space-y-6 px-4 py-8">
+    <main className="mx-auto max-w-6xl space-y-6 px-4 py-8">
       <section className="overflow-hidden rounded-2xl bg-gradient-to-br from-[#001F4D] via-[#002D72] to-[#2B1F5B] px-6 py-7 shadow-sm">
         <p className="text-[11px] font-semibold uppercase tracking-wide text-white/60">Dashboard</p>
         <h1 className="mt-1 text-2xl font-semibold text-white">Painel fiscal</h1>

@@ -20,8 +20,8 @@ export default async function AppLayout({
 
   return (
     <ToastProvider>
-      <div className="min-h-screen bg-slate-50">
-        <header className="border-b border-line bg-white">
+      <div className="min-h-screen bg-[#F7F8FC]">
+        <header className="sticky top-0 z-30 border-b border-line bg-white/80 backdrop-blur">
           <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-lg font-semibold text-ink">ProFacture</p>
