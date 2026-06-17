@@ -128,14 +128,14 @@ function categoryBar({
     <div className="space-y-2">
       <div className="flex justify-between gap-3 text-sm">
         <span className="font-medium text-ink">{label}</span>
-        <span className="text-muted">
+        <span className="tabular-nums text-muted">
           {euroFormatter.format(value)} / {euroFormatter.format(threshold)}
         </span>
       </div>
       <div className="h-3 overflow-hidden rounded-full bg-slate-100">
         <div className="h-full bg-brand" style={{ width: `${Math.min(100, percent)}%` }} />
       </div>
-      <p className="text-xs text-muted">{percent}%</p>
+      <p className="text-xs tabular-nums text-muted">{percent}%</p>
     </div>
   );
 }
@@ -158,7 +158,7 @@ function monthlyChart(monthlyValues: number[]) {
 
         return (
           <g key={index}>
-            <rect fill="#0f766e" height={barHeight} rx="4" width={barWidth} x={x} y={y} />
+            <rect fill="#002D72" height={barHeight} rx="4" width={barWidth} x={x} y={y} />
             <text fill="#65727f" fontSize="10" textAnchor="middle" x={x + barWidth / 2} y="170">
               {index + 1}
             </text>
@@ -267,84 +267,138 @@ export default async function DashboardPage() {
   );
   const cotisations = calculateResteAVivre(declarationTotals, typedProfile);
 
+  const actionItems = [
+    { count: devisExpiring.length, label: "Devis expiram nos próximos 7 dias" },
+    { count: lateFactures.length, label: "Factures à relancer" },
+    { count: deadlineDays <= 7 ? 1 : 0, label: `Déclaration URSSAF em D-${Math.max(0, deadlineDays)}` },
+    { count: profileFields.length, label: `Perfil incompleto: ${profileFields.join(", ")}` }
+  ].filter((item) => item.count > 0);
+
   return (
-    <main className="mx-auto max-w-7xl px-4 py-8">
-      <div className="mb-6">
-        <p className="text-sm font-semibold text-brand">Dashboard</p>
-        <h1 className="mt-2 text-2xl font-semibold text-ink">Painel fiscal</h1>
-        <p className="mt-2 text-sm text-muted">
+    <main className="mx-auto max-w-7xl space-y-6 px-4 py-8">
+      <section className="overflow-hidden rounded-2xl bg-gradient-to-br from-[#001F4D] via-[#002D72] to-[#2B1F5B] px-6 py-7 shadow-sm">
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-white/60">Dashboard</p>
+        <h1 className="mt-1 text-2xl font-semibold text-white">Painel fiscal</h1>
+        <p className="mt-1 text-sm text-white/70">
           CA baseado em encaissements, conforme o livre de recettes.
         </p>
-      </div>
+
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-xl bg-white/10 p-4 ring-1 ring-white/15">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-white/60">CA encaissé {currentYear}</p>
+            <p className="mt-2 text-2xl font-semibold tabular-nums text-white">{euroFormatter.format(annualTotal)}</p>
+            <p className="mt-1 text-xs text-white/60">
+              {annualDelta === null
+                ? "Sem base do ano anterior."
+                : `${annualDelta >= 0 ? "+" : ""}${annualDelta}% vs ${previousYear}`}
+            </p>
+          </div>
+
+          <Link
+            className="rounded-xl bg-white/10 p-4 ring-1 ring-white/15 transition hover:bg-white/15"
+            href="/documentos?status=sent"
+          >
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-white/60">Factures en attente</p>
+            <p className="mt-2 text-2xl font-semibold tabular-nums text-white">{pendingFactures.length}</p>
+            <p className="mt-1 text-xs tabular-nums text-white/60">{euroFormatter.format(pendingAmount)}</p>
+          </Link>
+
+          <Link
+            className="rounded-xl bg-white/10 p-4 ring-1 ring-white/15 transition hover:bg-white/15"
+            href="/documentos?status=a_relancer"
+          >
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-white/60">Factures en retard</p>
+            <p className="mt-2 text-2xl font-semibold tabular-nums text-white">{lateFactures.length}</p>
+            <p className="mt-1 text-xs tabular-nums text-white/60">{euroFormatter.format(lateAmount)}</p>
+          </Link>
+
+          <div className="rounded-xl bg-white/10 p-4 ring-1 ring-white/15">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-white/60">Projection {currentYear}</p>
+            <p className="mt-2 text-2xl font-semibold tabular-nums text-white">{euroFormatter.format(projection)}</p>
+            <p className="mt-1 text-xs text-white/60">Estimativa anual</p>
+          </div>
+        </div>
+
+        <div className="mt-5 grid gap-2 border-t border-white/10 pt-4 text-xs text-white/60 sm:grid-cols-3">
+          <p>
+            Vente: <span className="tabular-nums text-white/80">{euroFormatter.format(yearTotals.vente)}</span>
+          </p>
+          <p>
+            Service BIC: <span className="tabular-nums text-white/80">{euroFormatter.format(yearTotals.service_bic)}</span>
+          </p>
+          <p>
+            Service BNC: <span className="tabular-nums text-white/80">{euroFormatter.format(yearTotals.service_bnc)}</span>
+          </p>
+        </div>
+      </section>
 
       {isProfileIncomplete(typedProfile) ? (
-        <div className="mb-6 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
+        <div className="rounded-2xl bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800 ring-1 ring-amber-200">
           Complete seu perfil para poder emitir faturas
         </div>
       ) : null}
 
-      <section className="grid gap-4 lg:grid-cols-4">
-        <div className="rounded-lg border border-line bg-white p-5 shadow-sm lg:col-span-2">
-          <p className="text-sm font-semibold text-brand">CA encaissé {currentYear}</p>
-          <p className="mt-2 text-3xl font-semibold text-ink">{euroFormatter.format(annualTotal)}</p>
-          <p className="mt-1 text-sm text-muted">
-            {annualDelta === null
-              ? "Sem base do ano anterior para comparação."
-              : `${annualDelta >= 0 ? "+" : ""}${annualDelta}% vs ${previousYear}`}
-          </p>
-          <div className="mt-4 grid gap-2 text-sm text-muted sm:grid-cols-3">
-            <p>Vente: {euroFormatter.format(yearTotals.vente)}</p>
-            <p>Service BIC: {euroFormatter.format(yearTotals.service_bic)}</p>
-            <p>Service BNC: {euroFormatter.format(yearTotals.service_bnc)}</p>
+      {actionItems.length > 0 ? (
+        <section className="rounded-2xl bg-rose-50 p-4 shadow-sm ring-1 ring-rose-200">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-rose-500">Action requise</p>
+          <div className="mt-3 flex flex-wrap gap-3">
+            {actionItems.map((item) => (
+              <div
+                className="flex flex-1 basis-[260px] items-center justify-between gap-3 rounded-xl bg-white px-4 py-3 text-sm ring-1 ring-rose-100"
+                key={item.label}
+              >
+                <span className="text-slate-700">{item.label}</span>
+                <span className="inline-flex min-w-[1.75rem] justify-center rounded-full bg-rose-100 px-2 py-0.5 text-sm font-semibold tabular-nums text-rose-700">
+                  {item.count}
+                </span>
+              </div>
+            ))}
           </div>
-        </div>
+        </section>
+      ) : null}
 
-        <div className="rounded-lg border border-line bg-white p-5 shadow-sm">
-          <p className="text-sm font-semibold text-brand">Factures en attente</p>
-          <p className="mt-2 text-2xl font-semibold text-ink">{pendingFactures.length}</p>
-          <p className="text-sm text-muted">{euroFormatter.format(pendingAmount)}</p>
-          <Link className="mt-3 inline-flex text-sm font-semibold text-brand" href="/documentos?status=sent">
-            Ver documentos
-          </Link>
+      <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
+        <div className="mb-4">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">CA mensal encaissé</p>
+          <h2 className="mt-1 text-xl font-semibold text-ink">12 meses de {currentYear}</h2>
         </div>
-
-        <div className="rounded-lg border border-line bg-white p-5 shadow-sm">
-          <p className="text-sm font-semibold text-brand">Factures en retard</p>
-          <p className="mt-2 text-2xl font-semibold text-ink">{lateFactures.length}</p>
-          <p className="text-sm text-muted">{euroFormatter.format(lateAmount)}</p>
-          <Link className="mt-3 inline-flex text-sm font-semibold text-brand" href="/documentos?status=a_relancer">
-            À relancer
-          </Link>
-        </div>
+        {monthlyValues.some((value) => value > 0) ? (
+          monthlyChart(monthlyValues)
+        ) : (
+          <div className="flex h-28 flex-col items-center justify-center gap-1 rounded-xl bg-slate-50 text-center ring-1 ring-black/5">
+            <p className="text-sm font-medium text-slate-500">Sem encaissements registrados em {currentYear}</p>
+            <p className="text-xs text-slate-400">O gráfico aparece assim que houver receita lançada.</p>
+          </div>
+        )}
       </section>
 
-      <section className="mt-6 rounded-lg border border-line bg-white p-5 shadow-sm">
-        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-sm font-semibold text-brand">CA mensal encaissé</p>
-            <h2 className="mt-1 text-xl font-semibold text-ink">12 meses de {currentYear}</h2>
-          </div>
-          <p className="text-sm text-muted">Projection: {euroFormatter.format(projection)}</p>
-        </div>
-        {monthlyChart(monthlyValues)}
-      </section>
-
-      <section className="mt-6 grid gap-4 lg:grid-cols-2">
-        <div className="rounded-lg border border-line bg-white p-5 shadow-sm">
-          <p className="text-sm font-semibold text-brand">Seuils micro-entreprise</p>
-          <div className="mt-4 space-y-5">
-            {activeCategories.map((category) =>
-              categoryBar({
-                label: `${categoryLabel(category)} · seuil micro`,
-                threshold: microThreshold(category),
-                value: yearTotals[category]
-              })
-            )}
-          </div>
+      <section className="grid gap-4 lg:grid-cols-2">
+        <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Seuils micro-entreprise</p>
+          {activeCategories.length > 0 ? (
+            <div className="mt-4 space-y-5">
+              {activeCategories.map((category) =>
+                categoryBar({
+                  label: `${categoryLabel(category)} · seuil micro`,
+                  threshold: microThreshold(category),
+                  value: yearTotals[category]
+                })
+              )}
+            </div>
+          ) : (
+            <p className="mt-4 text-sm text-slate-400">
+              Defina sua atividade principal ou registre receita para acompanhar os seuils micro-entreprise.
+            </p>
+          )}
         </div>
 
-        <div className="rounded-lg border border-line bg-white p-5 shadow-sm">
-          <p className="text-sm font-semibold text-brand">Franchise TVA</p>
+        <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Franchise TVA</p>
+          {activeCategories.length === 0 ? (
+            <p className="mt-4 text-sm text-slate-400">
+              O acompanhamento da franchise TVA aparece quando houver categoria de atividade ativa.
+            </p>
+          ) : null}
           <div className="mt-4 space-y-5">
             {activeCategories.map((category) => {
               const thresholds = tvaThresholds(category);
@@ -364,7 +418,7 @@ export default async function DashboardPage() {
                     value: yearTotals[category]
                   })}
                   {tone ? (
-                    <div className={`rounded-md border px-3 py-2 text-sm ${tone}`}>
+                    <div className={`rounded-xl border px-3 py-2 text-sm ${tone}`}>
                       Suivi informativo: o CA dessa categoria aproxima-se do seuil de TVA. Esta indicação não constitui conselho fiscal.{" "}
                       <a className="font-semibold underline" href="#">
                         Saiba mais
@@ -378,79 +432,55 @@ export default async function DashboardPage() {
         </div>
       </section>
 
-      <section className="mt-6 grid gap-4 lg:grid-cols-2">
-        <div className="rounded-lg border border-line bg-white p-5 shadow-sm">
-          <p className="text-sm font-semibold text-brand">Cotisations estimées</p>
-          <p className="mt-1 text-sm text-muted">
-            Période actuelle: {declarationPeriod.label}. Échéance estimée: {deadline} ({deadlineDays} dias).
-          </p>
-          <div className="mt-4 space-y-3">
-            {cotisations.length > 0 ? (
-              cotisations.map((row) => (
-                <div className="rounded-md border border-line p-3 text-sm" key={row.category}>
-                  <p className="font-medium text-ink">{categoryLabel(row.category)}</p>
-                  <p className="text-muted">CA: {euroFormatter.format(row.total)}</p>
-                  <p className="text-muted">Cotisations: {euroFormatter.format(row.cotisations)}</p>
-                  {typedProfile?.versement_liberatoire ? (
-                    <p className="text-muted">
-                      Versement libératoire: {euroFormatter.format(row.versementLiberatoire)}
-                    </p>
-                  ) : null}
-                  <p className="font-semibold text-ink">Net estimado: {euroFormatter.format(row.net)}</p>
-                </div>
-              ))
-            ) : (
-              <p className="text-sm text-muted">Nenhum encaissement no período atual.</p>
-            )}
-          </div>
-          <p className="mt-4 text-xs text-muted">
-            Estimation indicative, ne constitue pas un conseil fiscal.
-          </p>
+      <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Cotisations estimées</p>
+        <p className="mt-1 text-sm text-muted">
+          Période actuelle: {declarationPeriod.label}. Échéance estimée: {deadline} ({deadlineDays} dias).
+        </p>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          {cotisations.length > 0 ? (
+            cotisations.map((row) => (
+              <div className="rounded-xl p-4 text-sm ring-1 ring-black/5" key={row.category}>
+                <p className="font-medium text-ink">{categoryLabel(row.category)}</p>
+                <p className="tabular-nums text-muted">CA: {euroFormatter.format(row.total)}</p>
+                <p className="tabular-nums text-muted">Cotisations: {euroFormatter.format(row.cotisations)}</p>
+                {typedProfile?.versement_liberatoire ? (
+                  <p className="tabular-nums text-muted">
+                    Versement libératoire: {euroFormatter.format(row.versementLiberatoire)}
+                  </p>
+                ) : null}
+                <p className="mt-1 font-semibold tabular-nums text-brand">
+                  Net estimado: {euroFormatter.format(row.net)}
+                </p>
+              </div>
+            ))
+          ) : (
+            <p className="text-sm text-muted">Nenhum encaissement no período atual.</p>
+          )}
         </div>
-
-        <div className="rounded-lg border border-line bg-white p-5 shadow-sm">
-          <p className="text-sm font-semibold text-brand">Centro de ações</p>
-          <div className="mt-4 space-y-3 text-sm">
-            <ActionItem count={devisExpiring.length} label="Devis expiram nos próximos 7 dias" />
-            <ActionItem count={lateFactures.length} label="Factures à relancer" />
-            <ActionItem
-              count={deadlineDays <= 7 ? 1 : 0}
-              label={`Déclaration URSSAF em D-${Math.max(0, deadlineDays)}`}
-            />
-            <ActionItem count={profileFields.length} label={`Perfil incompleto: ${profileFields.join(", ") || "OK"}`} />
-          </div>
-        </div>
+        <p className="mt-4 text-xs text-muted">
+          Estimation indicative, ne constitue pas un conseil fiscal.
+        </p>
       </section>
 
-      <section className="mt-6 grid gap-4 sm:grid-cols-3">
-        <div className="rounded-lg border border-line bg-white p-4 shadow-sm">
-          <p className="text-sm text-muted">CA encaissé ce trimestre</p>
-          <p className="mt-1 text-xl font-semibold">
+      <section className="grid gap-4 sm:grid-cols-3">
+        <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">CA encaissé ce trimestre</p>
+          <p className="mt-1 text-xl font-semibold tabular-nums text-slate-700">
             {euroFormatter.format(totalCategoryAmount(quarterTotals))}
           </p>
         </div>
-        <div className="rounded-lg border border-line bg-white p-4 shadow-sm">
-          <p className="text-sm text-muted">Vente</p>
-          <p className="mt-1 text-xl font-semibold">{euroFormatter.format(quarterTotals.vente)}</p>
+        <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Vente</p>
+          <p className="mt-1 text-xl font-semibold tabular-nums text-slate-700">{euroFormatter.format(quarterTotals.vente)}</p>
         </div>
-        <div className="rounded-lg border border-line bg-white p-4 shadow-sm">
-          <p className="text-sm text-muted">Services</p>
-          <p className="mt-1 text-xl font-semibold">
+        <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Services</p>
+          <p className="mt-1 text-xl font-semibold tabular-nums text-slate-700">
             {euroFormatter.format(quarterTotals.service_bic + quarterTotals.service_bnc)}
           </p>
         </div>
       </section>
     </main>
-  );
-}
-
-function ActionItem({ count, label }: { count: number; label: string }) {
-  return (
-    <div className="flex items-center justify-between rounded-md border border-line px-3 py-2">
-      <span>{label}</span>
-      <span className={count > 0 ? "font-semibold text-amber-700" : "font-semibold text-teal-700"}>
-        {count > 0 ? count : "OK"}
-      </span>
-    </div>
   );
 }

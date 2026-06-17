@@ -12,7 +12,7 @@ const config: Config = {
         ink: "#172033",
         muted: "#667085",
         line: "#d8dee8",
-        brand: "#0f766e"
+        brand: "#002D72"
       }
     }
   },
