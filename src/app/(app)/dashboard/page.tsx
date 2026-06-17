@@ -372,7 +372,10 @@ export default async function DashboardPage() {
         )}
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-2">
+      <div className="space-y-4 pt-2">
+        <p className="px-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Acompanhamento fiscal</p>
+
+        <section className="grid gap-4 lg:grid-cols-2">
         <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Seuils micro-entreprise</p>
           {activeCategories.length > 0 ? (
@@ -481,6 +484,7 @@ export default async function DashboardPage() {
           </p>
         </div>
       </section>
+      </div>
     </main>
   );
 }
