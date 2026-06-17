@@ -53,8 +53,23 @@ export function DataTable<T>({ columns, emptyMessage, getRowKey, rows }: DataTab
               ))
             ) : (
               <tr>
-                <td className="px-4 py-8 text-center text-muted" colSpan={columns.length}>
-                  {emptyMessage}
+                <td className="px-4 py-14 text-center" colSpan={columns.length}>
+                  <div className="mx-auto flex max-w-xs flex-col items-center gap-3">
+                    <span
+                      aria-hidden="true"
+                      className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 ring-1 ring-black/5"
+                    >
+                      <svg fill="none" height="20" stroke="currentColor" strokeLinecap="round" strokeWidth="2" viewBox="0 0 24 24" width="20">
+                        <line x1="8" x2="20" y1="7" y2="7" />
+                        <line x1="8" x2="20" y1="12" y2="12" />
+                        <line x1="8" x2="20" y1="17" y2="17" />
+                        <line x1="4" x2="4" y1="7" y2="7" />
+                        <line x1="4" x2="4" y1="12" y2="12" />
+                        <line x1="4" x2="4" y1="17" y2="17" />
+                      </svg>
+                    </span>
+                    <p className="text-sm text-muted">{emptyMessage}</p>
+                  </div>
                 </td>
               </tr>
             )}
