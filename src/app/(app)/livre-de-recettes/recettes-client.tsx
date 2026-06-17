@@ -69,7 +69,7 @@ export function LivreDeRecettesClient({
             Export CSV
           </a>
           <a
-            className="inline-flex h-11 items-center justify-center rounded-md bg-brand px-4 text-sm font-semibold text-white transition hover:bg-teal-800"
+            className="inline-flex h-11 items-center justify-center rounded-md bg-brand px-4 text-sm font-semibold text-white transition hover:bg-[#003a94]"
             href={`/api/livre-de-recettes/export?format=pdf&${query}`}
           >
             Export PDF
