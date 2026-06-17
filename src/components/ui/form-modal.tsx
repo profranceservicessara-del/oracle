@@ -17,8 +17,8 @@ export function FormModal({ children, description, isOpen, onClose, title }: For
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 px-4 py-8">
-      <section className="max-h-full w-full max-w-2xl overflow-y-auto rounded-lg border border-line bg-white p-6 shadow-xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 px-4 py-8 backdrop-blur-sm">
+      <section className="max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl ring-1 ring-black/5">
         <div className="mb-6 flex items-start justify-between gap-4">
           <div>
             <h2 className="text-xl font-semibold text-ink">{title}</h2>

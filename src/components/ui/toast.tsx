@@ -29,18 +29,22 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const value = useMemo(() => ({ showToast }), [showToast]);
 
   const toneClasses: Record<ToastTone, string> = {
-    success: "border-teal-200 bg-teal-50 text-teal-800",
-    error: "border-red-200 bg-red-50 text-red-700",
-    info: "border-slate-200 bg-white text-ink"
+    success: "border-l-emerald-500",
+    error: "border-l-red-500",
+    info: "border-l-slate-400"
   };
 
   return (
     <ToastContext.Provider value={value}>
       {children}
-      <div className="fixed bottom-4 right-4 z-[60] flex w-[min(24rem,calc(100vw-2rem))] flex-col gap-2">
+      <div
+        aria-live="polite"
+        className="fixed bottom-4 right-4 z-[100] flex w-[min(24rem,calc(100vw-2rem))] flex-col gap-2"
+        role="status"
+      >
         {messages.map((item) => (
           <div
-            className={`rounded-md border px-4 py-3 text-sm shadow-sm ${toneClasses[item.tone]}`}
+            className={`rounded-2xl border border-l-4 border-black/5 bg-white px-4 py-3 text-sm text-ink shadow-lg ${toneClasses[item.tone]}`}
             key={item.id}
           >
             {item.message}

@@ -28,7 +28,7 @@ export function DataTable<T>({ columns, emptyMessage, getRowKey, rows }: DataTab
   }, [rows, safePage]);
 
   return (
-    <div className="overflow-hidden rounded-lg border border-line bg-white">
+    <div className="overflow-hidden rounded-2xl bg-white ring-1 ring-black/5">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[720px] border-collapse text-left text-sm">
           <thead className="bg-slate-50 text-xs uppercase text-muted">
