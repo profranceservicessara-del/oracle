@@ -27,9 +27,28 @@ export function DataTable<T>({ columns, emptyMessage, getRowKey, rows }: DataTab
     return rows.slice(start, start + PAGE_SIZE);
   }, [rows, safePage]);
 
+  const emptyContent = (
+    <div className="mx-auto flex max-w-xs flex-col items-center gap-3">
+      <span
+        aria-hidden="true"
+        className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 ring-1 ring-black/5"
+      >
+        <svg fill="none" height="20" stroke="currentColor" strokeLinecap="round" strokeWidth="2" viewBox="0 0 24 24" width="20">
+          <line x1="8" x2="20" y1="7" y2="7" />
+          <line x1="8" x2="20" y1="12" y2="12" />
+          <line x1="8" x2="20" y1="17" y2="17" />
+          <line x1="4" x2="4" y1="7" y2="7" />
+          <line x1="4" x2="4" y1="12" y2="12" />
+          <line x1="4" x2="4" y1="17" y2="17" />
+        </svg>
+      </span>
+      <p className="text-sm text-muted">{emptyMessage}</p>
+    </div>
+  );
+
   return (
     <div className="overflow-hidden rounded-2xl bg-white ring-1 ring-black/5">
-      <div className="overflow-x-auto">
+      <div className="hidden overflow-x-auto md:block">
         <table className="w-full min-w-[720px] border-collapse text-left text-sm">
           <thead className="bg-slate-50 text-xs uppercase text-muted">
             <tr>
@@ -54,28 +73,33 @@ export function DataTable<T>({ columns, emptyMessage, getRowKey, rows }: DataTab
             ) : (
               <tr>
                 <td className="px-4 py-14 text-center" colSpan={columns.length}>
-                  <div className="mx-auto flex max-w-xs flex-col items-center gap-3">
-                    <span
-                      aria-hidden="true"
-                      className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 ring-1 ring-black/5"
-                    >
-                      <svg fill="none" height="20" stroke="currentColor" strokeLinecap="round" strokeWidth="2" viewBox="0 0 24 24" width="20">
-                        <line x1="8" x2="20" y1="7" y2="7" />
-                        <line x1="8" x2="20" y1="12" y2="12" />
-                        <line x1="8" x2="20" y1="17" y2="17" />
-                        <line x1="4" x2="4" y1="7" y2="7" />
-                        <line x1="4" x2="4" y1="12" y2="12" />
-                        <line x1="4" x2="4" y1="17" y2="17" />
-                      </svg>
-                    </span>
-                    <p className="text-sm text-muted">{emptyMessage}</p>
-                  </div>
+                  {emptyContent}
                 </td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
+
+      <div className="divide-y divide-line md:hidden">
+        {pageRows.length > 0 ? (
+          pageRows.map((row) => (
+            <div className="space-y-2 p-4" key={getRowKey(row)}>
+              {columns.map((column) => (
+                <div className="flex items-start justify-between gap-3 text-sm" key={column.header}>
+                  <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                    {column.header}
+                  </span>
+                  <span className="text-right text-ink">{column.render(row)}</span>
+                </div>
+              ))}
+            </div>
+          ))
+        ) : (
+          <div className="px-4 py-14 text-center">{emptyContent}</div>
+        )}
+      </div>
+
       <div className="flex items-center justify-between border-t border-line px-4 py-3 text-sm text-muted">
         <span>
           Página {safePage} de {totalPages}
