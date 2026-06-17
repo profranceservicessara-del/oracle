@@ -124,7 +124,7 @@ export function DocumentosClient({
       header: "Ações",
       render: (document) => (
         <Link
-          className="inline-flex h-11 items-center justify-center rounded-md border border-line bg-white px-4 text-sm font-semibold text-ink transition hover:bg-slate-50"
+          className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-white px-4 text-sm font-semibold text-ink shadow-sm ring-1 ring-black/5 transition hover:bg-slate-50 active:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
           href={document.status === "draft" ? `/documentos/${document.id}/editar` : `/documentos/${document.id}`}
         >
           {document.status === "draft" ? "Editar" : "Ver"}
@@ -142,13 +142,13 @@ export function DocumentosClient({
         </div>
         <div className="flex flex-wrap gap-2">
           <Link
-            className="inline-flex h-11 items-center justify-center rounded-md border border-line bg-white px-4 text-sm font-semibold text-ink transition hover:bg-slate-50"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-white px-4 text-sm font-semibold text-ink shadow-sm ring-1 ring-black/5 transition hover:bg-slate-50 active:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
             href="/documentos/novo?type=devis"
           >
             Novo devis
           </Link>
           <Link
-            className="inline-flex h-11 items-center justify-center rounded-md bg-brand px-4 text-sm font-semibold text-white transition hover:bg-[#003a94]"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-brand px-4 text-sm font-semibold text-white shadow-sm ring-1 ring-[#002D72]/20 transition hover:bg-[#003a94] active:bg-[#001F4D] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
             href="/documentos/novo?type=facture"
           >
             Nova facture
