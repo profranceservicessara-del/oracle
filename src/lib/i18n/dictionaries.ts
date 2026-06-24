@@ -1,0 +1,112 @@
+import type { AppLocale } from "@/lib/crm/types";
+
+export type Locale = AppLocale;
+
+// Pilot dictionary (FR default + PT). Full app translation is incremental.
+const dictionaries = {
+  fr: {
+    "menu.account": "Mon compte",
+    "menu.profile": "Mon profil",
+    "menu.settings": "Paramètres",
+    "menu.language": "Langue",
+    "menu.currentLanguage": "Français",
+    "menu.switchToPt": "Passer en portugais",
+    "menu.switchToFr": "Repasser en français",
+    "menu.logout": "Déconnexion",
+
+    "crm.subtitle": "CRM",
+    "crm.clients": "Clients",
+    "crm.newClient": "+ Nouveau client",
+    "crm.emptyTitle": "Aucun client pour le moment",
+    "crm.emptyHint": "Ajoutez votre premier client pour commencer votre CRM.",
+    "crm.modalTitle": "Nouveau client",
+    "crm.modalDesc": "Ajoutez un client à votre CRM.",
+    "crm.name": "Nom",
+    "crm.type": "Type",
+    "crm.email": "Email",
+    "crm.phone": "Téléphone",
+    "crm.professional": "Professionnel",
+    "crm.particular": "Particulier",
+    "crm.cancel": "Annuler",
+    "crm.create": "Créer",
+    "crm.creating": "Création...",
+    "crm.created": "Client créé.",
+    "crm.createError": "Impossible de créer le client.",
+    "crm.bootError": "Impossible d'initialiser votre espace CRM. Rechargez la page.",
+
+    "detail.back": "Clients",
+    "detail.archive": "Archiver",
+    "detail.archived": "Client archivé.",
+    "detail.archiveError": "Impossible d'archiver le client.",
+    "detail.contacts": "Contacts",
+    "detail.dossiers": "Dossiers",
+    "detail.tasks": "Tâches",
+    "detail.notes": "Notes",
+    "detail.activity": "Activité",
+    "detail.add": "Ajouter",
+    "detail.noContacts": "Aucun contact.",
+    "detail.noDossiers": "Aucun dossier.",
+    "detail.noTasks": "Aucune tâche.",
+    "detail.noNotes": "Aucune note.",
+    "detail.contactName": "Nom",
+    "detail.dossierTitle": "Titre du dossier",
+    "detail.taskTitle": "Tâche",
+    "detail.notePlaceholder": "Écrire une note…"
+  },
+  pt: {
+    "menu.account": "Minha conta",
+    "menu.profile": "Meu perfil",
+    "menu.settings": "Configurações",
+    "menu.language": "Idioma",
+    "menu.currentLanguage": "Português",
+    "menu.switchToPt": "Mudar para português",
+    "menu.switchToFr": "Voltar ao francês",
+    "menu.logout": "Sair",
+
+    "crm.subtitle": "CRM",
+    "crm.clients": "Clientes",
+    "crm.newClient": "+ Novo cliente",
+    "crm.emptyTitle": "Nenhum cliente ainda",
+    "crm.emptyHint": "Adicione seu primeiro cliente para começar seu CRM.",
+    "crm.modalTitle": "Novo cliente",
+    "crm.modalDesc": "Adicione um cliente ao seu CRM.",
+    "crm.name": "Nome",
+    "crm.type": "Tipo",
+    "crm.email": "Email",
+    "crm.phone": "Telefone",
+    "crm.professional": "Profissional",
+    "crm.particular": "Particular",
+    "crm.cancel": "Cancelar",
+    "crm.create": "Criar",
+    "crm.creating": "Criando...",
+    "crm.created": "Cliente criado.",
+    "crm.createError": "Não foi possível criar o cliente.",
+    "crm.bootError": "Não foi possível inicializar seu espaço CRM. Recarregue a página.",
+
+    "detail.back": "Clientes",
+    "detail.archive": "Arquivar",
+    "detail.archived": "Cliente arquivado.",
+    "detail.archiveError": "Não foi possível arquivar o cliente.",
+    "detail.contacts": "Contatos",
+    "detail.dossiers": "Dossiês",
+    "detail.tasks": "Tarefas",
+    "detail.notes": "Notas",
+    "detail.activity": "Atividade",
+    "detail.add": "Adicionar",
+    "detail.noContacts": "Nenhum contato.",
+    "detail.noDossiers": "Nenhum dossiê.",
+    "detail.noTasks": "Nenhuma tarefa.",
+    "detail.noNotes": "Nenhuma nota.",
+    "detail.contactName": "Nome",
+    "detail.dossierTitle": "Título do dossiê",
+    "detail.taskTitle": "Tarefa",
+    "detail.notePlaceholder": "Escrever uma nota…"
+  }
+} as const;
+
+export type TranslationKey = keyof (typeof dictionaries)["fr"];
+
+export function t(locale: Locale, key: TranslationKey): string {
+  const table = dictionaries[locale] ?? dictionaries.fr;
+  return table[key] ?? dictionaries.fr[key] ?? key;
+}

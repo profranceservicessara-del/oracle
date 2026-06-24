@@ -8,18 +8,21 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { useToast } from "@/components/ui/toast";
 import { logActivity } from "@/lib/crm/activity";
+import { t, type Locale } from "@/lib/i18n/dictionaries";
 import { createClient } from "@/lib/supabase/client";
 import type { CrmClient, CrmClientType, CrmCompany } from "@/lib/crm/types";
 
-const emptyForm = { name: "", type: "professionnel" as CrmClientType, email: "", phone: "" };
+const emptyForm = { email: "", name: "", phone: "", type: "professionnel" as CrmClientType };
 
 export function CrmClientsClient({
   company,
   initialClients,
+  locale,
   userId
 }: {
   company: CrmCompany | null;
   initialClients: CrmClient[];
+  locale: Locale;
   userId: string;
 }) {
   const supabase = useMemo(() => createClient(), []);
@@ -50,7 +53,7 @@ export function CrmClientsClient({
     setIsSaving(false);
 
     if (error || !data) {
-      showToast("Impossible de créer le client.", "error");
+      showToast(t(locale, "crm.createError"), "error");
       return;
     }
 
@@ -58,7 +61,7 @@ export function CrmClientsClient({
     setClients((current) => [created, ...current]);
     setForm(emptyForm);
     setIsOpen(false);
-    showToast("Client créé.", "success");
+    showToast(t(locale, "crm.created"), "success");
     void logActivity(supabase, {
       action: "create",
       clientId: created.id,
@@ -74,7 +77,7 @@ export function CrmClientsClient({
     return (
       <main className="mx-auto max-w-4xl px-4 py-8">
         <div className="rounded-2xl bg-amber-50 p-5 text-sm text-amber-800 ring-1 ring-amber-200">
-          Impossible d&apos;initialiser votre espace CRM. Rechargez la page ou réessayez plus tard.
+          {t(locale, "crm.bootError")}
         </div>
       </main>
     );
@@ -85,10 +88,10 @@ export function CrmClientsClient({
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">CRM · {company.name}</p>
-          <h1 className="mt-1 text-2xl font-semibold text-ink">Clients</h1>
+          <h1 className="mt-1 text-2xl font-semibold text-ink">{t(locale, "crm.clients")}</h1>
         </div>
         <Button onClick={() => setIsOpen(true)} type="button">
-          + Nouveau client
+          {t(locale, "crm.newClient")}
         </Button>
       </div>
 
@@ -101,10 +104,10 @@ export function CrmClientsClient({
               <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
             </svg>
           </span>
-          <h2 className="mt-5 text-lg font-semibold text-ink">Aucun client pour le moment</h2>
-          <p className="mt-2 max-w-sm text-sm text-muted">Ajoutez votre premier client pour commencer votre CRM.</p>
+          <h2 className="mt-5 text-lg font-semibold text-ink">{t(locale, "crm.emptyTitle")}</h2>
+          <p className="mt-2 max-w-sm text-sm text-muted">{t(locale, "crm.emptyHint")}</p>
           <Button className="mt-6" onClick={() => setIsOpen(true)} type="button">
-            + Nouveau client
+            {t(locale, "crm.newClient")}
           </Button>
         </div>
       ) : (
@@ -125,7 +128,7 @@ export function CrmClientsClient({
                 </div>
               </div>
               <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold text-slate-600 ring-1 ring-slate-200">
-                {client.type === "particulier" ? "Particulier" : "Professionnel"}
+                {client.type === "particulier" ? t(locale, "crm.particular") : t(locale, "crm.professional")}
               </span>
             </Link>
           ))}
@@ -133,14 +136,14 @@ export function CrmClientsClient({
       )}
 
       <FormModal
-        description="Ajoutez un client à votre CRM."
+        description={t(locale, "crm.modalDesc")}
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
-        title="Nouveau client"
+        title={t(locale, "crm.modalTitle")}
       >
         <form className="grid gap-4" onSubmit={(event) => void createCrmClient(event)}>
           <label className="text-sm font-medium text-ink">
-            Nom
+            {t(locale, "crm.name")}
             <Input
               className="mt-2"
               onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
@@ -149,21 +152,19 @@ export function CrmClientsClient({
             />
           </label>
           <label className="text-sm font-medium text-ink">
-            Type
+            {t(locale, "crm.type")}
             <Select
               className="mt-2"
-              onChange={(event) =>
-                setForm((current) => ({ ...current, type: event.target.value as CrmClientType }))
-              }
+              onChange={(event) => setForm((current) => ({ ...current, type: event.target.value as CrmClientType }))}
               value={form.type}
             >
-              <option value="professionnel">Professionnel</option>
-              <option value="particulier">Particulier</option>
+              <option value="professionnel">{t(locale, "crm.professional")}</option>
+              <option value="particulier">{t(locale, "crm.particular")}</option>
             </Select>
           </label>
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="text-sm font-medium text-ink">
-              Email
+              {t(locale, "crm.email")}
               <Input
                 className="mt-2"
                 onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
@@ -172,7 +173,7 @@ export function CrmClientsClient({
               />
             </label>
             <label className="text-sm font-medium text-ink">
-              Téléphone
+              {t(locale, "crm.phone")}
               <Input
                 className="mt-2"
                 onChange={(event) => setForm((current) => ({ ...current, phone: event.target.value }))}
@@ -182,10 +183,10 @@ export function CrmClientsClient({
           </div>
           <div className="flex justify-end gap-2">
             <Button onClick={() => setIsOpen(false)} type="button" variant="secondary">
-              Annuler
+              {t(locale, "crm.cancel")}
             </Button>
             <Button disabled={isSaving || !form.name.trim()} type="submit">
-              {isSaving ? "Création..." : "Créer"}
+              {isSaving ? t(locale, "crm.creating") : t(locale, "crm.create")}
             </Button>
           </div>
         </form>

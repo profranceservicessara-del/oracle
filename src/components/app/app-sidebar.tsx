@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { LogoutButton } from "@/components/app/logout-button";
+import { t, type Locale } from "@/lib/i18n/dictionaries";
+import { createClient } from "@/lib/supabase/client";
 
 const navIcons: Record<string, ReactNode> = {
   "/dashboard": (
@@ -129,10 +131,30 @@ function BrandBadge({ initials }: { initials: string }) {
   );
 }
 
-function UserMenu({ email, onNavigate }: { email: string; onNavigate?: () => void }) {
+function UserMenu({ email, locale, onNavigate }: { email: string; locale: Locale; onNavigate?: () => void }) {
   const [open, setOpen] = useState(false);
+  const [switching, setSwitching] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const supabase = useMemo(() => createClient(), []);
   const initials = (email.trim()[0] ?? "U").toUpperCase();
+
+  async function switchLocale() {
+    const target: Locale = locale === "fr" ? "pt" : "fr";
+    setSwitching(true);
+    const {
+      data: { user }
+    } = await supabase.auth.getUser();
+    if (user) {
+      await supabase
+        .from("user_preferences")
+        .upsert({ locale: target, user_id: user.id }, { onConflict: "user_id" });
+    }
+    setSwitching(false);
+    setOpen(false);
+    onNavigate?.();
+    router.refresh();
+  }
 
   useEffect(() => {
     if (!open) {
@@ -173,29 +195,27 @@ function UserMenu({ email, onNavigate }: { email: string; onNavigate?: () => voi
       {open ? (
         <div className="absolute bottom-full left-0 right-0 mb-2 rounded-2xl bg-white p-1.5 shadow-lg ring-1 ring-black/5">
           <Link className={itemClass} href="/configuracoes/perfil" onClick={handleNavigate}>
-            Mon profil
+            {t(locale, "menu.profile")}
           </Link>
           <Link className={itemClass} href="/configuracoes/dados" onClick={handleNavigate}>
-            Paramètres
+            {t(locale, "menu.settings")}
           </Link>
           <div className="my-1 border-t border-black/5" />
-          {/* TODO: Later implement full i18n with French as default and Portuguese switch from Settings. */}
           <p className="px-3 py-2 text-sm text-slate-500">
-            Langue: <span className="font-medium text-ink">Français</span>
+            {t(locale, "menu.language")}:{" "}
+            <span className="font-medium text-ink">{t(locale, "menu.currentLanguage")}</span>
           </p>
           <button
-            className="flex w-full cursor-not-allowed items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-left text-sm text-slate-400"
-            disabled
+            className="flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-left text-sm text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
+            disabled={switching}
+            onClick={() => void switchLocale()}
             type="button"
           >
-            Passer en portugais
-            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-              bientôt
-            </span>
+            {locale === "fr" ? t("fr", "menu.switchToPt") : t("pt", "menu.switchToFr")}
           </button>
           <div className="my-1 border-t border-black/5" />
           <div className="grid p-1">
-            <LogoutButton />
+            <LogoutButton label={t(locale, "menu.logout")} />
           </div>
         </div>
       ) : null}
@@ -211,8 +231,8 @@ function UserMenu({ email, onNavigate }: { email: string; onNavigate?: () => voi
           {initials}
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm font-medium text-white">{email || "Mon compte"}</span>
-          <span className="block text-xs text-white/50">Paramètres</span>
+          <span className="block truncate text-sm font-medium text-white">{email || t(locale, "menu.account")}</span>
+          <span className="block text-xs text-white/50">{t(locale, "menu.settings")}</span>
         </span>
         <svg aria-hidden="true" className="shrink-0 text-white/50" fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeWidth="2" viewBox="0 0 24 24" width="16">
           <path d="m6 9 6 6 6-6" />
@@ -222,7 +242,7 @@ function UserMenu({ email, onNavigate }: { email: string; onNavigate?: () => voi
   );
 }
 
-function SidebarBody({ email, onNavigate }: { email: string; onNavigate?: () => void }) {
+function SidebarBody({ email, locale, onNavigate }: { email: string; locale: Locale; onNavigate?: () => void }) {
   const initials = ((email.split("@")[0] ?? "").replace(/[^a-zA-Z]/g, "").slice(0, 2) || "PF").toUpperCase();
 
   return (
@@ -238,19 +258,19 @@ function SidebarBody({ email, onNavigate }: { email: string; onNavigate?: () => 
       </div>
       <div className="border-t border-white/10" />
       <NavList onNavigate={onNavigate} />
-      <UserMenu email={email} onNavigate={onNavigate} />
+      <UserMenu email={email} locale={locale} onNavigate={onNavigate} />
     </div>
   );
 }
 
-export function AppSidebar({ email }: { email: string }) {
+export function AppSidebar({ email, locale }: { email: string; locale: Locale }) {
   const [open, setOpen] = useState(false);
   const initials = ((email.split("@")[0] ?? "").replace(/[^a-zA-Z]/g, "").slice(0, 2) || "PF").toUpperCase();
 
   return (
     <>
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 md:block">
-        <SidebarBody email={email} />
+        <SidebarBody email={email} locale={locale} />
       </aside>
 
       <div className="sticky top-0 z-20 flex items-center justify-between border-b border-black/5 bg-white/80 px-4 py-3 backdrop-blur md:hidden">
@@ -283,7 +303,7 @@ export function AppSidebar({ email }: { email: string }) {
             type="button"
           />
           <div className="absolute inset-y-0 left-0 w-72 max-w-[80%]">
-            <SidebarBody email={email} onNavigate={() => setOpen(false)} />
+            <SidebarBody email={email} locale={locale} onNavigate={() => setOpen(false)} />
           </div>
         </div>
       ) : null}

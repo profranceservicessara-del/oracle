@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 
-export function LogoutButton() {
+export function LogoutButton({ label }: { label?: string }) {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
   const [isLoading, setIsLoading] = useState(false);
@@ -19,7 +19,7 @@ export function LogoutButton() {
 
   return (
     <Button disabled={isLoading} onClick={() => void signOut()} type="button" variant="secondary">
-      {isLoading ? "Saindo..." : "Sair"}
+      {isLoading ? "…" : (label ?? "Sair")}
     </Button>
   );
 }

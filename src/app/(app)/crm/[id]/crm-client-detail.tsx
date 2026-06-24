@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
 import { logActivity } from "@/lib/crm/activity";
+import { t, type Locale } from "@/lib/i18n/dictionaries";
 import { createClient } from "@/lib/supabase/client";
 import type {
   CrmActivityLog,
@@ -54,6 +55,7 @@ export function CrmClientDetail({
   initialDossiers,
   initialNotes,
   initialTasks,
+  locale,
   userId
 }: {
   client: CrmClient;
@@ -62,6 +64,7 @@ export function CrmClientDetail({
   initialDossiers: CrmDossier[];
   initialNotes: CrmNote[];
   initialTasks: CrmTask[];
+  locale: Locale;
   userId: string;
 }) {
   const supabase = useMemo(() => createClient(), []);
@@ -177,7 +180,7 @@ export function CrmClientDetail({
   return (
     <main className="mx-auto max-w-4xl px-4 py-8">
       <Link className="text-sm font-semibold text-muted transition hover:text-ink" href="/crm">
-        ← Clients
+        ← {t(locale, "detail.back")}
       </Link>
 
       <div className="mb-6 mt-3 flex flex-wrap items-center justify-between gap-3">
@@ -195,20 +198,20 @@ export function CrmClientDetail({
           </div>
         </div>
         <Button onClick={() => void archiveClient()} type="button" variant="secondary">
-          Archiver
+          {t(locale, "detail.archive")}
         </Button>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <Section count={contacts.length} title="Contacts">
+        <Section count={contacts.length} title={t(locale, "detail.contacts")}>
           <form className="mb-3 flex flex-wrap gap-2" onSubmit={(event) => void addContact(event)}>
             <Input aria-label="Nom du contact" className="min-w-[8rem] flex-1" onChange={(event) => setContactForm((current) => ({ ...current, name: event.target.value }))} placeholder="Nom" value={contactForm.name} />
             <Input aria-label="Email du contact" className="min-w-[8rem] flex-1" onChange={(event) => setContactForm((current) => ({ ...current, email: event.target.value }))} placeholder="Email" type="email" value={contactForm.email} />
-            <Button disabled={!contactForm.name.trim()} type="submit">Ajouter</Button>
+            <Button disabled={!contactForm.name.trim()} type="submit">{t(locale, "detail.add")}</Button>
           </form>
           <ul className="divide-y divide-line text-sm">
             {contacts.length === 0 ? (
-              <li className="py-2 text-muted">Aucun contact.</li>
+              <li className="py-2 text-muted">{t(locale, "detail.noContacts")}</li>
             ) : (
               contacts.map((contact) => (
                 <li className="flex items-center justify-between gap-3 py-2" key={contact.id}>
@@ -220,14 +223,14 @@ export function CrmClientDetail({
           </ul>
         </Section>
 
-        <Section count={dossiers.length} title="Dossiers">
+        <Section count={dossiers.length} title={t(locale, "detail.dossiers")}>
           <form className="mb-3 flex gap-2" onSubmit={(event) => void addDossier(event)}>
             <Input aria-label="Titre du dossier" className="flex-1" onChange={(event) => setDossierTitle(event.target.value)} placeholder="Titre du dossier" value={dossierTitle} />
-            <Button disabled={!dossierTitle.trim()} type="submit">Ajouter</Button>
+            <Button disabled={!dossierTitle.trim()} type="submit">{t(locale, "detail.add")}</Button>
           </form>
           <ul className="divide-y divide-line text-sm">
             {dossiers.length === 0 ? (
-              <li className="py-2 text-muted">Aucun dossier.</li>
+              <li className="py-2 text-muted">{t(locale, "detail.noDossiers")}</li>
             ) : (
               dossiers.map((dossier) => (
                 <li className="flex items-center justify-between gap-3 py-2" key={dossier.id}>
@@ -239,15 +242,15 @@ export function CrmClientDetail({
           </ul>
         </Section>
 
-        <Section count={tasks.length} title="Tâches">
+        <Section count={tasks.length} title={t(locale, "detail.tasks")}>
           <form className="mb-3 flex flex-wrap gap-2" onSubmit={(event) => void addTask(event)}>
             <Input aria-label="Titre de la tâche" className="min-w-[8rem] flex-1" onChange={(event) => setTaskForm((current) => ({ ...current, title: event.target.value }))} placeholder="Tâche" value={taskForm.title} />
             <Input aria-label="Échéance" className="w-[10rem]" onChange={(event) => setTaskForm((current) => ({ ...current, due: event.target.value }))} type="date" value={taskForm.due} />
-            <Button disabled={!taskForm.title.trim()} type="submit">Ajouter</Button>
+            <Button disabled={!taskForm.title.trim()} type="submit">{t(locale, "detail.add")}</Button>
           </form>
           <ul className="divide-y divide-line text-sm">
             {tasks.length === 0 ? (
-              <li className="py-2 text-muted">Aucune tâche.</li>
+              <li className="py-2 text-muted">{t(locale, "detail.noTasks")}</li>
             ) : (
               tasks.map((task) => (
                 <li className="flex items-center justify-between gap-3 py-2" key={task.id}>
@@ -268,16 +271,16 @@ export function CrmClientDetail({
           </ul>
         </Section>
 
-        <Section count={notes.length} title="Notes">
+        <Section count={notes.length} title={t(locale, "detail.notes")}>
           <form className="mb-3 grid gap-2" onSubmit={(event) => void addNote(event)}>
             <Textarea aria-label="Nouvelle note" className="min-h-16" onChange={(event) => setNoteBody(event.target.value)} placeholder="Écrire une note…" value={noteBody} />
             <div className="flex justify-end">
-              <Button disabled={!noteBody.trim()} type="submit">Ajouter</Button>
+              <Button disabled={!noteBody.trim()} type="submit">{t(locale, "detail.add")}</Button>
             </div>
           </form>
           <ul className="space-y-2 text-sm">
             {notes.length === 0 ? (
-              <li className="text-muted">Aucune note.</li>
+              <li className="text-muted">{t(locale, "detail.noNotes")}</li>
             ) : (
               notes.map((note) => (
                 <li className="rounded-xl bg-slate-50 px-3 py-2 text-slate-700 ring-1 ring-black/5" key={note.id}>
@@ -291,7 +294,7 @@ export function CrmClientDetail({
 
       {activity.length > 0 ? (
         <section className="mt-4 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
-          <h2 className="mb-3 text-sm font-semibold text-ink">Activité</h2>
+          <h2 className="mb-3 text-sm font-semibold text-ink">{t(locale, "detail.activity")}</h2>
           <ul className="space-y-2 text-sm">
             {activity.map((item) => (
               <li className="flex items-center justify-between gap-3" key={item.id}>
