@@ -50,6 +50,11 @@ const navIcons: Record<string, ReactNode> = {
       <path d="M4 5v6c0 1.66 3.58 3 8 3s8-1.34 8-3V5" />
       <path d="M4 11v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6" />
     </svg>
+  ),
+  "/configuracoes/seguranca": (
+    <svg fill="none" height="18" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" width="18">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    </svg>
   )
 };
 
@@ -59,7 +64,8 @@ const links = [
   { href: "/clientes", label: "Clientes" },
   { href: "/catalogo", label: "Catálogo" },
   { href: "/configuracoes/perfil", label: "Perfil fiscal" },
-  { href: "/configuracoes/dados", label: "Dados" }
+  { href: "/configuracoes/dados", label: "Dados" },
+  { href: "/configuracoes/seguranca", label: "Segurança" }
 ];
 
 function NavList({ onNavigate }: { onNavigate?: () => void }) {
