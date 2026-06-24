@@ -34,6 +34,15 @@ const navIcons: Record<string, ReactNode> = {
       <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
     </svg>
   ),
+  "/crm": (
+    <svg fill="none" height="18" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" width="18">
+      <rect height="16" rx="2" width="18" x="3" y="4" />
+      <circle cx="9" cy="10" r="2" />
+      <path d="M6.5 16a2.5 2.5 0 0 1 5 0" />
+      <line x1="14" x2="18" y1="10" y2="10" />
+      <line x1="14" x2="18" y1="14" y2="14" />
+    </svg>
+  ),
   "/clientes": (
     <svg fill="none" height="18" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" width="18">
       <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
@@ -75,6 +84,7 @@ const links = [
   { href: "/documentos", label: "Documentos" },
   { href: "/facturation", label: "Facturation" },
   { href: "/documents", label: "Documents" },
+  { href: "/crm", label: "CRM" },
   { href: "/clientes", label: "Clientes" },
   { href: "/catalogo", label: "Catálogo" },
   { href: "/configuracoes/perfil", label: "Perfil fiscal" },
