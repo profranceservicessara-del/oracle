@@ -1,9 +1,57 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LogoutButton } from "@/components/app/logout-button";
+
+const navIcons: Record<string, ReactNode> = {
+  "/dashboard": (
+    <svg fill="none" height="18" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" width="18">
+      <rect height="8" rx="1.5" width="8" x="3" y="3" />
+      <rect height="8" rx="1.5" width="8" x="13" y="3" />
+      <rect height="8" rx="1.5" width="8" x="13" y="13" />
+      <rect height="8" rx="1.5" width="8" x="3" y="13" />
+    </svg>
+  ),
+  "/documentos": (
+    <svg fill="none" height="18" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" width="18">
+      <path d="M14 3v4a1 1 0 0 0 1 1h4" />
+      <path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z" />
+      <line x1="9" x2="15" y1="13" y2="13" />
+      <line x1="9" x2="13" y1="17" y2="17" />
+    </svg>
+  ),
+  "/clientes": (
+    <svg fill="none" height="18" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" width="18">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  ),
+  "/catalogo": (
+    <svg fill="none" height="18" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" width="18">
+      <path d="m7.5 4.27 9 5.15" />
+      <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+      <path d="m3.3 7 8.7 5 8.7-5" />
+      <path d="M12 22V12" />
+    </svg>
+  ),
+  "/configuracoes/perfil": (
+    <svg fill="none" height="18" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" width="18">
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 21a8 8 0 0 1 16 0" />
+    </svg>
+  ),
+  "/configuracoes/dados": (
+    <svg fill="none" height="18" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" width="18">
+      <ellipse cx="12" cy="5" rx="8" ry="3" />
+      <path d="M4 5v6c0 1.66 3.58 3 8 3s8-1.34 8-3V5" />
+      <path d="M4 11v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6" />
+    </svg>
+  )
+};
 
 const links = [
   { href: "/dashboard", label: "Dashboard" },
@@ -25,18 +73,29 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
         return (
           <Link
             aria-current={isActive ? "page" : undefined}
-            className={`rounded-xl px-3 py-2.5 text-sm font-medium transition ${
-              isActive ? "bg-white/15 text-white" : "text-white/70 hover:bg-white/10 hover:text-white"
+            className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
+              isActive
+                ? "bg-white/15 text-white shadow-sm ring-1 ring-white/10"
+                : "text-white/60 hover:bg-white/10 hover:text-white"
             }`}
             href={link.href}
             key={link.href}
             onClick={onNavigate}
           >
+            <span className={`shrink-0 ${isActive ? "text-white" : "text-white/50"}`}>{navIcons[link.href]}</span>
             {link.label}
           </Link>
         );
       })}
     </nav>
+  );
+}
+
+function BrandBadge({ initials }: { initials: string }) {
+  return (
+    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#4F5FB8] to-[#2B1F5B] text-sm font-bold text-white shadow-sm ring-1 ring-white/20">
+      {initials}
+    </span>
   );
 }
 
@@ -137,13 +196,17 @@ function SidebarBody({ email, onNavigate }: { email: string; onNavigate?: () => 
   const initials = ((email.split("@")[0] ?? "").replace(/[^a-zA-Z]/g, "").slice(0, 2) || "PF").toUpperCase();
 
   return (
-    <div className="flex h-full flex-col gap-6 bg-gradient-to-b from-[#001F4D] via-[#002D72] to-[#2B1F5B] p-4">
-      <div className="px-2 pt-2">
-        <p className="text-base font-semibold text-white">ProFacture</p>
-        <span className="mt-3 flex h-12 w-12 items-center justify-center rounded-full bg-white text-base font-semibold text-[#002D72] ring-1 ring-white/20">
-          {initials}
-        </span>
+    <div className="flex h-full flex-col gap-5 bg-gradient-to-b from-[#001433] via-[#002D72] to-[#241845] p-4">
+      <div className="flex items-center gap-3 px-1 pt-1">
+        <BrandBadge initials={initials} />
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold text-white">ProFacture</p>
+          <p className="truncate text-[10px] font-medium uppercase tracking-wide text-white/40">
+            Sistema financeiro
+          </p>
+        </div>
       </div>
+      <div className="border-t border-white/10" />
       <NavList onNavigate={onNavigate} />
       <UserMenu email={email} onNavigate={onNavigate} />
     </div>
@@ -152,6 +215,7 @@ function SidebarBody({ email, onNavigate }: { email: string; onNavigate?: () => 
 
 export function AppSidebar({ email }: { email: string }) {
   const [open, setOpen] = useState(false);
+  const initials = ((email.split("@")[0] ?? "").replace(/[^a-zA-Z]/g, "").slice(0, 2) || "PF").toUpperCase();
 
   return (
     <>
@@ -160,7 +224,12 @@ export function AppSidebar({ email }: { email: string }) {
       </aside>
 
       <div className="sticky top-0 z-20 flex items-center justify-between border-b border-black/5 bg-white/80 px-4 py-3 backdrop-blur md:hidden">
-        <p className="text-base font-semibold text-ink">ProFacture</p>
+        <div className="flex items-center gap-2.5">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#4F5FB8] to-[#2B1F5B] text-xs font-bold text-white ring-1 ring-black/5">
+            {initials}
+          </span>
+          <p className="text-base font-semibold text-ink">ProFacture</p>
+        </div>
         <button
           aria-label="Abrir menu"
           className="inline-flex h-10 w-10 items-center justify-center rounded-2xl ring-1 ring-black/5 transition hover:bg-slate-100"
