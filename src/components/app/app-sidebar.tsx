@@ -134,10 +134,15 @@ function UserMenu({ email, onNavigate }: { email: string; onNavigate?: () => voi
 }
 
 function SidebarBody({ email, onNavigate }: { email: string; onNavigate?: () => void }) {
+  const initials = ((email.split("@")[0] ?? "").replace(/[^a-zA-Z]/g, "").slice(0, 2) || "PF").toUpperCase();
+
   return (
     <div className="flex h-full flex-col gap-6 bg-gradient-to-b from-[#001F4D] via-[#002D72] to-[#2B1F5B] p-4">
       <div className="px-2 pt-2">
         <p className="text-base font-semibold text-white">ProFacture</p>
+        <span className="mt-3 flex h-12 w-12 items-center justify-center rounded-full bg-white text-base font-semibold text-[#002D72] ring-1 ring-white/20">
+          {initials}
+        </span>
       </div>
       <NavList onNavigate={onNavigate} />
       <UserMenu email={email} onNavigate={onNavigate} />
