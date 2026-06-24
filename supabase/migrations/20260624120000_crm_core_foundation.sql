@@ -1,38 +1,7 @@
 -- CRM Core foundation (Phase 1) — additive, company-based, namespaced crm_*.
 -- Does NOT touch existing profiles/clients/documents (user-based invoicing model).
 -- Multi-tenant by company; access restricted to company owner or members.
-
--- ---------------------------------------------------------------------------
--- Membership helpers (security definer to avoid RLS recursion on crm tables).
--- ---------------------------------------------------------------------------
-create or replace function public.crm_is_company_owner(p_company_id uuid)
-returns boolean
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  select exists (
-    select 1 from public.crm_companies c
-    where c.id = p_company_id and c.owner_id = auth.uid()
-  );
-$$;
-
-create or replace function public.crm_is_company_member(p_company_id uuid)
-returns boolean
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  select exists (
-    select 1 from public.crm_companies c
-    where c.id = p_company_id and c.owner_id = auth.uid()
-  ) or exists (
-    select 1 from public.crm_company_members m
-    where m.company_id = p_company_id and m.user_id = auth.uid()
-  );
-$$;
+-- Order: tables -> triggers -> membership helpers -> RLS/policies.
 
 -- ---------------------------------------------------------------------------
 -- Tables
@@ -173,6 +142,39 @@ create trigger crm_dossiers_set_updated_at before update on public.crm_dossiers 
 create trigger crm_notes_set_updated_at before update on public.crm_notes for each row execute function public.set_updated_at();
 create trigger crm_tasks_set_updated_at before update on public.crm_tasks for each row execute function public.set_updated_at();
 create trigger user_preferences_set_updated_at before update on public.user_preferences for each row execute function public.set_updated_at();
+
+-- ---------------------------------------------------------------------------
+-- Membership helpers (security definer to avoid RLS recursion on crm tables).
+-- Defined AFTER the tables they reference.
+-- ---------------------------------------------------------------------------
+create or replace function public.crm_is_company_owner(p_company_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.crm_companies c
+    where c.id = p_company_id and c.owner_id = auth.uid()
+  );
+$$;
+
+create or replace function public.crm_is_company_member(p_company_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.crm_companies c
+    where c.id = p_company_id and c.owner_id = auth.uid()
+  ) or exists (
+    select 1 from public.crm_company_members m
+    where m.company_id = p_company_id and m.user_id = auth.uid()
+  );
+$$;
 
 -- ---------------------------------------------------------------------------
 -- Row Level Security (authenticated only; isolated by company membership)
