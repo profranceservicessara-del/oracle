@@ -143,6 +143,25 @@ export function PerfilClient({
     }
   }
 
+  const companyName = [profile?.nome, profile?.prenom].filter(Boolean).join(" ");
+  const companyAddress = [
+    profile?.adresse_rue,
+    [profile?.adresse_cp, profile?.adresse_ville].filter(Boolean).join(" ")
+  ]
+    .filter(Boolean)
+    .join(", ");
+  const infoRows = [
+    {
+      label: "Atividade principal",
+      value: profile?.activite_principale ? categoryLabels[profile.activite_principale] : "—"
+    },
+    { label: "Regime de TVA", value: profile ? vatRegimeLabels[profile.regime_tva] : "—" },
+    { label: "Código APE", value: profile?.code_ape || "—" },
+    { label: "Penalidades de atraso", value: profile ? `${profile.taux_penalites_retard}%` : "—" },
+    { label: "Versement libératoire", value: profile?.versement_liberatoire ? "Sim" : "Não" },
+    { label: "ACRE", value: profile?.acre ? "Sim" : "Não" }
+  ];
+
   return (
     <main className="mx-auto max-w-4xl px-4 py-8">
       <div className="mb-6">
@@ -152,6 +171,45 @@ export function PerfilClient({
           Estes dados são necessários para emitir documentos fiscais franceses.
         </p>
       </div>
+
+      <section className="mb-6 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
+        <div className="h-24 bg-gradient-to-br from-[#001F4D] via-[#002D72] to-[#2B1F5B]" />
+        <div className="px-6 pb-6">
+          <div className="-mt-10 flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl bg-white ring-1 ring-black/5">
+            {logoSignedUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img alt="Logo da empresa" className="h-full w-full object-contain p-2" src={logoSignedUrl} />
+            ) : (
+              <svg aria-hidden="true" className="text-[#002D72]" fill="none" height="28" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" width="28">
+                <path d="M3 21h18" />
+                <path d="M6 21V5a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v16" />
+                <path d="M15 9h3a1 1 0 0 1 1 1v11" />
+                <path d="M9 8h0M9 12h0M9 16h0" />
+              </svg>
+            )}
+          </div>
+          <h2 className="mt-4 text-2xl font-semibold text-ink">{companyName || "Sua empresa"}</h2>
+          <p className="mt-1 text-sm text-muted">{companyAddress || "Endereço não informado"}</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {profile?.siret ? (
+              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold tabular-nums text-slate-700 ring-1 ring-slate-200">
+                SIRET: {formatSiret(profile.siret)}
+              </span>
+            ) : null}
+            <span className="rounded-full bg-[#002D72]/10 px-3 py-1 text-xs font-semibold text-[#002D72]">
+              Micro-entreprise
+            </span>
+          </div>
+          <dl className="mt-6 divide-y divide-line">
+            {infoRows.map((row) => (
+              <div className="flex flex-col gap-1 py-3 text-sm sm:flex-row sm:items-center sm:justify-between" key={row.label}>
+                <dt className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">{row.label}</dt>
+                <dd className="font-medium text-ink sm:text-right">{row.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </section>
 
       <form
         className="grid gap-6 rounded-lg border border-line bg-white p-6 shadow-sm"
