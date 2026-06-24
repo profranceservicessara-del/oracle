@@ -4,10 +4,9 @@ const items = [
   { key: "factures", label: "Factures", href: "/facturation" },
   { key: "devis", label: "Devis", href: "/facturation/devis" },
   { key: "clients", label: "Clients", href: "/clientes" },
-  { key: "produits", label: "Produits et services", href: "/catalogo" },
-  // TODO: Create recurring invoices route (Factures récurrentes).
-  { key: "recurrentes", label: "Factures récurrentes", href: "#" },
-  { key: "fournisseurs", label: "Factures fournisseurs", href: "/registre-des-achats" }
+  { key: "produits", label: "Produits et services", href: "/facturation/produits" },
+  { key: "recurrentes", label: "Factures récurrentes", href: "/facturation/recurrentes" },
+  { key: "fournisseurs", label: "Factures fournisseurs", href: "/facturation/fournisseurs" }
 ];
 
 export function BillingNav({ active }: { active: string }) {
