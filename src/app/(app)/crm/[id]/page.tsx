@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import {
   getCrmClient,
+  listActivity,
   listContacts,
   listDossiers,
   listNotes,
@@ -25,16 +26,18 @@ export default async function CrmClientPage({ params }: { params: { id: string }
     notFound();
   }
 
-  const [contacts, dossiers, notes, tasks] = await Promise.all([
+  const [contacts, dossiers, notes, tasks, activity] = await Promise.all([
     listContacts(client.id),
     listDossiers(client.id),
     listNotes(client.id),
-    listTasks(client.id)
+    listTasks(client.id),
+    listActivity(client.id)
   ]);
 
   return (
     <CrmClientDetail
       client={client}
+      initialActivity={activity}
       initialContacts={contacts}
       initialDossiers={dossiers}
       initialNotes={notes}

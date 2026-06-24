@@ -16,5 +16,5 @@ export default async function CrmPage() {
   const company = await getOrCreateCompany();
   const clients = company ? await listCrmClients(company.id) : [];
 
-  return <CrmClientsClient company={company} initialClients={clients} />;
+  return <CrmClientsClient company={company} initialClients={clients} userId={user.id} />;
 }

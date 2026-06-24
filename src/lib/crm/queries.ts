@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import type {
+  CrmActivityLog,
   CrmClient,
   CrmCompany,
   CrmContact,
@@ -108,4 +109,15 @@ export async function listTasks(clientId: string): Promise<CrmTask[]> {
     .eq("client_id", clientId)
     .order("created_at", { ascending: false });
   return (data ?? []) as CrmTask[];
+}
+
+export async function listActivity(clientId: string): Promise<CrmActivityLog[]> {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("crm_activity_log")
+    .select("*")
+    .contains("payload", { client_id: clientId })
+    .order("created_at", { ascending: false })
+    .limit(20);
+  return (data ?? []) as CrmActivityLog[];
 }

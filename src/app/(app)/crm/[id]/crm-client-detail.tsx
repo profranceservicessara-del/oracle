@@ -2,12 +2,15 @@
 
 import { useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
+import { logActivity } from "@/lib/crm/activity";
 import { createClient } from "@/lib/supabase/client";
 import type {
+  CrmActivityLog,
   CrmClient,
   CrmContact,
   CrmDossier,
@@ -15,6 +18,14 @@ import type {
   CrmTask,
   CrmTaskStatus
 } from "@/lib/crm/types";
+
+const entityLabel: Record<string, string> = {
+  client: "Client",
+  contact: "Contact",
+  dossier: "Dossier",
+  note: "Note",
+  task: "Tâche"
+};
 
 const taskStatusLabel: Record<CrmTaskStatus, string> = { todo: "À faire", doing: "En cours", done: "Terminé" };
 const taskNext: Record<CrmTaskStatus, CrmTaskStatus> = { todo: "doing", doing: "done", done: "todo" };
@@ -38,6 +49,7 @@ function Section({ children, count, title }: { children: ReactNode; count: numbe
 
 export function CrmClientDetail({
   client,
+  initialActivity,
   initialContacts,
   initialDossiers,
   initialNotes,
@@ -45,6 +57,7 @@ export function CrmClientDetail({
   userId
 }: {
   client: CrmClient;
+  initialActivity: CrmActivityLog[];
   initialContacts: CrmContact[];
   initialDossiers: CrmDossier[];
   initialNotes: CrmNote[];
@@ -52,11 +65,37 @@ export function CrmClientDetail({
   userId: string;
 }) {
   const supabase = useMemo(() => createClient(), []);
+  const router = useRouter();
   const { showToast } = useToast();
   const [contacts, setContacts] = useState(initialContacts);
   const [dossiers, setDossiers] = useState(initialDossiers);
   const [notes, setNotes] = useState(initialNotes);
   const [tasks, setTasks] = useState(initialTasks);
+  const [activity, setActivity] = useState(initialActivity);
+
+  async function record(action: string, entity: string, entityId: string, label: string) {
+    const log = await logActivity(supabase, {
+      action,
+      clientId: client.id,
+      companyId: client.company_id,
+      entity,
+      entityId,
+      label,
+      userId
+    });
+    if (log) setActivity((current) => [log, ...current]);
+  }
+
+  async function archiveClient() {
+    const { error } = await supabase.from("crm_clients").update({ archived: true }).eq("id", client.id);
+    if (error) {
+      showToast("Impossible d'archiver le client.", "error");
+      return;
+    }
+    showToast("Client archivé.", "success");
+    router.push("/crm");
+    router.refresh();
+  }
   const [contactForm, setContactForm] = useState({ name: "", email: "" });
   const [dossierTitle, setDossierTitle] = useState("");
   const [taskForm, setTaskForm] = useState({ title: "", due: "" });
@@ -73,8 +112,10 @@ export function CrmClientDetail({
       .select("*")
       .single();
     if (error || !data) return showToast("Impossible d'ajouter le contact.", "error");
-    setContacts((current) => [data as CrmContact, ...current]);
+    const created = data as CrmContact;
+    setContacts((current) => [created, ...current]);
     setContactForm({ name: "", email: "" });
+    void record("create", "contact", created.id, created.name);
   }
 
   async function addDossier(event: React.FormEvent) {
@@ -86,8 +127,10 @@ export function CrmClientDetail({
       .select("*")
       .single();
     if (error || !data) return showToast("Impossible de créer le dossier.", "error");
-    setDossiers((current) => [data as CrmDossier, ...current]);
+    const created = data as CrmDossier;
+    setDossiers((current) => [created, ...current]);
     setDossierTitle("");
+    void record("create", "dossier", created.id, created.title);
   }
 
   async function addTask(event: React.FormEvent) {
@@ -99,8 +142,10 @@ export function CrmClientDetail({
       .select("*")
       .single();
     if (error || !data) return showToast("Impossible de créer la tâche.", "error");
-    setTasks((current) => [data as CrmTask, ...current]);
+    const created = data as CrmTask;
+    setTasks((current) => [created, ...current]);
     setTaskForm({ title: "", due: "" });
+    void record("create", "task", created.id, created.title);
   }
 
   async function cycleTask(task: CrmTask) {
@@ -123,8 +168,10 @@ export function CrmClientDetail({
       .select("*")
       .single();
     if (error || !data) return showToast("Impossible d'ajouter la note.", "error");
-    setNotes((current) => [data as CrmNote, ...current]);
+    const created = data as CrmNote;
+    setNotes((current) => [created, ...current]);
     setNoteBody("");
+    void record("create", "note", created.id, created.body.slice(0, 40));
   }
 
   return (
@@ -133,18 +180,23 @@ export function CrmClientDetail({
         ← Clients
       </Link>
 
-      <div className="mb-6 mt-3 flex items-center gap-3">
-        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#002D72]/10 text-base font-semibold text-[#002D72]">
-          {client.name.trim()[0]?.toUpperCase() ?? "?"}
-        </span>
-        <div className="min-w-0">
-          <h1 className="text-2xl font-semibold text-ink">{client.name}</h1>
-          <p className="text-sm text-muted">
-            {client.type === "particulier" ? "Particulier" : "Professionnel"}
-            {client.email ? ` · ${client.email}` : ""}
-            {client.phone ? ` · ${client.phone}` : ""}
-          </p>
+      <div className="mb-6 mt-3 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#002D72]/10 text-base font-semibold text-[#002D72]">
+            {client.name.trim()[0]?.toUpperCase() ?? "?"}
+          </span>
+          <div className="min-w-0">
+            <h1 className="text-2xl font-semibold text-ink">{client.name}</h1>
+            <p className="text-sm text-muted">
+              {client.type === "particulier" ? "Particulier" : "Professionnel"}
+              {client.email ? ` · ${client.email}` : ""}
+              {client.phone ? ` · ${client.phone}` : ""}
+            </p>
+          </div>
         </div>
+        <Button onClick={() => void archiveClient()} type="button" variant="secondary">
+          Archiver
+        </Button>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
@@ -236,6 +288,25 @@ export function CrmClientDetail({
           </ul>
         </Section>
       </div>
+
+      {activity.length > 0 ? (
+        <section className="mt-4 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
+          <h2 className="mb-3 text-sm font-semibold text-ink">Activité</h2>
+          <ul className="space-y-2 text-sm">
+            {activity.map((item) => (
+              <li className="flex items-center justify-between gap-3" key={item.id}>
+                <span className="truncate text-slate-700">
+                  + {entityLabel[item.entity ?? ""] ?? item.entity} ·{" "}
+                  {String((item.payload as { label?: string }).label ?? "")}
+                </span>
+                <span className="shrink-0 text-xs text-muted">
+                  {new Date(item.created_at).toLocaleDateString("fr-FR")}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
     </main>
   );
 }

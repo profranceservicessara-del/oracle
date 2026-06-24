@@ -7,6 +7,7 @@ import { FormModal } from "@/components/ui/form-modal";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { useToast } from "@/components/ui/toast";
+import { logActivity } from "@/lib/crm/activity";
 import { createClient } from "@/lib/supabase/client";
 import type { CrmClient, CrmClientType, CrmCompany } from "@/lib/crm/types";
 
@@ -14,10 +15,12 @@ const emptyForm = { name: "", type: "professionnel" as CrmClientType, email: "",
 
 export function CrmClientsClient({
   company,
-  initialClients
+  initialClients,
+  userId
 }: {
   company: CrmCompany | null;
   initialClients: CrmClient[];
+  userId: string;
 }) {
   const supabase = useMemo(() => createClient(), []);
   const { showToast } = useToast();
@@ -51,10 +54,20 @@ export function CrmClientsClient({
       return;
     }
 
-    setClients((current) => [data as CrmClient, ...current]);
+    const created = data as CrmClient;
+    setClients((current) => [created, ...current]);
     setForm(emptyForm);
     setIsOpen(false);
     showToast("Client créé.", "success");
+    void logActivity(supabase, {
+      action: "create",
+      clientId: created.id,
+      companyId: company.id,
+      entity: "client",
+      entityId: created.id,
+      label: created.name,
+      userId
+    });
   }
 
   if (!company) {
