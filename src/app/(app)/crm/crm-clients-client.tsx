@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { FormModal } from "@/components/ui/form-modal";
 import { Input } from "@/components/ui/input";
@@ -96,7 +97,11 @@ export function CrmClientsClient({
       ) : (
         <div className="divide-y divide-line overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
           {clients.map((client) => (
-            <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4" key={client.id}>
+            <Link
+              className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 transition hover:bg-slate-50"
+              href={`/crm/${client.id}`}
+              key={client.id}
+            >
               <div className="flex items-center gap-3">
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#002D72]/10 text-sm font-semibold text-[#002D72]">
                   {client.name.trim()[0]?.toUpperCase() ?? "?"}
@@ -109,7 +114,7 @@ export function CrmClientsClient({
               <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold text-slate-600 ring-1 ring-slate-200">
                 {client.type === "particulier" ? "Particulier" : "Professionnel"}
               </span>
-            </div>
+            </Link>
           ))}
         </div>
       )}
