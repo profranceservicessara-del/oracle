@@ -103,6 +103,9 @@ export const profileSchema = z.object({
   activite_principale: z.enum(["vente", "service_bic", "service_bnc"], {
     message: "Escolha a atividade principal."
   }),
+  declaration_periodicite: z.enum(["mensal", "trimestral"], {
+    message: "Escolha a periodicidade de declaração."
+  }),
   acre: z.coerce.boolean(),
   versement_liberatoire: z.coerce.boolean(),
   monthly_summary_email: z.coerce.boolean(),

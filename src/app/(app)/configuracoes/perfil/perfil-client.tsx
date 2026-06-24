@@ -11,6 +11,7 @@ import {
   categoryLabels,
   vatRegimeLabels,
   type ActivityCategory,
+  type DeclarationPeriodicite,
   type Profile,
   type VatRegime
 } from "@/lib/types";
@@ -26,6 +27,7 @@ type ProfileFormState = {
   code_ape: string;
   regime_tva: VatRegime;
   activite_principale: ActivityCategory;
+  declaration_periodicite: DeclarationPeriodicite;
   acre: boolean;
   versement_liberatoire: boolean;
   monthly_summary_email: boolean;
@@ -44,6 +46,7 @@ function toFormState(profile: Profile | null): ProfileFormState {
     code_ape: profile?.code_ape ?? "",
     regime_tva: profile?.regime_tva ?? "franchise",
     activite_principale: profile?.activite_principale ?? "service_bic",
+    declaration_periodicite: profile?.declaration_periodicite ?? "trimestral",
     acre: profile?.acre ?? false,
     versement_liberatoire: profile?.versement_liberatoire ?? false,
     monthly_summary_email: profile?.monthly_summary_email ?? false,
@@ -156,6 +159,10 @@ export function PerfilClient({
       value: profile?.activite_principale ? categoryLabels[profile.activite_principale] : "—"
     },
     { label: "Regime de TVA", value: profile ? vatRegimeLabels[profile.regime_tva] : "—" },
+    {
+      label: "Periodicidade de declaração",
+      value: profile ? (profile.declaration_periodicite === "mensal" ? "Mensal" : "Trimestral") : "—"
+    },
     { label: "Código APE", value: profile?.code_ape || "—" },
     { label: "Penalidades de atraso", value: profile ? `${profile.taux_penalites_retard}%` : "—" },
     { label: "Versement libératoire", value: profile?.versement_liberatoire ? "Sim" : "Não" },
@@ -334,6 +341,22 @@ export function PerfilClient({
               <option value="vente">{categoryLabels.vente}</option>
               <option value="service_bic">{categoryLabels.service_bic}</option>
               <option value="service_bnc">{categoryLabels.service_bnc}</option>
+            </Select>
+          </label>
+          <label className="text-sm font-medium text-ink">
+            Periodicidade de declaração
+            <Select
+              className="mt-2"
+              onChange={(event) =>
+                setForm((current) => ({
+                  ...current,
+                  declaration_periodicite: event.target.value as DeclarationPeriodicite
+                }))
+              }
+              value={form.declaration_periodicite}
+            >
+              <option value="trimestral">Trimestral</option>
+              <option value="mensal">Mensal</option>
             </Select>
           </label>
         </section>
