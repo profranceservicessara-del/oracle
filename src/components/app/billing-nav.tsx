@@ -2,7 +2,7 @@ import Link from "next/link";
 
 const items = [
   { key: "factures", label: "Factures", href: "/facturation" },
-  { key: "devis", label: "Devis", href: "/documentos" },
+  { key: "devis", label: "Devis", href: "/facturation/devis" },
   { key: "clients", label: "Clients", href: "/clientes" },
   { key: "produits", label: "Produits et services", href: "/catalogo" },
   // TODO: Create recurring invoices route (Factures récurrentes).
