@@ -31,6 +31,21 @@ export function CrmClientsClient({
   const [isOpen, setIsOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [form, setForm] = useState(emptyForm);
+  const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState<"all" | CrmClientType>("all");
+  const [showArchived, setShowArchived] = useState(false);
+
+  const visible = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    return clients.filter((client) => {
+      if (!showArchived && client.archived) return false;
+      if (typeFilter !== "all" && client.type !== typeFilter) return false;
+      if (!term) return true;
+      return [client.name, client.email, client.phone]
+        .filter(Boolean)
+        .some((value) => (value as string).toLowerCase().includes(term));
+    });
+  }, [clients, search, typeFilter, showArchived]);
 
   async function createCrmClient(event: React.FormEvent) {
     event.preventDefault();
@@ -73,6 +88,16 @@ export function CrmClientsClient({
     });
   }
 
+  async function unarchiveClient(client: CrmClient) {
+    const { error } = await supabase.from("crm_clients").update({ archived: false }).eq("id", client.id);
+    if (error) {
+      showToast(t(locale, "crm.createError"), "error");
+      return;
+    }
+    setClients((current) => current.map((c) => (c.id === client.id ? { ...c, archived: false } : c)));
+    showToast(t(locale, "crm.unarchived"), "success");
+  }
+
   if (!company) {
     return (
       <main className="mx-auto max-w-4xl px-4 py-8">
@@ -90,9 +115,21 @@ export function CrmClientsClient({
           <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">CRM · {company.name}</p>
           <h1 className="mt-1 text-2xl font-semibold text-ink">{t(locale, "crm.clients")}</h1>
         </div>
-        <Button onClick={() => setIsOpen(true)} type="button">
-          {t(locale, "crm.newClient")}
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            className="inline-flex h-11 items-center gap-2 rounded-2xl bg-white px-4 text-sm font-semibold text-ink shadow-sm ring-1 ring-black/5 transition hover:bg-slate-50"
+            href="/crm/agenda"
+          >
+            <svg fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24" width="16">
+              <rect height="18" rx="2" ry="2" width="18" x="3" y="4" />
+              <path d="M16 2v4M8 2v4M3 10h18" />
+            </svg>
+            {t(locale, "crm.agenda")}
+          </Link>
+          <Button onClick={() => setIsOpen(true)} type="button">
+            {t(locale, "crm.newClient")}
+          </Button>
+        </div>
       </div>
 
       {clients.length === 0 ? (
@@ -111,28 +148,69 @@ export function CrmClientsClient({
           </Button>
         </div>
       ) : (
-        <div className="divide-y divide-line overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
-          {clients.map((client) => (
-            <Link
-              className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 transition hover:bg-slate-50"
-              href={`/crm/${client.id}`}
-              key={client.id}
+        <>
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            <Input
+              aria-label={t(locale, "crm.search")}
+              className="min-w-[12rem] flex-1"
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder={t(locale, "crm.search")}
+              value={search}
+            />
+            <Select
+              aria-label={t(locale, "crm.type")}
+              className="w-[12rem]"
+              onChange={(event) => setTypeFilter(event.target.value as "all" | CrmClientType)}
+              value={typeFilter}
             >
-              <div className="flex items-center gap-3">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#002D72]/10 text-sm font-semibold text-[#002D72]">
-                  {client.name.trim()[0]?.toUpperCase() ?? "?"}
-                </span>
-                <div className="min-w-0">
-                  <p className="font-medium text-ink">{client.name}</p>
-                  <p className="text-xs text-muted">{client.email || client.phone || "—"}</p>
+              <option value="all">{t(locale, "crm.filterAll")}</option>
+              <option value="professionnel">{t(locale, "crm.professional")}</option>
+              <option value="particulier">{t(locale, "crm.particular")}</option>
+            </Select>
+            <label className="flex cursor-pointer items-center gap-2 rounded-2xl bg-white px-3 py-2 text-sm font-medium text-slate-600 ring-1 ring-black/5">
+              <input checked={showArchived} className="h-4 w-4 accent-[#002D72]" onChange={(event) => setShowArchived(event.target.checked)} type="checkbox" />
+              {t(locale, "crm.showArchived")}
+            </label>
+          </div>
+
+          {visible.length === 0 ? (
+            <div className="rounded-2xl bg-white px-6 py-12 text-center text-sm text-muted shadow-sm ring-1 ring-black/5">
+              {t(locale, "crm.noResults")}
+            </div>
+          ) : (
+            <div className="divide-y divide-line overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
+              {visible.map((client) => (
+                <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 transition hover:bg-slate-50" key={client.id}>
+                  <Link className="flex min-w-0 flex-1 items-center gap-3" href={`/crm/${client.id}`}>
+                    <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${client.archived ? "bg-slate-100 text-slate-400" : "bg-[#002D72]/10 text-[#002D72]"}`}>
+                      {client.name.trim()[0]?.toUpperCase() ?? "?"}
+                    </span>
+                    <div className="min-w-0">
+                      <p className={`font-medium ${client.archived ? "text-slate-400" : "text-ink"}`}>{client.name}</p>
+                      <p className="text-xs text-muted">{client.email || client.phone || "—"}</p>
+                    </div>
+                  </Link>
+                  <div className="flex shrink-0 items-center gap-2">
+                    {client.archived ? (
+                      <>
+                        <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-[11px] font-semibold text-amber-700 ring-1 ring-amber-200">
+                          {t(locale, "crm.archivedBadge")}
+                        </span>
+                        <Button onClick={() => void unarchiveClient(client)} type="button" variant="secondary">
+                          {t(locale, "crm.unarchive")}
+                        </Button>
+                      </>
+                    ) : (
+                      <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold text-slate-600 ring-1 ring-slate-200">
+                        {client.type === "particulier" ? t(locale, "crm.particular") : t(locale, "crm.professional")}
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold text-slate-600 ring-1 ring-slate-200">
-                {client.type === "particulier" ? t(locale, "crm.particular") : t(locale, "crm.professional")}
-              </span>
-            </Link>
-          ))}
-        </div>
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       <FormModal

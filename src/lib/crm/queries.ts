@@ -54,16 +54,30 @@ export async function getOrCreateCompany(): Promise<CrmCompany | null> {
   return created as CrmCompany;
 }
 
-export async function listCrmClients(companyId: string): Promise<CrmClient[]> {
+export async function listCrmClients(companyId: string, includeArchived = false): Promise<CrmClient[]> {
   const supabase = createClient();
-  const { data } = await supabase
-    .from("crm_clients")
-    .select("*")
-    .eq("company_id", companyId)
-    .eq("archived", false)
-    .order("created_at", { ascending: false });
+  let query = supabase.from("crm_clients").select("*").eq("company_id", companyId);
+  if (!includeArchived) {
+    query = query.eq("archived", false);
+  }
+  const { data } = await query.order("created_at", { ascending: false });
 
   return (data ?? []) as CrmClient[];
+}
+
+// Task with its client name embedded, for the cross-client agenda view.
+export type CompanyTask = CrmTask & { crm_clients: { name: string } | null };
+
+export async function listCompanyTasks(companyId: string): Promise<CompanyTask[]> {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("crm_tasks")
+    .select("*, crm_clients(name)")
+    .eq("company_id", companyId)
+    .order("due_date", { ascending: true, nullsFirst: false })
+    .order("created_at", { ascending: false });
+
+  return (data ?? []) as CompanyTask[];
 }
 
 export async function getCrmClient(clientId: string): Promise<CrmClient | null> {
