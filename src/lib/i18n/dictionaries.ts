@@ -51,7 +51,14 @@ const dictionaries = {
     "detail.contactName": "Nom",
     "detail.dossierTitle": "Titre du dossier",
     "detail.taskTitle": "Tâche",
-    "detail.notePlaceholder": "Écrire une note…"
+    "detail.notePlaceholder": "Écrire une note…",
+    "detail.billing": "Facturation",
+    "detail.createFacture": "Créer une facture",
+    "detail.createDevis": "Créer un devis",
+    "detail.noInvoices": "Aucun document pour ce client.",
+    "detail.totalBilled": "Total facturé",
+    "detail.fiscalHint": "Complétez la raison sociale et le SIREN dans la fiche client pour facturer en professionnel.",
+    "detail.draftDoc": "Brouillon"
   },
   pt: {
     "menu.account": "Minha conta",
@@ -100,7 +107,14 @@ const dictionaries = {
     "detail.contactName": "Nome",
     "detail.dossierTitle": "Título do dossiê",
     "detail.taskTitle": "Tarefa",
-    "detail.notePlaceholder": "Escrever uma nota…"
+    "detail.notePlaceholder": "Escrever uma nota…",
+    "detail.billing": "Faturamento",
+    "detail.createFacture": "Criar fatura",
+    "detail.createDevis": "Criar orçamento",
+    "detail.noInvoices": "Nenhum documento para este cliente.",
+    "detail.totalBilled": "Total faturado",
+    "detail.fiscalHint": "Complete a razão social e o SIREN no cadastro do cliente para faturar como profissional.",
+    "detail.draftDoc": "Rascunho"
   }
 } as const;
 

@@ -31,6 +31,8 @@ export type CrmClient = {
   email: string | null;
   phone: string | null;
   archived: boolean;
+  /** Bridge to the invoicing `clients` table (Phase 6). Null until first invoice. */
+  client_id: string | null;
   created_at: string;
   updated_at: string;
 };

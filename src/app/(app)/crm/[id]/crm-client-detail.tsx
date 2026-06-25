@@ -10,6 +10,7 @@ import { useToast } from "@/components/ui/toast";
 import { logActivity } from "@/lib/crm/activity";
 import { t, type Locale } from "@/lib/i18n/dictionaries";
 import { createClient } from "@/lib/supabase/client";
+import { documentStatusLabels, documentTypeLabels, type Document, type DocumentStatus } from "@/lib/types";
 import type {
   CrmActivityLog,
   CrmClient,
@@ -19,6 +20,18 @@ import type {
   CrmTask,
   CrmTaskStatus
 } from "@/lib/crm/types";
+import { createInvoiceFromCrmClient } from "./actions";
+
+const docStatusClass: Record<DocumentStatus, string> = {
+  draft: "bg-slate-100 text-slate-600",
+  sent: "bg-sky-100 text-sky-700",
+  paid: "bg-emerald-100 text-emerald-700",
+  partial: "bg-amber-100 text-amber-700",
+  cancelled: "bg-rose-100 text-rose-700",
+  expired: "bg-slate-100 text-slate-500",
+  accepted: "bg-emerald-100 text-emerald-700",
+  refused: "bg-rose-100 text-rose-700"
+};
 
 const entityLabel: Record<string, string> = {
   client: "Client",
@@ -51,6 +64,7 @@ function Section({ children, count, title }: { children: ReactNode; count: numbe
 export function CrmClientDetail({
   client,
   initialActivity,
+  initialInvoices,
   initialContacts,
   initialDossiers,
   initialNotes,
@@ -60,6 +74,7 @@ export function CrmClientDetail({
 }: {
   client: CrmClient;
   initialActivity: CrmActivityLog[];
+  initialInvoices: Document[];
   initialContacts: CrmContact[];
   initialDossiers: CrmDossier[];
   initialNotes: CrmNote[];
@@ -68,6 +83,15 @@ export function CrmClientDetail({
   userId: string;
 }) {
   const supabase = useMemo(() => createClient(), []);
+  const invoices = initialInvoices;
+  const formatEur = (value: number) =>
+    new Intl.NumberFormat(locale === "pt" ? "pt-BR" : "fr-FR", {
+      style: "currency",
+      currency: "EUR"
+    }).format(value);
+  const totalBilled = invoices
+    .filter((doc) => doc.type === "facture")
+    .reduce((sum, doc) => sum + Number(doc.total_ttc), 0);
   const router = useRouter();
   const { showToast } = useToast();
   const [contacts, setContacts] = useState(initialContacts);
@@ -201,6 +225,67 @@ export function CrmClientDetail({
           {t(locale, "detail.archive")}
         </Button>
       </div>
+
+      <section className="mb-4 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm font-semibold text-ink">{t(locale, "detail.billing")}</h2>
+            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold tabular-nums text-slate-600">
+              {invoices.length}
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <form action={createInvoiceFromCrmClient.bind(null, client.id, "devis")}>
+              <Button type="submit" variant="secondary">
+                {t(locale, "detail.createDevis")}
+              </Button>
+            </form>
+            <form action={createInvoiceFromCrmClient.bind(null, client.id, "facture")}>
+              <Button type="submit">{t(locale, "detail.createFacture")}</Button>
+            </form>
+          </div>
+        </div>
+
+        {invoices.length > 0 ? (
+          <>
+            <p className="mb-2 text-sm text-muted">
+              {t(locale, "detail.totalBilled")}:{" "}
+              <span className="font-semibold tabular-nums text-ink">{formatEur(totalBilled)}</span>
+            </p>
+            <ul className="divide-y divide-line text-sm">
+              {invoices.map((doc) => (
+                <li key={doc.id}>
+                  <Link
+                    className="flex items-center justify-between gap-3 py-2 transition hover:opacity-80"
+                    href={`/documentos/${doc.id}`}
+                  >
+                    <span className="flex min-w-0 items-center gap-2">
+                      <span className="font-medium text-ink">{documentTypeLabels[doc.type]}</span>
+                      <span className="truncate text-muted">{doc.numero ?? t(locale, "detail.draftDoc")}</span>
+                    </span>
+                    <span className="flex shrink-0 items-center gap-3">
+                      <span className="tabular-nums font-medium text-ink">{formatEur(Number(doc.total_ttc))}</span>
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${docStatusClass[doc.status]}`}
+                      >
+                        {documentStatusLabels[doc.status]}
+                      </span>
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </>
+        ) : (
+          <p className="py-2 text-sm text-muted">{t(locale, "detail.noInvoices")}</p>
+        )}
+
+        {client.type === "professionnel" && !client.client_id ? (
+          <p className="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-800 ring-1 ring-amber-200">
+            {t(locale, "detail.fiscalHint")}
+          </p>
+        ) : null}
+      </section>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Section count={contacts.length} title={t(locale, "detail.contacts")}>

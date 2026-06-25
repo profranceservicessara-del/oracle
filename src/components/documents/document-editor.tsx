@@ -37,6 +37,7 @@ import { ResteAVivrePanel } from "./reste-a-vivre-panel";
 type DocumentEditorProps = {
   catalogItems: CatalogItem[];
   clients: Client[];
+  initialClientId?: string;
   initialDocument: Document | null;
   initialLines: DocumentLine[];
   initialType: DocumentType;
@@ -107,6 +108,7 @@ function toDbDate(value: string) {
 export function DocumentEditor({
   catalogItems,
   clients: initialClients,
+  initialClientId,
   initialDocument,
   initialLines,
   initialType,
@@ -119,7 +121,7 @@ export function DocumentEditor({
   const [documentId, setDocumentId] = useState(initialDocument?.id ?? null);
   const [documentType, setDocumentType] = useState<DocumentType>(initialDocument?.type ?? initialType);
   const [clients, setClients] = useState(initialClients);
-  const [clientId, setClientId] = useState(initialDocument?.client_id ?? "");
+  const [clientId, setClientId] = useState(initialDocument?.client_id ?? initialClientId ?? "");
   const [dateEmission, setDateEmission] = useState(dateOrDefault(initialDocument?.date_emission));
   const [datePrestation, setDatePrestation] = useState(
     dateOrDefault(initialDocument?.date_prestation)

@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import type { Document } from "@/lib/types";
 import type {
   CrmActivityLog,
   CrmClient,
@@ -109,6 +110,18 @@ export async function listTasks(clientId: string): Promise<CrmTask[]> {
     .eq("client_id", clientId)
     .order("created_at", { ascending: false });
   return (data ?? []) as CrmTask[];
+}
+
+// Invoicing documents (factures/devis/avoirs) for the linked invoicing client.
+// RLS on `documents` is user-scoped, so this only returns the owner's documents.
+export async function listClientInvoices(invoicingClientId: string): Promise<Document[]> {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("documents")
+    .select("*")
+    .eq("client_id", invoicingClientId)
+    .order("created_at", { ascending: false });
+  return (data ?? []) as Document[];
 }
 
 export async function listActivity(clientId: string): Promise<CrmActivityLog[]> {
