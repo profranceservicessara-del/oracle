@@ -58,7 +58,16 @@ const dictionaries = {
     "detail.noInvoices": "Aucun document pour ce client.",
     "detail.totalBilled": "Total facturé",
     "detail.fiscalHint": "Complétez la raison sociale et le SIREN dans la fiche client pour facturer en professionnel.",
-    "detail.draftDoc": "Brouillon"
+    "detail.draftDoc": "Brouillon",
+    "detail.edit": "Modifier",
+    "detail.delete": "Supprimer",
+    "detail.save": "Enregistrer",
+    "detail.cancel": "Annuler",
+    "detail.editClient": "Modifier le client",
+    "detail.deleteConfirm": "Supprimer cet élément ?",
+    "detail.deleteError": "Suppression impossible.",
+    "detail.saveError": "Enregistrement impossible.",
+    "detail.saved": "Modifications enregistrées."
   },
   pt: {
     "menu.account": "Minha conta",
@@ -114,7 +123,16 @@ const dictionaries = {
     "detail.noInvoices": "Nenhum documento para este cliente.",
     "detail.totalBilled": "Total faturado",
     "detail.fiscalHint": "Complete a razão social e o SIREN no cadastro do cliente para faturar como profissional.",
-    "detail.draftDoc": "Rascunho"
+    "detail.draftDoc": "Rascunho",
+    "detail.edit": "Editar",
+    "detail.delete": "Excluir",
+    "detail.save": "Salvar",
+    "detail.cancel": "Cancelar",
+    "detail.editClient": "Editar cliente",
+    "detail.deleteConfirm": "Excluir este item?",
+    "detail.deleteError": "Não foi possível excluir.",
+    "detail.saveError": "Não foi possível salvar.",
+    "detail.saved": "Alterações salvas."
   }
 } as const;
 
