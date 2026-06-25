@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import {
   getCrmClient,
   listActivity,
+  listClientDocuments,
   listClientInvoices,
   listContacts,
   listDossiers,
@@ -28,13 +29,14 @@ export default async function CrmClientPage({ params }: { params: { id: string }
     notFound();
   }
 
-  const [contacts, dossiers, notes, tasks, activity, invoices] = await Promise.all([
+  const [contacts, dossiers, notes, tasks, activity, invoices, documents] = await Promise.all([
     listContacts(client.id),
     listDossiers(client.id),
     listNotes(client.id),
     listTasks(client.id),
     listActivity(client.id),
-    client.client_id ? listClientInvoices(client.client_id) : Promise.resolve([])
+    client.client_id ? listClientInvoices(client.client_id) : Promise.resolve([]),
+    listClientDocuments(client.id)
   ]);
 
   const locale = await getLocale();
@@ -43,6 +45,7 @@ export default async function CrmClientPage({ params }: { params: { id: string }
     <CrmClientDetail
       client={client}
       initialActivity={activity}
+      initialDocuments={documents}
       initialInvoices={invoices}
       locale={locale}
       initialContacts={contacts}

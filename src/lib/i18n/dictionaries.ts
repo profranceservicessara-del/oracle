@@ -85,7 +85,13 @@ const dictionaries = {
     "detail.deleteConfirm": "Supprimer cet élément ?",
     "detail.deleteError": "Suppression impossible.",
     "detail.saveError": "Enregistrement impossible.",
-    "detail.saved": "Modifications enregistrées."
+    "detail.saved": "Modifications enregistrées.",
+    "detail.documents": "Documents",
+    "detail.upload": "Téléverser",
+    "detail.uploading": "Envoi…",
+    "detail.noDocuments": "Aucun document.",
+    "detail.uploadError": "Téléversement impossible.",
+    "detail.download": "Télécharger"
   },
   pt: {
     "menu.account": "Minha conta",
@@ -168,7 +174,13 @@ const dictionaries = {
     "detail.deleteConfirm": "Excluir este item?",
     "detail.deleteError": "Não foi possível excluir.",
     "detail.saveError": "Não foi possível salvar.",
-    "detail.saved": "Alterações salvas."
+    "detail.saved": "Alterações salvas.",
+    "detail.documents": "Documentos",
+    "detail.upload": "Enviar arquivo",
+    "detail.uploading": "Enviando…",
+    "detail.noDocuments": "Nenhum documento.",
+    "detail.uploadError": "Não foi possível enviar o arquivo.",
+    "detail.download": "Baixar"
   }
 } as const;
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ import type {
   CrmClient,
   CrmClientType,
   CrmContact,
+  CrmDocument,
   CrmDossier,
   CrmDossierStatus,
   CrmNote,
@@ -42,7 +43,8 @@ const entityLabel: Record<string, string> = {
   contact: "Contact",
   dossier: "Dossier",
   note: "Note",
-  task: "Tâche"
+  task: "Tâche",
+  document: "Document"
 };
 
 const actionSymbol: Record<string, string> = { create: "+", update: "✎", delete: "✕" };
@@ -95,6 +97,7 @@ function RowActions({ editLabel, deleteLabel, onEdit, onDelete }: { editLabel: s
 export function CrmClientDetail({
   client,
   initialActivity,
+  initialDocuments,
   initialInvoices,
   initialContacts,
   initialDossiers,
@@ -105,6 +108,7 @@ export function CrmClientDetail({
 }: {
   client: CrmClient;
   initialActivity: CrmActivityLog[];
+  initialDocuments: CrmDocument[];
   initialInvoices: Document[];
   initialContacts: CrmContact[];
   initialDossiers: CrmDossier[];
@@ -121,7 +125,10 @@ export function CrmClientDetail({
   const [dossiers, setDossiers] = useState(initialDossiers);
   const [notes, setNotes] = useState(initialNotes);
   const [tasks, setTasks] = useState(initialTasks);
+  const [documents, setDocuments] = useState(initialDocuments);
   const [activity, setActivity] = useState(initialActivity);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const invoices = initialInvoices;
   const formatEur = (value: number) =>
@@ -370,6 +377,54 @@ export function CrmClientDetail({
     void record("delete", "note", note.id, note.body.slice(0, 40));
   }
 
+  // ---- Documents (Supabase Storage) --------------------------------------
+  async function uploadDocument(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    setUploading(true);
+    const safe = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+    const path = `${client.company_id}/${client.id}/${crypto.randomUUID()}-${safe}`;
+    const { error: uploadError } = await supabase.storage
+      .from("crm-documents")
+      .upload(path, file, { contentType: file.type || undefined, upsert: false });
+    if (uploadError) {
+      setUploading(false);
+      return showToast(t(locale, "detail.uploadError"), "error");
+    }
+    const { data, error } = await supabase
+      .from("crm_documents")
+      .insert({ ...base, name: file.name, storage_path: path, mime_type: file.type || null })
+      .select("*")
+      .single();
+    setUploading(false);
+    if (error || !data) {
+      await supabase.storage.from("crm-documents").remove([path]);
+      return showToast(t(locale, "detail.uploadError"), "error");
+    }
+    const created = data as CrmDocument;
+    setDocuments((current) => [created, ...current]);
+    void record("create", "document", created.id, created.name);
+  }
+
+  async function downloadDocument(doc: CrmDocument) {
+    if (!doc.storage_path) return;
+    const { data, error } = await supabase.storage.from("crm-documents").createSignedUrl(doc.storage_path, 120);
+    if (error || !data) return showToast(t(locale, "detail.uploadError"), "error");
+    window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+  }
+
+  async function deleteDocument(doc: CrmDocument) {
+    if (!confirmDelete()) return;
+    if (doc.storage_path) {
+      await supabase.storage.from("crm-documents").remove([doc.storage_path]);
+    }
+    const { error } = await supabase.from("crm_documents").delete().eq("id", doc.id);
+    if (error) return showToast(t(locale, "detail.deleteError"), "error");
+    setDocuments((current) => current.filter((d) => d.id !== doc.id));
+    void record("delete", "document", doc.id, doc.name);
+  }
+
   return (
     <main className="mx-auto max-w-4xl px-4 py-8">
       <Link className="text-sm font-semibold text-muted transition hover:text-ink" href="/crm">
@@ -578,6 +633,50 @@ export function CrmClientDetail({
                   </li>
                 )
               )
+            )}
+          </ul>
+        </Section>
+
+        <Section count={documents.length} title={t(locale, "detail.documents")}>
+          <div className="mb-3">
+            <input className="hidden" onChange={(event) => void uploadDocument(event)} ref={fileRef} type="file" />
+            <Button disabled={uploading} onClick={() => fileRef.current?.click()} type="button">
+              {uploading ? t(locale, "detail.uploading") : t(locale, "detail.upload")}
+            </Button>
+          </div>
+          <ul className="divide-y divide-line text-sm">
+            {documents.length === 0 ? (
+              <li className="py-2 text-muted">{t(locale, "detail.noDocuments")}</li>
+            ) : (
+              documents.map((doc) => (
+                <li className="flex items-center justify-between gap-3 py-2" key={doc.id}>
+                  <button
+                    className="flex min-w-0 items-center gap-2 truncate text-left font-medium text-[#002D72] transition hover:underline"
+                    onClick={() => void downloadDocument(doc)}
+                    title={t(locale, "detail.download")}
+                    type="button"
+                  >
+                    <svg className="shrink-0" fill="none" height="15" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24" width="15">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <path d="M14 2v6h6" />
+                    </svg>
+                    <span className="truncate">{doc.name}</span>
+                  </button>
+                  <button
+                    aria-label={t(locale, "detail.delete")}
+                    className="shrink-0 rounded-lg p-1 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600"
+                    onClick={() => void deleteDocument(doc)}
+                    title={t(locale, "detail.delete")}
+                    type="button"
+                  >
+                    <svg fill="none" height="15" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" width="15">
+                      <path d="M3 6h18" />
+                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                      <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                    </svg>
+                  </button>
+                </li>
+              ))
             )}
           </ul>
         </Section>

@@ -5,6 +5,7 @@ import type {
   CrmClient,
   CrmCompany,
   CrmContact,
+  CrmDocument,
   CrmDossier,
   CrmNote,
   CrmTask
@@ -136,6 +137,16 @@ export async function listClientInvoices(invoicingClientId: string): Promise<Doc
     .eq("client_id", invoicingClientId)
     .order("created_at", { ascending: false });
   return (data ?? []) as Document[];
+}
+
+export async function listClientDocuments(clientId: string): Promise<CrmDocument[]> {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("crm_documents")
+    .select("*")
+    .eq("client_id", clientId)
+    .order("created_at", { ascending: false });
+  return (data ?? []) as CrmDocument[];
 }
 
 export async function listActivity(clientId: string): Promise<CrmActivityLog[]> {
