@@ -31,28 +31,30 @@ export async function getOrCreateCompany(): Promise<CrmCompany | null> {
     .limit(1)
     .maybeSingle();
 
-  if (existing) {
-    return existing as CrmCompany;
+  let company = (existing as CrmCompany | null) ?? null;
+
+  if (!company) {
+    const { data: created } = await supabase
+      .from("crm_companies")
+      .insert({ owner_id: user.id, name: "Mon entreprise" })
+      .select("*")
+      .single();
+    company = (created as CrmCompany | null) ?? null;
   }
 
-  const { data: created, error } = await supabase
-    .from("crm_companies")
-    .insert({ owner_id: user.id, name: "Mon entreprise" })
-    .select("*")
-    .single();
-
-  if (error || !created) {
+  if (!company) {
     return null;
   }
 
-  await supabase.from("crm_company_members").insert({
-    company_id: created.id,
-    role: "owner",
-    user_id: user.id
-  });
+  // Idempotently ensure the owner membership + default preferences. This heals
+  // partial bootstraps (e.g. a company created without its membership row) and
+  // is safe to run on every load (unique on (company_id, user_id) / user_id).
+  await supabase
+    .from("crm_company_members")
+    .upsert({ company_id: company.id, role: "owner", user_id: user.id }, { onConflict: "company_id,user_id" });
   await supabase.from("user_preferences").upsert({ user_id: user.id }, { onConflict: "user_id" });
 
-  return created as CrmCompany;
+  return company;
 }
 
 export async function listCrmClients(companyId: string, includeArchived = false): Promise<CrmClient[]> {
