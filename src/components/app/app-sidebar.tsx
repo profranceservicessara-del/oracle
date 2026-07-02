@@ -50,7 +50,8 @@ const icons = {
   contabilidadeLeaf: (<svg {...s16}><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></svg>),
   declaracoes: (<svg {...s16}><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z" /><line x1="9" x2="14" y1="13" y2="13" /></svg>),
   comprovantes: (<svg {...s16}><rect height="4" rx="1" width="8" x="8" y="3" /><path d="M9 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3" /><path d="m9 14 2 2 4-4" /></svg>),
-  faturasRecebidas: (<svg {...s16}><path d="M22 12h-6l-2 3h-4l-2-3H2" /><path d="M5.5 5.5 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.5-6.5A2 2 0 0 0 16.8 4H7.2a2 2 0 0 0-1.7 1.5z" /></svg>)
+  faturasRecebidas: (<svg {...s16}><path d="M22 12h-6l-2 3h-4l-2-3H2" /><path d="M5.5 5.5 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.5-6.5A2 2 0 0 0 16.8 4H7.2a2 2 0 0 0-1.7 1.5z" /></svg>),
+  moedas: (<svg {...s16}><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18" /></svg>)
 } as const;
 
 type Leaf = { href: string; label: string; icon: ReactNode };
@@ -104,7 +105,8 @@ const nav: NavItem[] = [
     children: [
       { href: "/configuracoes/perfil", label: "Perfil", icon: icons.perfil },
       { href: "/configuracoes/dados", label: "Dados", icon: icons.dados },
-      { href: "/configuracoes/seguranca", label: "Segurança", icon: icons.seguranca }
+      { href: "/configuracoes/seguranca", label: "Segurança", icon: icons.seguranca },
+      { href: "/configuracoes/moedas", label: "Moedas e idiomas", icon: icons.moedas }
     ]
   }
 ];
