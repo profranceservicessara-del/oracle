@@ -166,10 +166,7 @@ export function PerfilClient({
       label: "Periodicidade de declaração",
       value: profile ? (profile.declaration_periodicite === "mensal" ? "Mensal" : "Trimestral") : "—"
     },
-    { label: "Código APE", value: profile?.code_ape || "—" },
-    { label: "Penalidades de atraso", value: profile ? `${profile.taux_penalites_retard}%` : "—" },
-    { label: "Versement libératoire", value: profile?.versement_liberatoire ? "Sim" : "Não" },
-    { label: "ACRE", value: profile?.acre ? "Sim" : "Não" }
+    { label: "Código APE", value: profile?.code_ape || "—" }
   ];
 
   return (
