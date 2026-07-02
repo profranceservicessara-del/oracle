@@ -138,7 +138,8 @@ export function DocumentosClient({
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-sm font-semibold text-brand">Documentos</p>
-          <h1 className="mt-2 text-2xl font-semibold text-ink">Devis e factures</h1>
+          <h1 className="mt-2 text-2xl font-semibold text-ink">Orçamentos e Faturas</h1>
+          <p className="mt-0.5 text-xs text-muted">Devis e Factures</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Link

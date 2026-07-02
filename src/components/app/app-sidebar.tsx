@@ -62,7 +62,7 @@ const nav: NavItem[] = [
   {
     kind: "group",
     key: "faturamento",
-    label: "Faturamento",
+    label: "Cobrança",
     icon: icons.faturamento,
     children: [
       { href: "/facturation", label: "Faturas", icon: icons.faturas },

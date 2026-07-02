@@ -12,7 +12,7 @@ const items = [
 export function BillingNav({ active }: { active: string }) {
   return (
     <nav
-      aria-label="Faturamento"
+      aria-label="Cobrança"
       className="flex gap-1 overflow-x-auto pb-1 lg:w-56 lg:shrink-0 lg:flex-col lg:overflow-visible lg:pb-0"
     >
       {items.map((item) => {
