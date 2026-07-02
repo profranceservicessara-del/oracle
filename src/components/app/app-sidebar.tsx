@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { t, type Locale } from "@/lib/i18n/dictionaries";
@@ -96,19 +96,16 @@ const nav: NavItem[] = [
       { href: "#", label: "Comprovantes", icon: icons.comprovantes },
       { href: "/facturation/fournisseurs", label: "Faturas recebidas", icon: icons.faturasRecebidas }
     ]
-  },
-  {
-    kind: "group",
-    key: "config",
-    label: "Configurações",
-    icon: icons.config,
-    children: [
-      { href: "/configuracoes/perfil", label: "Perfil", icon: icons.perfil },
-      { href: "/configuracoes/dados", label: "Dados", icon: icons.dados },
-      { href: "/configuracoes/seguranca", label: "Segurança", icon: icons.seguranca },
-      { href: "/configuracoes/moedas", label: "Moedas e idiomas", icon: icons.moedas }
-    ]
   }
+];
+
+// Configurações — removed from the main nav; now surfaced behind the gear on the
+// bottom "Meu perfil" block (popover).
+const configLeaves: Leaf[] = [
+  { href: "/configuracoes/perfil", label: "Perfil", icon: icons.perfil },
+  { href: "/configuracoes/dados", label: "Dados", icon: icons.dados },
+  { href: "/configuracoes/seguranca", label: "Segurança", icon: icons.seguranca },
+  { href: "/configuracoes/moedas", label: "Moedas e idiomas", icon: icons.moedas }
 ];
 
 // ACTIVE item — premium glass: translucent fill + backdrop blur, inset ring,
@@ -278,28 +275,79 @@ function BrandBadge({ initials }: { initials: string }) {
   );
 }
 
-// Bottom account block — navigates straight to the profile page. Account options
-// (language, settings, logout) now live behind the profile page's gear menu.
+// Bottom account block — the avatar/name links to the profile page; the gear
+// button toggles a popover with the Configurações submenus (Perfil, Dados,
+// Segurança, Moedas e idiomas), which no longer live in the main nav.
 function UserMenu({ email, locale, onNavigate }: { email: string; locale: Locale; onNavigate?: () => void }) {
   const initials = (email.trim()[0] ?? "U").toUpperCase();
+  const pathname = usePathname();
+  const [configOpen, setConfigOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!configOpen) return;
+    function onDoc(event: MouseEvent) {
+      if (ref.current && !ref.current.contains(event.target as Node)) setConfigOpen(false);
+    }
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, [configOpen]);
 
   return (
-    <Link
-      className="flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left transition hover:-translate-y-px hover:bg-white/10"
-      href="/configuracoes/perfil"
-      onClick={onNavigate}
-    >
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/15 text-sm font-semibold text-white ring-1 ring-white/10">
-        {initials}
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="block truncate text-sm font-medium text-white">{email || t(locale, "menu.account")}</span>
-        <span className="block text-xs text-white/50">{t(locale, "menu.profile")}</span>
-      </span>
-      <svg aria-hidden="true" className="shrink-0 text-white/40" fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeWidth="2" viewBox="0 0 24 24" width="16">
-        <path d="m9 18 6-6-6-6" />
-      </svg>
-    </Link>
+    <div className="relative" ref={ref}>
+      {configOpen ? (
+        <div className="absolute bottom-full left-0 right-0 z-20 mb-2 rounded-2xl bg-white p-1.5 shadow-xl ring-1 ring-black/10" role="menu">
+          <p className="px-3 pb-1 pt-1.5 text-[10px] font-semibold uppercase tracking-wide text-slate-400">Configurações</p>
+          {configLeaves.map((leaf) => (
+            <Link
+              aria-current={leaf.href === pathname ? "page" : undefined}
+              className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm transition hover:bg-slate-50 ${
+                leaf.href === pathname ? "bg-slate-50 font-semibold text-[#002D72]" : "text-slate-700"
+              }`}
+              href={leaf.href}
+              key={leaf.href}
+              onClick={() => {
+                setConfigOpen(false);
+                onNavigate?.();
+              }}
+              role="menuitem"
+            >
+              <span className="shrink-0 text-[#5A74E0]">{leaf.icon}</span>
+              {leaf.label}
+            </Link>
+          ))}
+        </div>
+      ) : null}
+
+      <div className="flex w-full items-center gap-2 rounded-xl px-1 py-1">
+        <Link
+          className="flex min-w-0 flex-1 items-center gap-3 rounded-xl px-1 py-1 text-left transition hover:-translate-y-px hover:bg-white/10"
+          href="/configuracoes/perfil"
+          onClick={onNavigate}
+        >
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/15 text-sm font-semibold text-white ring-1 ring-white/10">
+            {initials}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-sm font-medium text-white">{email || t(locale, "menu.account")}</span>
+            <span className="block text-xs text-white/50">{t(locale, "menu.profile")}</span>
+          </span>
+        </Link>
+        <button
+          aria-expanded={configOpen}
+          aria-haspopup="menu"
+          aria-label="Configurações"
+          className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[#8FB2FF] ring-1 ring-inset transition hover:-translate-y-px hover:bg-white/10 hover:text-white ${
+            configOpen ? "bg-white/10 text-white ring-white/20" : "ring-white/5"
+          }`}
+          onClick={() => setConfigOpen((value) => !value)}
+          title="Configurações"
+          type="button"
+        >
+          {icons.config}
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -308,7 +356,12 @@ function SidebarBody({ email, locale, onNavigate }: { email: string; locale: Loc
 
   return (
     <div className="flex h-full flex-col gap-5 bg-gradient-to-b from-[#00153A] via-[#032A63] to-[#061A3E] p-4">
-      <div className="flex items-center gap-3 px-1 pt-1">
+      <Link
+        aria-label="Ir para Análise"
+        className="flex items-center gap-3 rounded-xl px-1 pt-1 transition hover:opacity-90"
+        href="/dashboard"
+        onClick={onNavigate}
+      >
         <BrandBadge initials={initials} />
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold text-white">Oracle</p>
@@ -316,7 +369,7 @@ function SidebarBody({ email, locale, onNavigate }: { email: string; locale: Loc
             Sistema financeiro
           </p>
         </div>
-      </div>
+      </Link>
       <div className="border-t border-white/10" />
       <NavList onNavigate={onNavigate} />
       <UserMenu email={email} locale={locale} onNavigate={onNavigate} />
@@ -335,12 +388,12 @@ export function AppSidebar({ email, locale }: { email: string; locale: Locale })
       </aside>
 
       <div className="sticky top-0 z-20 flex items-center justify-between border-b border-black/5 bg-white/80 px-4 py-3 backdrop-blur md:hidden">
-        <div className="flex items-center gap-2.5">
+        <Link aria-label="Ir para Análise" className="flex items-center gap-2.5" href="/dashboard">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#5A74E0] to-[#1B2A66] text-xs font-bold text-white ring-1 ring-black/5">
             {initials}
           </span>
           <p className="text-base font-semibold text-ink">Oracle</p>
-        </div>
+        </Link>
         <button
           aria-label="Abrir menu"
           className="inline-flex h-10 w-10 items-center justify-center rounded-2xl ring-1 ring-black/5 transition hover:bg-slate-100"
