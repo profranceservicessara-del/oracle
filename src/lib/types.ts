@@ -62,6 +62,7 @@ export type Profile = {
   declaration_periodicite: DeclarationPeriodicite;
   monthly_summary_email: boolean;
   logo_url: string | null;
+  avatar_url: string | null;
   couleur_principale: string | null;
   created_at: string;
   updated_at: string;

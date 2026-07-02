@@ -20,10 +20,17 @@ export default async function AppLayout({
 
   const locale = await getLocale();
 
+  const { data: profile } = await supabase.from("profiles").select("avatar_url").eq("id", user.id).maybeSingle();
+  let avatarUrl: string | null = null;
+  if (profile?.avatar_url) {
+    const { data: signed } = await supabase.storage.from("logos").createSignedUrl(profile.avatar_url, 900);
+    avatarUrl = signed?.signedUrl ?? null;
+  }
+
   return (
     <ToastProvider>
       <div className="min-h-screen bg-[#F7F8FC]">
-        <AppSidebar email={user.email ?? ""} locale={locale} />
+        <AppSidebar avatarUrl={avatarUrl} email={user.email ?? ""} locale={locale} />
         <div className="md:pl-64">{children}</div>
       </div>
     </ToastProvider>

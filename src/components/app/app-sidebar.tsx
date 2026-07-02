@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { t, type Locale } from "@/lib/i18n/dictionaries";
@@ -97,15 +97,6 @@ const nav: NavItem[] = [
       { href: "/facturation/fournisseurs", label: "Faturas recebidas", icon: icons.faturasRecebidas }
     ]
   }
-];
-
-// Configurações — removed from the main nav; now surfaced behind the gear on the
-// bottom "Meu perfil" block (popover).
-const configLeaves: Leaf[] = [
-  { href: "/configuracoes/perfil", label: "Perfil", icon: icons.perfil },
-  { href: "/configuracoes/dados", label: "Dados", icon: icons.dados },
-  { href: "/configuracoes/seguranca", label: "Segurança", icon: icons.seguranca },
-  { href: "/configuracoes/moedas", label: "Moedas e idiomas", icon: icons.moedas }
 ];
 
 // ACTIVE item — premium glass: translucent fill + backdrop blur, inset ring,
@@ -275,83 +266,46 @@ function BrandBadge({ initials }: { initials: string }) {
   );
 }
 
-// Bottom account block — the avatar/name links to the profile page; the gear
-// button toggles a popover with the Configurações submenus (Perfil, Dados,
-// Segurança, Moedas e idiomas), which no longer live in the main nav.
-function UserMenu({ email, locale, onNavigate }: { email: string; locale: Locale; onNavigate?: () => void }) {
+// Bottom account block — avatar (uploaded photo, initials fallback) + email/name
+// link to the profile page; the gear links to the dedicated Configurações page
+// (which now carries the settings rail with all submenus).
+function UserMenu({ email, locale, avatarUrl, onNavigate }: { email: string; locale: Locale; avatarUrl?: string | null; onNavigate?: () => void }) {
   const initials = (email.trim()[0] ?? "U").toUpperCase();
-  const pathname = usePathname();
-  const [configOpen, setConfigOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!configOpen) return;
-    function onDoc(event: MouseEvent) {
-      if (ref.current && !ref.current.contains(event.target as Node)) setConfigOpen(false);
-    }
-    document.addEventListener("mousedown", onDoc);
-    return () => document.removeEventListener("mousedown", onDoc);
-  }, [configOpen]);
 
   return (
-    <div className="relative" ref={ref}>
-      {configOpen ? (
-        <div className="absolute bottom-full left-0 right-0 z-20 mb-2 rounded-2xl bg-white p-1.5 shadow-xl ring-1 ring-black/10" role="menu">
-          <p className="px-3 pb-1 pt-1.5 text-[10px] font-semibold uppercase tracking-wide text-slate-400">Configurações</p>
-          {configLeaves.map((leaf) => (
-            <Link
-              aria-current={leaf.href === pathname ? "page" : undefined}
-              className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm transition hover:bg-slate-50 ${
-                leaf.href === pathname ? "bg-slate-50 font-semibold text-[#002D72]" : "text-slate-700"
-              }`}
-              href={leaf.href}
-              key={leaf.href}
-              onClick={() => {
-                setConfigOpen(false);
-                onNavigate?.();
-              }}
-              role="menuitem"
-            >
-              <span className="shrink-0 text-[#5A74E0]">{leaf.icon}</span>
-              {leaf.label}
-            </Link>
-          ))}
-        </div>
-      ) : null}
-
-      <div className="flex w-full items-center gap-2 rounded-xl px-1 py-1">
-        <Link
-          className="flex min-w-0 flex-1 items-center gap-3 rounded-xl px-1 py-1 text-left transition hover:-translate-y-px hover:bg-white/10"
-          href="/configuracoes/perfil"
-          onClick={onNavigate}
-        >
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/15 text-sm font-semibold text-white ring-1 ring-white/10">
-            {initials}
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="block truncate text-sm font-medium text-white">{email || t(locale, "menu.account")}</span>
-            <span className="block text-xs text-white/50">{t(locale, "menu.profile")}</span>
-          </span>
-        </Link>
-        <button
-          aria-expanded={configOpen}
-          aria-haspopup="menu"
-          aria-label="Configurações"
-          className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[#8FB2FF] ring-1 ring-inset transition hover:-translate-y-px hover:bg-white/10 hover:text-white ${
-            configOpen ? "bg-white/10 text-white ring-white/20" : "ring-white/5"
-          }`}
-          onClick={() => setConfigOpen((value) => !value)}
-          title="Configurações"
-          type="button"
-        >
-          {icons.config}
-        </button>
-      </div>
+    <div className="flex w-full items-center gap-2 rounded-xl px-1 py-1">
+      <Link
+        className="flex min-w-0 flex-1 items-center gap-3 rounded-xl px-1 py-1 text-left transition hover:-translate-y-px hover:bg-white/10"
+        href="/configuracoes/perfil"
+        onClick={onNavigate}
+      >
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/15 text-sm font-semibold text-white ring-1 ring-white/10">
+          {avatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img alt="Foto do perfil" className="h-full w-full object-cover" src={avatarUrl} />
+          ) : (
+            initials
+          )}
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-sm font-medium text-white">{email || t(locale, "menu.account")}</span>
+          <span className="block text-xs text-white/50">{t(locale, "menu.profile")}</span>
+        </span>
+      </Link>
+      <Link
+        aria-label="Configurações"
+        className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[#8FB2FF] ring-1 ring-inset ring-white/5 transition hover:-translate-y-px hover:bg-white/10 hover:text-white"
+        href="/configuracoes/perfil"
+        onClick={onNavigate}
+        title="Configurações"
+      >
+        {icons.config}
+      </Link>
     </div>
   );
 }
 
-function SidebarBody({ email, locale, onNavigate }: { email: string; locale: Locale; onNavigate?: () => void }) {
+function SidebarBody({ email, locale, avatarUrl, onNavigate }: { email: string; locale: Locale; avatarUrl?: string | null; onNavigate?: () => void }) {
   const initials = ((email.split("@")[0] ?? "").replace(/[^a-zA-Z]/g, "").slice(0, 2) || "PF").toUpperCase();
 
   return (
@@ -372,19 +326,19 @@ function SidebarBody({ email, locale, onNavigate }: { email: string; locale: Loc
       </Link>
       <div className="border-t border-white/10" />
       <NavList onNavigate={onNavigate} />
-      <UserMenu email={email} locale={locale} onNavigate={onNavigate} />
+      <UserMenu avatarUrl={avatarUrl} email={email} locale={locale} onNavigate={onNavigate} />
     </div>
   );
 }
 
-export function AppSidebar({ email, locale }: { email: string; locale: Locale }) {
+export function AppSidebar({ email, locale, avatarUrl }: { email: string; locale: Locale; avatarUrl?: string | null }) {
   const [open, setOpen] = useState(false);
   const initials = ((email.split("@")[0] ?? "").replace(/[^a-zA-Z]/g, "").slice(0, 2) || "PF").toUpperCase();
 
   return (
     <>
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 md:block">
-        <SidebarBody email={email} locale={locale} />
+        <SidebarBody avatarUrl={avatarUrl} email={email} locale={locale} />
       </aside>
 
       <div className="sticky top-0 z-20 flex items-center justify-between border-b border-black/5 bg-white/80 px-4 py-3 backdrop-blur md:hidden">
@@ -417,7 +371,7 @@ export function AppSidebar({ email, locale }: { email: string; locale: Locale })
             type="button"
           />
           <div className="absolute inset-y-0 left-0 w-72 max-w-[80%]">
-            <SidebarBody email={email} locale={locale} onNavigate={() => setOpen(false)} />
+            <SidebarBody avatarUrl={avatarUrl} email={email} locale={locale} onNavigate={() => setOpen(false)} />
           </div>
         </div>
       ) : null}
