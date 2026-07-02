@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { FormModal } from "@/components/ui/form-modal";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { useToast } from "@/components/ui/toast";
@@ -72,6 +73,7 @@ export function PerfilClient({
   const [logoSignedUrl, setLogoSignedUrl] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSaving, setIsSaving] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
 
   useEffect(() => {
     async function loadLogo() {
@@ -138,6 +140,7 @@ export function PerfilClient({
 
       setProfile(data as Profile);
       setLogoFile(null);
+      setIsEditOpen(false);
       showToast("Perfil salvo.", "success");
     } catch {
       showToast("Não foi possível salvar o perfil.", "error");
@@ -179,7 +182,18 @@ export function PerfilClient({
         </p>
       </div>
 
-      <section className="mb-6 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
+      <section className="relative mb-6 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
+        <button
+          aria-label="Editar perfil"
+          className="absolute right-4 top-4 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/15 text-white ring-1 ring-inset ring-white/25 backdrop-blur-sm transition hover:-translate-y-px hover:bg-white/25"
+          onClick={() => setIsEditOpen(true)}
+          type="button"
+        >
+          <svg fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" width="16">
+            <path d="M12 20h9" />
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+          </svg>
+        </button>
         <div className="h-24 bg-gradient-to-br from-[#001F4D] via-[#002D72] to-[#2B1F5B]" />
         <div className="px-6 pb-6">
           <div className="-mt-10 flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl bg-white ring-1 ring-black/5">
@@ -226,8 +240,14 @@ export function PerfilClient({
         </div>
       </section>
 
+      <FormModal
+        description="Estes dados são necessários para emitir documentos fiscais franceses."
+        isOpen={isEditOpen}
+        onClose={() => setIsEditOpen(false)}
+        title="Editar perfil"
+      >
       <form
-        className="grid gap-6 rounded-lg border border-line bg-white p-6 shadow-sm"
+        className="grid gap-6"
         onSubmit={(event) => {
           event.preventDefault();
           void saveProfile();
@@ -467,6 +487,7 @@ export function PerfilClient({
           </Button>
         </div>
       </form>
+      </FormModal>
     </main>
   );
 }
