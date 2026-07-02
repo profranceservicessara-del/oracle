@@ -313,12 +313,54 @@ export function PerfilClient({
   return (
     <main className="mx-auto max-w-4xl px-4 py-8">
       <div className="mb-6 flex items-start justify-between gap-3">
-        <div>
-          <p className="text-sm font-semibold text-brand">Configurações</p>
-          <h1 className="mt-2 text-2xl font-semibold text-ink">Perfil</h1>
-          <p className="mt-2 text-sm text-muted">
-            Estes dados são necessários para emitir documentos fiscais franceses.
-          </p>
+        <div className="flex items-center gap-4">
+          <div className="relative shrink-0">
+            <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-[#EAF0FF] text-xl font-bold text-[#1D4ED8] ring-1 ring-black/5">
+              {avatarPreview || avatarSignedUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img alt="Foto do perfil" className="h-full w-full object-cover" src={avatarPreview ?? avatarSignedUrl ?? ""} />
+              ) : (
+                (companyName.trim()[0] ?? "U").toUpperCase()
+              )}
+            </div>
+            <button
+              aria-label="Alterar foto do perfil"
+              className="absolute -bottom-1 -right-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#002D72] text-white shadow-md ring-2 ring-white transition hover:bg-[#0140A6] disabled:opacity-60"
+              disabled={avatarUploading}
+              onClick={() => avatarInputRef.current?.click()}
+              title="Alterar foto do perfil"
+              type="button"
+            >
+              {avatarUploading ? (
+                <svg className="animate-spin" fill="none" height="12" stroke="currentColor" strokeLinecap="round" strokeWidth="2.4" viewBox="0 0 24 24" width="12">
+                  <path d="M21 12a9 9 0 1 1-6.2-8.5" />
+                </svg>
+              ) : (
+                <svg fill="none" height="12" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.9" viewBox="0 0 24 24" width="12">
+                  <path d="M12 20h9" />
+                  <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                </svg>
+              )}
+            </button>
+            <input
+              accept="image/*"
+              className="hidden"
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                if (file) void handleAvatarChange(file);
+                event.target.value = "";
+              }}
+              ref={avatarInputRef}
+              type="file"
+            />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-brand">Configurações</p>
+            <h1 className="mt-1 text-2xl font-semibold text-ink">Perfil</h1>
+            <p className="mt-1 text-sm text-muted">
+              Estes dados são necessários para emitir documentos fiscais franceses.
+            </p>
+          </div>
         </div>
         <div className="relative" ref={settingsRef}>
           <button
@@ -371,55 +413,6 @@ export function PerfilClient({
           ) : null}
         </div>
       </div>
-
-      <section className="mb-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5">
-        <div className="flex flex-col items-center gap-3 text-center">
-          <div className="relative">
-            <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-[#EAF0FF] text-2xl font-bold text-[#1D4ED8] ring-1 ring-black/5">
-              {avatarPreview || avatarSignedUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img alt="Foto do perfil" className="h-full w-full object-cover" src={avatarPreview ?? avatarSignedUrl ?? ""} />
-              ) : (
-                (companyName.trim()[0] ?? "U").toUpperCase()
-              )}
-            </div>
-            <button
-              aria-label="Alterar foto do perfil"
-              className="absolute -bottom-1 -right-1 inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#002D72] text-white shadow-md ring-2 ring-white transition hover:bg-[#0140A6] disabled:opacity-60"
-              disabled={avatarUploading}
-              onClick={() => avatarInputRef.current?.click()}
-              title="Alterar foto do perfil"
-              type="button"
-            >
-              {avatarUploading ? (
-                <svg className="animate-spin" fill="none" height="15" stroke="currentColor" strokeLinecap="round" strokeWidth="2.2" viewBox="0 0 24 24" width="15">
-                  <path d="M21 12a9 9 0 1 1-6.2-8.5" />
-                </svg>
-              ) : (
-                <svg fill="none" height="15" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" width="15">
-                  <path d="M12 20h9" />
-                  <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
-                </svg>
-              )}
-            </button>
-            <input
-              accept="image/*"
-              className="hidden"
-              onChange={(event) => {
-                const file = event.target.files?.[0];
-                if (file) void handleAvatarChange(file);
-                event.target.value = "";
-              }}
-              ref={avatarInputRef}
-              type="file"
-            />
-          </div>
-          <div>
-            <p className="text-lg font-semibold text-ink">{companyName || "Meu perfil"}</p>
-            <p className="text-sm text-muted">Foto do perfil de usuário</p>
-          </div>
-        </div>
-      </section>
 
       <section className="relative mb-6 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
         <div className="h-24 bg-gradient-to-br from-[#001F4D] via-[#002D72] to-[#2B1F5B]" />
