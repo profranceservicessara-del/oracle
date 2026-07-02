@@ -674,6 +674,7 @@ function SidebarBody({ email, locale, avatarUrl, name, onNavigate, collapsed, on
       <div className="border-t border-white/10" />
       <NavList collapsed={collapsed} onExpand={() => onSetCollapsed?.(false)} onNavigate={onNavigate} />
       <ShortcutsBlock collapsed={collapsed} onNavigate={onNavigate} />
+      <div className={`border-t border-white/10 ${collapsed ? "mx-auto w-8" : ""}`} />
       <UserMenu avatarUrl={avatarUrl} collapsed={collapsed} email={email} locale={locale} name={name} onCollapse={() => onSetCollapsed?.(true)} onNavigate={onNavigate} />
     </div>
   );
