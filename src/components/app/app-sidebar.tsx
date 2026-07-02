@@ -407,7 +407,7 @@ function ShortcutsBlock({ collapsed, onNavigate }: { collapsed?: boolean; onNavi
               <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-400/15 text-[11px] leading-none ring-1 ring-emerald-400/20 transition group-hover/sc:ring-emerald-400/35">
                 {shortcutEmoji(item.key)}
               </span>
-              {collapsed ? null : <span className="truncate text-[11px] font-medium text-emerald-400/80">{item.label}</span>}
+              {collapsed ? null : <span className="truncate text-[11px] font-medium text-emerald-400/70">{item.label}</span>}
             </Link>
           ))}
         </div>
