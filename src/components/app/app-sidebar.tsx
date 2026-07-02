@@ -308,7 +308,7 @@ function BrandBadge({ initials }: { initials: string }) {
 }
 
 const fourDotIcon = (
-  <svg fill="currentColor" height="16" viewBox="0 0 24 24" width="16"><circle cx="9" cy="9" r="1.6" /><circle cx="15" cy="9" r="1.6" /><circle cx="9" cy="15" r="1.6" /><circle cx="15" cy="15" r="1.6" /></svg>
+  <svg fill="currentColor" height="19" viewBox="0 0 24 24" width="19"><circle cx="8.5" cy="8.5" r="2.1" /><circle cx="15.5" cy="8.5" r="2.1" /><circle cx="8.5" cy="15.5" r="2.1" /><circle cx="15.5" cy="15.5" r="2.1" /></svg>
 );
 const gripIcon = (
   <svg fill="currentColor" height="18" viewBox="0 0 24 24" width="18"><circle cx="9" cy="6" r="1.4" /><circle cx="9" cy="12" r="1.4" /><circle cx="9" cy="18" r="1.4" /><circle cx="15" cy="6" r="1.4" /><circle cx="15" cy="12" r="1.4" /><circle cx="15" cy="18" r="1.4" /></svg>
