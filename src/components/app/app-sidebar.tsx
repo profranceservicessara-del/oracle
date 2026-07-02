@@ -63,7 +63,6 @@ type NavItem =
 
 const nav: NavItem[] = [
   { kind: "link", href: "/dashboard", label: "Análise", icon: icons.dashboard },
-  { kind: "link", href: "/documentos", label: "Documentos", icon: icons.documentos },
   {
     kind: "group",
     key: "faturamento",
@@ -73,15 +72,7 @@ const nav: NavItem[] = [
       { href: "/facturation", label: "Faturas", icon: icons.faturas },
       { href: "/facturation/devis", label: "Orçamentos", icon: icons.orcamentos },
       { href: "/facturation/produits", label: "Produtos e serviços", icon: icons.produtos },
-      { href: "/catalogo", label: "Catálogo", icon: icons.catalogoLeaf }
-    ]
-  },
-  {
-    kind: "group",
-    key: "clientes",
-    label: "Clientes",
-    icon: icons.clientes,
-    children: [
+      { href: "/catalogo", label: "Catálogo", icon: icons.catalogoLeaf },
       { href: "/crm", label: "CRM", icon: icons.crm },
       { href: "/crm/agenda", label: "Agenda", icon: icons.agenda },
       { href: "/clientes", label: "Clientes", icon: icons.clientesLeaf }
@@ -98,7 +89,8 @@ const nav: NavItem[] = [
       { href: "#", label: "Comprovantes", icon: icons.comprovantes },
       { href: "/facturation/fournisseurs", label: "Faturas recebidas", icon: icons.faturasRecebidas }
     ]
-  }
+  },
+  { kind: "link", href: "/documentos", label: "Documentos", icon: icons.documentos }
 ];
 
 // ACTIVE item — premium glass: translucent fill + backdrop blur, inset ring,
@@ -285,9 +277,28 @@ function NavList({ onNavigate, collapsed, onExpand }: { onNavigate?: () => void;
 }
 
 function BrandBadge({ initials }: { initials: string }) {
+  const [imgError, setImgError] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  // SSR renders the <img> before React attaches onError; if the load already
+  // failed by hydration, catch it here so the initials fallback still shows.
+  useEffect(() => {
+    const el = imgRef.current;
+    if (el && el.complete && el.naturalWidth === 0) setImgError(true);
+  }, []);
+
+  if (imgError) {
+    return (
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#5A74E0] to-[#1B2A66] text-sm font-bold text-white shadow-sm ring-1 ring-white/20">
+        {initials}
+      </span>
+    );
+  }
+
   return (
-    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#5A74E0] to-[#1B2A66] text-sm font-bold text-white shadow-sm ring-1 ring-white/20">
-      {initials}
+    <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl shadow-sm ring-1 ring-white/20">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img alt="Oracle" className="h-full w-full object-cover" onError={() => setImgError(true)} ref={imgRef} src="/illustrations/oracle-icon.png" />
     </span>
   );
 }
