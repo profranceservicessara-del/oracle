@@ -1,11 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { LogoutButton } from "@/components/app/logout-button";
+import { usePathname } from "next/navigation";
 import { t, type Locale } from "@/lib/i18n/dictionaries";
-import { createClient } from "@/lib/supabase/client";
 
 // ---------------------------------------------------------------------------
 // Icons — 18px for section rows, 16px for sub-items. Rendered in the periwinkle
@@ -278,114 +276,28 @@ function BrandBadge({ initials }: { initials: string }) {
   );
 }
 
+// Bottom account block — navigates straight to the profile page. Account options
+// (language, settings, logout) now live behind the profile page's gear menu.
 function UserMenu({ email, locale, onNavigate }: { email: string; locale: Locale; onNavigate?: () => void }) {
-  const [open, setOpen] = useState(false);
-  const [switching, setSwitching] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-  const router = useRouter();
-  const supabase = useMemo(() => createClient(), []);
   const initials = (email.trim()[0] ?? "U").toUpperCase();
 
-  async function switchLocale() {
-    const target: Locale = locale === "fr" ? "pt" : "fr";
-    setSwitching(true);
-    const {
-      data: { user }
-    } = await supabase.auth.getUser();
-    if (user) {
-      await supabase
-        .from("user_preferences")
-        .upsert({ locale: target, user_id: user.id }, { onConflict: "user_id" });
-    }
-    setSwitching(false);
-    setOpen(false);
-    onNavigate?.();
-    router.refresh();
-  }
-
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
-
-    function onPointerDown(event: MouseEvent) {
-      if (ref.current && !ref.current.contains(event.target as Node)) {
-        setOpen(false);
-      }
-    }
-
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        setOpen(false);
-      }
-    }
-
-    document.addEventListener("mousedown", onPointerDown);
-    document.addEventListener("keydown", onKeyDown);
-
-    return () => {
-      document.removeEventListener("mousedown", onPointerDown);
-      document.removeEventListener("keydown", onKeyDown);
-    };
-  }, [open]);
-
-  function handleNavigate() {
-    setOpen(false);
-    onNavigate?.();
-  }
-
-  const itemClass =
-    "flex items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-sm text-slate-700 transition hover:bg-slate-50";
-
   return (
-    <div className="relative" ref={ref}>
-      {open ? (
-        <div className="absolute bottom-full left-0 right-0 mb-2 rounded-2xl bg-white p-1.5 shadow-lg ring-1 ring-black/5">
-          <Link className={itemClass} href="/configuracoes/perfil" onClick={handleNavigate}>
-            {t(locale, "menu.profile")}
-          </Link>
-          <Link className={itemClass} href="/configuracoes/dados" onClick={handleNavigate}>
-            {t(locale, "menu.settings")}
-          </Link>
-          <div className="my-1 border-t border-black/5" />
-          <p className="px-3 py-2 text-sm text-slate-500">
-            {t(locale, "menu.language")}:{" "}
-            <span className="font-medium text-ink">{t(locale, "menu.currentLanguage")}</span>
-          </p>
-          <button
-            className="flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-left text-sm text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
-            disabled={switching}
-            onClick={() => void switchLocale()}
-            type="button"
-          >
-            {locale === "fr" ? t("fr", "menu.switchToPt") : t("pt", "menu.switchToFr")}
-          </button>
-          <div className="my-1 border-t border-black/5" />
-          <div className="grid p-1">
-            <LogoutButton label={t(locale, "menu.logout")} />
-          </div>
-        </div>
-      ) : null}
-
-      <button
-        aria-expanded={open}
-        aria-haspopup="menu"
-        className="flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left transition hover:bg-white/10"
-        onClick={() => setOpen((value) => !value)}
-        type="button"
-      >
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/15 text-sm font-semibold text-white ring-1 ring-white/10">
-          {initials}
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm font-medium text-white">{email || t(locale, "menu.account")}</span>
-          <span className="block text-xs text-white/50">{t(locale, "menu.settings")}</span>
-        </span>
-        <svg aria-hidden="true" className="shrink-0 text-white/50" fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeWidth="2" viewBox="0 0 24 24" width="16">
-          <path d="m6 9 6 6 6-6" />
-        </svg>
-      </button>
-    </div>
+    <Link
+      className="flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left transition hover:-translate-y-px hover:bg-white/10"
+      href="/configuracoes/perfil"
+      onClick={onNavigate}
+    >
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/15 text-sm font-semibold text-white ring-1 ring-white/10">
+        {initials}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-sm font-medium text-white">{email || t(locale, "menu.account")}</span>
+        <span className="block text-xs text-white/50">{t(locale, "menu.profile")}</span>
+      </span>
+      <svg aria-hidden="true" className="shrink-0 text-white/40" fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeWidth="2" viewBox="0 0 24 24" width="16">
+        <path d="m9 18 6-6-6-6" />
+      </svg>
+    </Link>
   );
 }
 

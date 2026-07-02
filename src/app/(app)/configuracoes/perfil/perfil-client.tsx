@@ -1,12 +1,16 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { FormModal } from "@/components/ui/form-modal";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { useToast } from "@/components/ui/toast";
+import { LogoutButton } from "@/components/app/logout-button";
 import { fiscalConfig } from "@/config/fiscal";
+import { t, type Locale } from "@/lib/i18n/dictionaries";
 import { createClient } from "@/lib/supabase/client";
 import {
   categoryLabels,
@@ -60,12 +64,15 @@ function toFormState(profile: Profile | null): ProfileFormState {
 
 export function PerfilClient({
   initialProfile,
+  locale,
   userId
 }: {
   initialProfile: Profile | null;
+  locale: Locale;
   userId: string;
 }) {
   const supabase = useMemo(() => createClient(), []);
+  const router = useRouter();
   const { showToast } = useToast();
   const [profile, setProfile] = useState(initialProfile);
   const [form, setForm] = useState<ProfileFormState>(() => toFormState(initialProfile));
@@ -74,6 +81,40 @@ export function PerfilClient({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSaving, setIsSaving] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [switching, setSwitching] = useState(false);
+  const settingsRef = useRef<HTMLDivElement>(null);
+
+  async function switchLocale() {
+    const target: Locale = locale === "fr" ? "pt" : "fr";
+    setSwitching(true);
+    await supabase.from("user_preferences").upsert({ locale: target, user_id: userId }, { onConflict: "user_id" });
+    setSwitching(false);
+    setSettingsOpen(false);
+    router.refresh();
+  }
+
+  useEffect(() => {
+    if (!settingsOpen) {
+      return;
+    }
+    function onDown(event: MouseEvent) {
+      if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
+        setSettingsOpen(false);
+      }
+    }
+    function onKey(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setSettingsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [settingsOpen]);
 
   useEffect(() => {
     async function loadLogo() {
@@ -179,18 +220,56 @@ export function PerfilClient({
             Estes dados são necessários para emitir documentos fiscais franceses.
           </p>
         </div>
-        <button
-          aria-label="Editar perfil"
-          className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-slate-500 ring-1 ring-black/5 transition hover:-translate-y-px hover:bg-white hover:text-ink hover:shadow-sm"
-          onClick={() => setIsEditOpen(true)}
-          title="Editar perfil"
-          type="button"
-        >
-          <svg fill="none" height="20" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24" width="20">
-            <circle cx="12" cy="12" r="3" />
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6h.09A1.65 1.65 0 0 0 10 3.09V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
-          </svg>
-        </button>
+        <div className="relative" ref={settingsRef}>
+          <button
+            aria-expanded={settingsOpen}
+            aria-haspopup="menu"
+            aria-label={t(locale, "menu.settings")}
+            className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-slate-500 ring-1 ring-black/5 transition hover:-translate-y-px hover:bg-white hover:text-ink hover:shadow-sm"
+            onClick={() => setSettingsOpen((value) => !value)}
+            title={t(locale, "menu.settings")}
+            type="button"
+          >
+            <svg fill="none" height="20" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24" width="20">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6h.09A1.65 1.65 0 0 0 10 3.09V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+            </svg>
+          </button>
+
+          {settingsOpen ? (
+            <div className="absolute right-0 top-full z-20 mt-2 w-56 rounded-2xl bg-white p-1.5 shadow-lg ring-1 ring-black/5" role="menu">
+              <button
+                className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm text-slate-700 transition hover:bg-slate-50"
+                onClick={() => {
+                  setSettingsOpen(false);
+                  setIsEditOpen(true);
+                }}
+                type="button"
+              >
+                Editar perfil
+              </button>
+              <Link className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm text-slate-700 transition hover:bg-slate-50" href="/configuracoes/dados" onClick={() => setSettingsOpen(false)}>
+                {t(locale, "menu.settings")}
+              </Link>
+              <div className="my-1 border-t border-black/5" />
+              <p className="px-3 py-2 text-sm text-slate-500">
+                {t(locale, "menu.language")}: <span className="font-medium text-ink">{t(locale, "menu.currentLanguage")}</span>
+              </p>
+              <button
+                className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
+                disabled={switching}
+                onClick={() => void switchLocale()}
+                type="button"
+              >
+                {locale === "fr" ? t("fr", "menu.switchToPt") : t("pt", "menu.switchToFr")}
+              </button>
+              <div className="my-1 border-t border-black/5" />
+              <div className="grid p-1">
+                <LogoutButton label={t(locale, "menu.logout")} />
+              </div>
+            </div>
+          ) : null}
+        </div>
       </div>
 
       <section className="relative mb-6 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
