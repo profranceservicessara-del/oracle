@@ -4,6 +4,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { t, type Locale } from "@/lib/i18n/dictionaries";
+import { SHORTCUTS, SHORTCUTS_EVENT, readVisibleKeys } from "@/lib/shortcuts";
 
 // ---------------------------------------------------------------------------
 // Icons — 18px for section rows, 16px for sub-items. Rendered in the periwinkle
@@ -290,6 +291,51 @@ function BrandBadge({ initials }: { initials: string }) {
   );
 }
 
+// Shortcuts chosen in Configurações > Gerenciar atalhos, shown above the user
+// block. Reads localStorage and live-syncs via the shortcuts CustomEvent. Renders
+// nothing when none are visible. Icon-only when the sidebar is collapsed.
+function ShortcutsBlock({ collapsed, onNavigate }: { collapsed?: boolean; onNavigate?: () => void }) {
+  const [keys, setKeys] = useState<string[]>([]);
+
+  useEffect(() => {
+    const sync = () => setKeys(readVisibleKeys());
+    sync();
+    window.addEventListener(SHORTCUTS_EVENT, sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener(SHORTCUTS_EVENT, sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+
+  const items = SHORTCUTS.filter((item) => keys.includes(item.key));
+  if (items.length === 0) return null;
+
+  return (
+    <div className={`shrink-0 ${collapsed ? "flex flex-col items-center gap-1" : "space-y-0.5"}`}>
+      {collapsed ? null : (
+        <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wide text-white/40">Atalhos</p>
+      )}
+      {items.map((item) => (
+        <Link
+          className={
+            collapsed
+              ? `flex h-11 w-11 items-center justify-center rounded-xl ${idleRow}`
+              : `flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium ${idleRow}`
+          }
+          href={item.href}
+          key={item.key}
+          onClick={onNavigate}
+          title={item.label}
+        >
+          <span className="shrink-0 text-[#8FB2FF]">{item.icon}</span>
+          {collapsed ? null : <span className="truncate">{item.label}</span>}
+        </Link>
+      ))}
+    </div>
+  );
+}
+
 // Bottom account block — clicking it collapses/expands the sidebar (icon-only
 // mode). No gear. The avatar (photo or email initial) stays visible in both
 // states. Profile is reached from the Configurações rail.
@@ -355,6 +401,7 @@ function SidebarBody({ email, locale, avatarUrl, onNavigate, collapsed, onToggle
       </Link>
       <div className="border-t border-white/10" />
       <NavList collapsed={collapsed} onExpand={onToggleCollapse} onNavigate={onNavigate} />
+      <ShortcutsBlock collapsed={collapsed} onNavigate={onNavigate} />
       <UserMenu avatarUrl={avatarUrl} collapsed={collapsed} email={email} locale={locale} onToggle={onToggleCollapse} />
     </div>
   );

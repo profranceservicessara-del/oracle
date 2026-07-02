@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 
 // Premium settings shell — left rail (grouped) + main content card. The gear in
 // the sidebar lands here. Real routes link; not-yet-built items are muted.
-type Item = { href: string | null; label: string; dot?: boolean };
+type Item = { href: string | null; label: string; dot?: boolean; icon?: ReactNode };
 type Group = { key: string; label: string; children: Item[] };
 
 const groups: Group[] = [
@@ -44,8 +44,17 @@ const groups: Group[] = [
   }
 ];
 
+const giftIcon = (
+  <svg fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24" width="16">
+    <rect height="5" rx="1" width="20" x="2" y="7" /><path d="M12 22V7" /><path d="M4 12v9a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-9" />
+    <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" /><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
+  </svg>
+);
+
 const soloLinks: Item[] = [
   { href: null, label: "Produtividade" },
+  { href: "/configuracoes/atalhos", label: "Gerenciar atalhos" },
+  { href: "/configuracoes/recomendar", label: "Recomendar", icon: giftIcon },
   { href: null, label: "Funcionalidades experimentais" }
 ];
 
@@ -76,6 +85,7 @@ function LeafItem({ item, pathname }: { item: Item; pathname: string }) {
       }`}
       href={item.href}
     >
+      {item.icon ? <span className={`shrink-0 ${active ? "text-[#1D4ED8]" : "text-slate-400"}`}>{item.icon}</span> : null}
       {item.label}
       {item.dot ? <span className="h-1.5 w-1.5 rounded-full bg-red-500" /> : null}
     </Link>
