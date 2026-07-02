@@ -149,7 +149,7 @@ export function PerfilClient({
     }
   }
 
-  const companyName = [profile?.nome, profile?.prenom].filter(Boolean).join(" ");
+  const companyName = [profile?.prenom, profile?.nome].filter(Boolean).join(" ");
   const companyAddress = [
     profile?.adresse_rue,
     [profile?.adresse_cp, profile?.adresse_ville].filter(Boolean).join(" ")
@@ -171,26 +171,29 @@ export function PerfilClient({
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-8">
-      <div className="mb-6">
-        <p className="text-sm font-semibold text-brand">Configurações</p>
-        <h1 className="mt-2 text-2xl font-semibold text-ink">Perfil</h1>
-        <p className="mt-2 text-sm text-muted">
-          Estes dados são necessários para emitir documentos fiscais franceses.
-        </p>
+      <div className="mb-6 flex items-start justify-between gap-3">
+        <div>
+          <p className="text-sm font-semibold text-brand">Configurações</p>
+          <h1 className="mt-2 text-2xl font-semibold text-ink">Perfil</h1>
+          <p className="mt-2 text-sm text-muted">
+            Estes dados são necessários para emitir documentos fiscais franceses.
+          </p>
+        </div>
+        <button
+          aria-label="Editar perfil"
+          className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-slate-500 ring-1 ring-black/5 transition hover:-translate-y-px hover:bg-white hover:text-ink hover:shadow-sm"
+          onClick={() => setIsEditOpen(true)}
+          title="Editar perfil"
+          type="button"
+        >
+          <svg fill="none" height="20" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24" width="20">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6h.09A1.65 1.65 0 0 0 10 3.09V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg>
+        </button>
       </div>
 
       <section className="relative mb-6 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
-        <button
-          aria-label="Editar perfil"
-          className="absolute right-4 top-4 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/15 text-white ring-1 ring-inset ring-white/25 backdrop-blur-sm transition hover:-translate-y-px hover:bg-white/25"
-          onClick={() => setIsEditOpen(true)}
-          type="button"
-        >
-          <svg fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" width="16">
-            <path d="M12 20h9" />
-            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
-          </svg>
-        </button>
         <div className="h-24 bg-gradient-to-br from-[#001F4D] via-[#002D72] to-[#2B1F5B]" />
         <div className="px-6 pb-6">
           <div className="-mt-10 flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl bg-white ring-1 ring-black/5">
