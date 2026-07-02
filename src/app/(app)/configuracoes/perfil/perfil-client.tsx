@@ -202,7 +202,7 @@ export function PerfilClient({
               <img alt="Logo da empresa" className="h-full w-full object-contain p-2" src={logoSignedUrl} />
             ) : (
               // eslint-disable-next-line @next/next/no-img-element
-              <img alt="" aria-hidden="true" className="h-full w-full object-contain p-2" src="/illustrations/predio.png" />
+              <img alt="" aria-hidden="true" className="h-full w-full object-contain p-1" src="/illustrations/predio.png" />
             )}
           </div>
           <h2 className="mt-4 text-2xl font-semibold text-ink">{companyName || "Sua empresa"}</h2>
