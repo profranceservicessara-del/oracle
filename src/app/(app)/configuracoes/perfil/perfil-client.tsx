@@ -201,20 +201,8 @@ export function PerfilClient({
               // eslint-disable-next-line @next/next/no-img-element
               <img alt="Logo da empresa" className="h-full w-full object-contain p-2" src={logoSignedUrl} />
             ) : (
-              <svg aria-hidden="true" className="text-[#002D72]" fill="none" height="46" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.6" viewBox="0 0 24 24" width="46">
-                <path d="M2 21h20" />
-                <path d="M8 21V6h8v15" />
-                <path d="M3 21V11h5" />
-                <path d="M16 9h5v12" />
-                <path d="M10 6V4h4v2" />
-                <path d="M11 4V2M13 4V2" />
-                <path d="M11 21v-3h2v3" />
-                <path d="M10 9h0M12 9h0M14 9h0" />
-                <path d="M10 12.5h0M12 12.5h0M14 12.5h0" />
-                <path d="M10 15.5h0M12 15.5h0M14 15.5h0" />
-                <path d="M5.5 14h0M5.5 17.5h0" />
-                <path d="M18.5 13h0M18.5 16h0M18.5 19h0" />
-              </svg>
+              // eslint-disable-next-line @next/next/no-img-element
+              <img alt="" aria-hidden="true" className="h-full w-full object-contain p-2" src="/illustrations/predio.png" />
             )}
           </div>
           <h2 className="mt-4 text-2xl font-semibold text-ink">{companyName || "Sua empresa"}</h2>
