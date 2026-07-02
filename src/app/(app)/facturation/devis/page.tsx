@@ -160,14 +160,8 @@ export default async function DevisPage() {
 
           {devis.length === 0 ? (
             <div className="mt-6 flex flex-col items-center rounded-2xl bg-white px-6 py-16 text-center shadow-sm ring-1 ring-black/5">
-              <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-50 text-slate-400 ring-1 ring-black/5">
-                <svg fill="none" height="28" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.6" viewBox="0 0 24 24" width="28">
-                  <path d="M14 3v4a1 1 0 0 0 1 1h4" />
-                  <path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z" />
-                  <line x1="9" x2="15" y1="13" y2="13" />
-                  <line x1="9" x2="13" y1="17" y2="17" />
-                </svg>
-              </span>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img alt="" aria-hidden="true" className="h-44 w-auto" src="/illustrations/orcamento.png" />
               <h2 className="mt-5 text-lg font-semibold text-ink">Comece pelo seu 1º orçamento!</h2>
               <p className="mt-2 max-w-sm text-sm text-muted">Configure e crie seu orçamento com toda a simplicidade.</p>
               <Link className={`mt-6 ${primaryButton}`} href="/documentos/novo?type=devis">
