@@ -71,7 +71,7 @@ export default async function DocumentoPage({ params }: { params: { id: string }
         <div className="flex flex-wrap justify-end gap-2">
           {typedDocument.status === "draft" ? (
             <Link
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-brand px-4 text-sm font-semibold text-white shadow-sm ring-1 ring-[#002D72]/20 transition hover:bg-[#003a94] active:bg-[#001F4D] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-brand px-4 text-sm font-semibold text-white shadow-sm ring-1 ring-[#002D72]/20 transition hover:bg-[#003a94] active:bg-[#001F4D] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
               href={`/documentos/${typedDocument.id}/editar`}
             >
               Editar rascunho
