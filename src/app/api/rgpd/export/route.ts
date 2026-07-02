@@ -57,7 +57,7 @@ export async function POST() {
     };
     const zip = createZip([
       {
-        name: "profacture-export.json",
+        name: "oracle-export.json",
         content: JSON.stringify(payload, null, 2)
       },
       {

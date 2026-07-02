@@ -72,7 +72,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         filename: `${document.numero ?? "document"}.pdf`
       }
     ],
-    from: "ProFacture <onboarding@resend.dev>",
+    from: "Oracle <onboarding@resend.dev>",
     html: parsed.data.body.replaceAll("\n", "<br />"),
     subject: parsed.data.subject,
     text: parsed.data.body,

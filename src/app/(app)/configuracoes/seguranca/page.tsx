@@ -16,7 +16,7 @@ export default function SegurancaPage() {
       <div className="mb-6">
         <p className="text-sm font-semibold text-brand">Configurações</p>
         <h1 className="mt-2 text-2xl font-semibold text-ink">Segurança</h1>
-        <p className="mt-2 text-sm text-muted">Proteja o acesso à sua conta ProFacture.</p>
+        <p className="mt-2 text-sm text-muted">Proteja o acesso à sua conta Oracle.</p>
       </div>
 
       <div className="flex items-start gap-3 rounded-2xl bg-emerald-50 p-4 ring-1 ring-emerald-200">
@@ -25,7 +25,7 @@ export default function SegurancaPage() {
         </svg>
         <div>
           <p className="font-semibold text-emerald-800">Conta protegida</p>
-          <p className="mt-1 text-sm text-emerald-700">Você acessa o ProFacture com email e senha.</p>
+          <p className="mt-1 text-sm text-emerald-700">Você acessa o Oracle com email e senha.</p>
         </div>
       </div>
 
@@ -44,7 +44,7 @@ export default function SegurancaPage() {
           <div>
             <p className="font-semibold text-amber-800">Lembrete</p>
             <p className="mt-1 text-sm text-amber-700">
-              A equipe ProFacture nunca pedirá informações sensíveis. Se detectarmos algum problema de
+              A equipe Oracle nunca pedirá informações sensíveis. Se detectarmos algum problema de
               segurança, entraremos em contato por email ou diretamente no aplicativo.
             </p>
           </div>
@@ -66,7 +66,7 @@ export default function SegurancaPage() {
           <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5">
             <h3 className="font-semibold text-ink">Dispositivos conectados</h3>
             <p className="mt-2 text-sm leading-6 text-muted">
-              Veja os dispositivos conectados à sua conta ProFacture.
+              Veja os dispositivos conectados à sua conta Oracle.
             </p>
             <Button className="mt-4" onClick={notImplemented} type="button" variant="secondary">
               Ver lista

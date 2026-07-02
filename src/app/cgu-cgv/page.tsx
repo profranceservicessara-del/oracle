@@ -6,7 +6,7 @@ export default function CguCgvPage() {
       <section>
         <h2 className="text-lg font-semibold">Objet</h2>
         <p>
-          ProFacture est un service SaaS de facturation et de suivi administratif pour
+          Oracle est un service SaaS de facturation et de suivi administratif pour
           micro-entrepreneurs. [A COMPLETER]
         </p>
       </section>

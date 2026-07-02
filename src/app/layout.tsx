@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "ProFacture",
+  title: "Oracle",
   description: "Faturação para auto-entrepreneurs lusófonos na França"
 };
 

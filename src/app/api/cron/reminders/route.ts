@@ -76,7 +76,7 @@ async function sendReminderEmail({
 
   const response = await fetch("https://api.resend.com/emails", {
     body: JSON.stringify({
-      from: "ProFacture <onboarding@resend.dev>",
+      from: "Oracle <onboarding@resend.dev>",
       html: body.replaceAll("\n", "<br />"),
       subject,
       text: body,
@@ -111,11 +111,11 @@ async function logReminder(
 }
 
 function urssafBody(deadline: string, days: number) {
-  return `Bonjour,\n\nRappel ProFacture: votre prochaine échéance déclarative URSSAF estimée est le ${deadline} (D-${days}).\n\nCe message est informatif et ne constitue pas un conseil fiscal.\n\nCordialement.`;
+  return `Bonjour,\n\nRappel Oracle: votre prochaine échéance déclarative URSSAF estimée est le ${deadline} (D-${days}).\n\nCe message est informatif et ne constitue pas un conseil fiscal.\n\nCordialement.`;
 }
 
 function monthlyBody(total: number) {
-  return `Bonjour,\n\nRésumé mensuel ProFacture: le CA encaissé du mois précédent enregistré dans votre livre de recettes est de ${euroFormatter.format(total)}.\n\nCe message est informatif et ne constitue pas un conseil fiscal.\n\nCordialement.`;
+  return `Bonjour,\n\nRésumé mensuel Oracle: le CA encaissé du mois précédent enregistré dans votre livre de recettes est de ${euroFormatter.format(total)}.\n\nCe message est informatif et ne constitue pas un conseil fiscal.\n\nCordialement.`;
 }
 
 export async function GET(request: NextRequest) {
@@ -186,7 +186,7 @@ export async function GET(request: NextRequest) {
       reminders.push({
         body: monthlyBody(total),
         kind: "monthly_summary",
-        subject: "Résumé mensuel ProFacture"
+        subject: "Résumé mensuel Oracle"
       });
     }
 

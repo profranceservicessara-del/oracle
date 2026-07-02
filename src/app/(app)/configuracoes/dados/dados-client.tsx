@@ -100,7 +100,7 @@ export function DadosClient() {
         <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Integrações</p>
         <h2 className="mt-1 text-lg font-semibold text-ink">Integração com VITRINE</h2>
         <p className="mt-2 text-sm leading-6 text-muted">
-          Se você usa a VITRINE, ative esta integração para autorizar o ProFacture a recuperar as
+          Se você usa a VITRINE, ative esta integração para autorizar o Oracle a recuperar as
           informações das suas missões realizadas na VITRINE e automatizar o tratamento contábil.
         </p>
         <div className="mt-4 rounded-xl bg-slate-50 p-4 text-sm text-slate-600 ring-1 ring-black/5">

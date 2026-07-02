@@ -70,7 +70,7 @@ export default async function HomePage() {
     <div className="min-h-screen bg-[#F7F8FC] text-ink">
       <header className="sticky top-0 z-30 border-b border-black/5 bg-white/80 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-          <p className="text-lg font-semibold text-ink">ProFacture</p>
+          <p className="text-lg font-semibold text-ink">Oracle</p>
           <nav className="hidden items-center gap-6 text-sm text-muted sm:flex">
             <a className="transition hover:text-ink" href="#recursos">Recursos</a>
             <a className="transition hover:text-ink" href="#planos">Planos</a>
@@ -201,13 +201,13 @@ export default async function HomePage() {
 
       <footer className="border-t border-black/5 bg-white">
         <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-8 text-sm text-muted sm:flex-row sm:items-center sm:justify-between">
-          <p className="font-semibold text-ink">ProFacture</p>
+          <p className="font-semibold text-ink">Oracle</p>
           <nav className="flex flex-wrap gap-4">
             <Link className="transition hover:text-ink" href="/cgu-cgv">CGU / CGV</Link>
             <Link className="transition hover:text-ink" href="/mentions-legales">Mentions légales</Link>
             <Link className="transition hover:text-ink" href="/politique-de-confidentialite">Confidentialité</Link>
           </nav>
-          <p className="text-xs text-slate-400">© {new Date().getFullYear()} ProFacture</p>
+          <p className="text-xs text-slate-400">© {new Date().getFullYear()} Oracle</p>
         </div>
       </footer>
     </div>

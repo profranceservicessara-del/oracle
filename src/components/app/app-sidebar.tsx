@@ -383,7 +383,7 @@ function SidebarBody({ email, locale, onNavigate }: { email: string; locale: Loc
       <div className="flex items-center gap-3 px-1 pt-1">
         <BrandBadge initials={initials} />
         <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-white">ProFacture</p>
+          <p className="truncate text-sm font-semibold text-white">Oracle</p>
           <p className="truncate text-[10px] font-medium uppercase tracking-wide text-white/40">
             Sistema financeiro
           </p>
@@ -411,7 +411,7 @@ export function AppSidebar({ email, locale }: { email: string; locale: Locale })
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#5A74E0] to-[#1B2A66] text-xs font-bold text-white ring-1 ring-black/5">
             {initials}
           </span>
-          <p className="text-base font-semibold text-ink">ProFacture</p>
+          <p className="text-base font-semibold text-ink">Oracle</p>
         </div>
         <button
           aria-label="Abrir menu"
