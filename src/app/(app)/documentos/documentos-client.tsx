@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
@@ -62,6 +62,34 @@ export function DocumentosClient({
   const [clientFilter, setClientFilter] = useState("todos");
   const [periodStart, setPeriodStart] = useState("");
   const [periodEnd, setPeriodEnd] = useState("");
+  const [newOpen, setNewOpen] = useState(false);
+  const newMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!newOpen) {
+      return;
+    }
+
+    function onPointerDown(event: MouseEvent) {
+      if (newMenuRef.current && !newMenuRef.current.contains(event.target as Node)) {
+        setNewOpen(false);
+      }
+    }
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setNewOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [newOpen]);
 
   const clientsById = useMemo(
     () => new Map(clients.map((client) => [client.id, client])),
@@ -141,19 +169,39 @@ export function DocumentosClient({
           <h1 className="mt-2 text-2xl font-semibold text-ink">Orçamentos e Faturas</h1>
           <p className="mt-0.5 text-xs text-muted">Devis e Factures</p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Link
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-ink shadow-sm ring-1 ring-black/5 transition hover:bg-slate-50 active:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-            href="/documentos/novo?type=devis"
-          >
-            Novo devis
-          </Link>
-          <Link
+        <div className="relative" ref={newMenuRef}>
+          <button
+            aria-expanded={newOpen}
+            aria-haspopup="menu"
             className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-brand px-4 text-sm font-semibold text-white shadow-sm ring-1 ring-[#002D72]/20 transition hover:bg-[#003a94] active:bg-[#001F4D] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-            href="/documentos/novo?type=facture"
+            onClick={() => setNewOpen((value) => !value)}
+            type="button"
           >
-            Nova facture
-          </Link>
+            + Nova
+            <svg aria-hidden="true" className={`transition-transform ${newOpen ? "rotate-180" : ""}`} fill="none" height="15" stroke="currentColor" strokeLinecap="round" strokeWidth="2" viewBox="0 0 24 24" width="15">
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </button>
+          {newOpen ? (
+            <div className="absolute right-0 z-20 mt-2 w-56 overflow-hidden rounded-2xl bg-white p-1.5 shadow-lg ring-1 ring-black/5" role="menu">
+              <Link
+                className="flex items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-ink transition hover:bg-slate-50"
+                href="/documentos/novo?type=devis"
+                onClick={() => setNewOpen(false)}
+                role="menuitem"
+              >
+                Orçamento <span className="text-xs font-normal text-muted">Devis</span>
+              </Link>
+              <Link
+                className="flex items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-ink transition hover:bg-slate-50"
+                href="/documentos/novo?type=facture"
+                onClick={() => setNewOpen(false)}
+                role="menuitem"
+              >
+                Fatura <span className="text-xs font-normal text-muted">Facture</span>
+              </Link>
+            </div>
+          ) : null}
         </div>
       </div>
 
