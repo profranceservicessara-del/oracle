@@ -381,13 +381,13 @@ function ShortcutsBlock({ collapsed, onNavigate }: { collapsed?: boolean; onNavi
         className={
           collapsed
             ? "flex h-10 w-10 items-center justify-center rounded-xl text-white/50 transition hover:bg-white/10 hover:text-white/80"
-            : "flex w-full items-center justify-between rounded-xl px-2.5 py-1.5 text-[12px] font-medium text-white/60 transition hover:bg-white/10 hover:text-white/90"
+            : "flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-[12px] font-medium text-white/60 transition hover:bg-white/10 hover:text-white/90"
         }
         onClick={openDrawer}
         title="Gerenciar atalhos"
         type="button"
       >
-        {collapsed ? fourDotIcon : (<><span>Gerenciar atalhos</span><span className="shrink-0 text-white/40">{fourDotIcon}</span></>)}
+        {collapsed ? fourDotIcon : (<><span className="shrink-0 text-white/40">{fourDotIcon}</span><span>Gerenciar atalhos</span></>)}
       </button>
 
       {items.length > 0 ? (
