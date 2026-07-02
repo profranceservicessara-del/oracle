@@ -276,11 +276,10 @@ export default async function DashboardPage() {
 
   return (
     <main className="mx-auto max-w-6xl space-y-6 px-4 py-8">
-      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#111F3B] via-[#182C57] to-[#231E44] px-6 py-7 shadow-sm ring-1 ring-white/10">
-        {/* Discreet corner light shapes (decorative, non-interactive). */}
-        <div aria-hidden className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-white/[0.05] blur-3xl" />
-        <div aria-hidden className="pointer-events-none absolute -bottom-28 -right-24 h-96 w-96 rounded-full bg-[#3E4E9A]/15 blur-3xl" />
-        <div aria-hidden className="pointer-events-none absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-[#1B2A55]/40 blur-3xl" />
+      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#00153A] via-[#052A63] to-[#0A2E6E] px-6 py-7 shadow-sm ring-1 ring-white/10">
+        <div aria-hidden className="pointer-events-none absolute -right-12 -top-24 h-72 w-72 rounded-full bg-[#5D7BEA]/30 blur-3xl" />
+        <div aria-hidden className="pointer-events-none absolute -bottom-28 right-20 h-64 w-64 rounded-full bg-[#7FA0FF]/20 blur-3xl" />
+        <div aria-hidden className="pointer-events-none absolute -left-16 top-1/3 h-56 w-56 rounded-full bg-white/[0.07] blur-3xl" />
         <div className="relative z-10">
         <h1 className="text-2xl font-medium text-white">
           Bienvenue{typedProfile?.prenom || typedProfile?.nome ? `, ${typedProfile?.prenom || typedProfile?.nome}` : ""} ! 👋
