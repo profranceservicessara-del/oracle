@@ -47,7 +47,8 @@ const icons = {
   clientesLeaf: (<svg {...s16}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /></svg>),
   perfil: (<svg {...s16}><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></svg>),
   dados: (<svg {...s16}><ellipse cx="12" cy="5" rx="8" ry="3" /><path d="M4 5v6c0 1.66 3.58 3 8 3s8-1.34 8-3V5" /><path d="M4 11v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6" /></svg>),
-  seguranca: (<svg {...s16}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>)
+  seguranca: (<svg {...s16}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>),
+  catalogoLeaf: (<svg {...s16}><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" /><path d="m3.3 7 8.7 5 8.7-5" /><path d="M12 22V12" /></svg>)
 } as const;
 
 type Leaf = { href: string; label: string; icon: ReactNode };
@@ -67,6 +68,7 @@ const nav: NavItem[] = [
       { href: "/facturation", label: "Faturas", icon: icons.faturas },
       { href: "/facturation/devis", label: "Orçamentos", icon: icons.orcamentos },
       { href: "/facturation/produits", label: "Produtos e serviços", icon: icons.produtos },
+      { href: "/catalogo", label: "Catálogo", icon: icons.catalogoLeaf },
       { href: "/facturation/recurrentes", label: "Faturas recorrentes", icon: icons.recorrentes },
       { href: "/facturation/fournisseurs", label: "Faturas de fornecedores", icon: icons.fornecedores }
     ]
@@ -83,7 +85,6 @@ const nav: NavItem[] = [
     ]
   },
   { kind: "link", href: "/documents", label: "Contabilidade", icon: icons.contabilidade },
-  { kind: "link", href: "/catalogo", label: "Catálogo", icon: icons.catalogo },
   {
     kind: "group",
     key: "config",
