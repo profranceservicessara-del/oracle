@@ -277,7 +277,7 @@ export function PerfilClient({
         <section className="grid gap-4">
           <FieldError error={errors.adresse_rue}>
             <label className="text-sm font-medium text-ink">
-              Rua
+              Adresse
               <Input
                 className="mt-2"
                 onChange={(event) =>
@@ -290,7 +290,7 @@ export function PerfilClient({
           <div className="grid gap-4 sm:grid-cols-3">
             <FieldError error={errors.adresse_cp}>
               <label className="text-sm font-medium text-ink">
-                Código postal
+                Code Postal
                 <Input
                   className="mt-2"
                   onChange={(event) =>
@@ -302,7 +302,7 @@ export function PerfilClient({
             </FieldError>
             <FieldError error={errors.adresse_ville}>
               <label className="text-sm font-medium text-ink sm:col-span-2">
-                Cidade
+                Ville
                 <Input
                   className="mt-2"
                   onChange={(event) =>
