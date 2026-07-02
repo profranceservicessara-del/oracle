@@ -305,7 +305,7 @@ function SidebarBody({ email, locale, onNavigate }: { email: string; locale: Loc
   const initials = ((email.split("@")[0] ?? "").replace(/[^a-zA-Z]/g, "").slice(0, 2) || "PF").toUpperCase();
 
   return (
-    <div className="flex h-full flex-col gap-5 bg-gradient-to-b from-[#00153A] via-[#032A63] to-[#061A3E] p-4">
+    <div className="flex h-full flex-col gap-5 bg-gradient-to-b from-[#0B2A63] via-[#0E3A82] to-[#0B2C63] p-4">
       <div className="flex items-center gap-3 px-1 pt-1">
         <BrandBadge initials={initials} />
         <div className="min-w-0">
