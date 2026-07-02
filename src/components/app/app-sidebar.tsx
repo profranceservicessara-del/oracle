@@ -203,7 +203,7 @@ function GroupRow({
   );
 }
 
-function NavList({ onNavigate }: { onNavigate?: () => void }) {
+function NavList({ onNavigate, collapsed, onExpand }: { onNavigate?: () => void; collapsed?: boolean; onExpand?: () => void }) {
   const pathname = usePathname();
   const activeHref = activeHrefFor(pathname);
   const [open, setOpen] = useState<Record<string, boolean>>(() => {
@@ -224,6 +224,30 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
       }
     }
   }, [activeHref]);
+
+  if (collapsed) {
+    return (
+      <nav className="flex flex-1 flex-col items-center gap-1 overflow-y-auto">
+        {nav.map((item) => {
+          const active =
+            item.kind === "link" ? item.href === activeHref : item.children.some((child) => child.href === activeHref);
+          const cls = `flex h-11 w-11 items-center justify-center rounded-xl transition-all duration-200 ${
+            active ? activeCard : idleRow
+          }`;
+          const iconCls = `${active ? "text-[#AFC6FF]" : "text-[#8FB2FF]"}`;
+          return item.kind === "link" ? (
+            <Link aria-current={active ? "page" : undefined} className={cls} href={item.href} key={item.href} onClick={onNavigate} title={item.label}>
+              <span className={iconCls}>{item.icon}</span>
+            </Link>
+          ) : (
+            <button className={cls} key={item.key} onClick={onExpand} title={item.label} type="button">
+              <span className={iconCls}>{item.icon}</span>
+            </button>
+          );
+        })}
+      </nav>
+    );
+  }
 
   return (
     <nav className="flex flex-1 flex-col gap-1 overflow-y-auto pr-0.5">
@@ -266,79 +290,94 @@ function BrandBadge({ initials }: { initials: string }) {
   );
 }
 
-// Bottom account block — selectable, no editing here. The avatar (photo or email
-// initial) + email/name link to the profile info page; the gear ("Opções") opens
-// the Configurações tabs. Photo editing lives on the profile page.
-function UserMenu({ email, locale, avatarUrl, onNavigate }: { email: string; locale: Locale; avatarUrl?: string | null; onNavigate?: () => void }) {
+// Bottom account block — clicking it collapses/expands the sidebar (icon-only
+// mode). No gear. The avatar (photo or email initial) stays visible in both
+// states. Profile is reached from the Configurações rail.
+function UserMenu({ email, locale, avatarUrl, collapsed, onToggle }: { email: string; locale: Locale; avatarUrl?: string | null; collapsed?: boolean; onToggle?: () => void }) {
   const initials = (email.trim()[0] ?? "U").toUpperCase();
 
+  const avatar = (
+    <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/15 text-sm font-semibold text-white ring-1 ring-white/10">
+      {avatarUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img alt="Foto do perfil" className="h-full w-full object-cover" src={avatarUrl} />
+      ) : (
+        initials
+      )}
+    </span>
+  );
+
   return (
-    <div className="flex w-full items-center gap-2 rounded-xl px-1 py-1">
-      <Link
-        className="flex min-w-0 flex-1 items-center gap-3 rounded-xl px-1 py-1 text-left transition hover:-translate-y-px hover:bg-white/10"
-        href="/configuracoes/perfil"
-        onClick={onNavigate}
-      >
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/15 text-sm font-semibold text-white ring-1 ring-white/10">
-          {avatarUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img alt="Foto do perfil" className="h-full w-full object-cover" src={avatarUrl} />
-          ) : (
-            initials
-          )}
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm font-medium text-white">{email || t(locale, "menu.account")}</span>
-          <span className="block text-xs text-white/50">{t(locale, "menu.profile")}</span>
-        </span>
-      </Link>
-      <Link
-        aria-label="Opções"
-        className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[#8FB2FF] ring-1 ring-inset ring-white/5 transition hover:-translate-y-px hover:bg-white/10 hover:text-white"
-        href="/configuracoes/perfil"
-        onClick={onNavigate}
-        title="Opções"
-      >
-        {icons.config}
-      </Link>
-    </div>
+    <button
+      aria-expanded={!collapsed}
+      aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
+      className={`flex w-full items-center gap-3 rounded-xl px-1 py-1.5 text-left transition hover:-translate-y-px hover:bg-white/10 ${collapsed ? "justify-center" : ""}`}
+      onClick={onToggle}
+      title={collapsed ? "Expandir menu" : "Recolher menu"}
+      type="button"
+    >
+      {avatar}
+      {collapsed ? null : (
+        <>
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-sm font-medium text-white">{email || t(locale, "menu.account")}</span>
+            <span className="block text-xs text-white/50">{t(locale, "menu.profile")}</span>
+          </span>
+          <svg aria-hidden="true" className="shrink-0 text-white/40" fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeWidth="2" viewBox="0 0 24 24" width="16">
+            <path d="m15 18-6-6 6-6" />
+          </svg>
+        </>
+      )}
+    </button>
   );
 }
 
-function SidebarBody({ email, locale, avatarUrl, onNavigate }: { email: string; locale: Locale; avatarUrl?: string | null; onNavigate?: () => void }) {
+function SidebarBody({ email, locale, avatarUrl, onNavigate, collapsed, onToggleCollapse }: { email: string; locale: Locale; avatarUrl?: string | null; onNavigate?: () => void; collapsed?: boolean; onToggleCollapse?: () => void }) {
   const initials = ((email.split("@")[0] ?? "").replace(/[^a-zA-Z]/g, "").slice(0, 2) || "PF").toUpperCase();
 
   return (
-    <div className="flex h-full flex-col gap-5 bg-gradient-to-b from-[#00153A] via-[#032A63] to-[#061A3E] p-4">
+    <div className={`flex h-full flex-col gap-5 bg-gradient-to-b from-[#00153A] via-[#032A63] to-[#061A3E] ${collapsed ? "px-2 py-4" : "p-4"}`}>
       <Link
         aria-label="Ir para Análise"
-        className="flex items-center gap-3 rounded-xl px-1 pt-1 transition hover:opacity-90"
+        className={`flex items-center gap-3 rounded-xl px-1 pt-1 transition hover:opacity-90 ${collapsed ? "justify-center" : ""}`}
         href="/dashboard"
         onClick={onNavigate}
       >
         <BrandBadge initials={initials} />
-        <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-white">Oracle</p>
-          <p className="truncate text-[10px] font-medium uppercase tracking-wide text-white/40">
-            Sistema financeiro
-          </p>
-        </div>
+        {collapsed ? null : (
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-white">Oracle</p>
+            <p className="truncate text-[10px] font-medium uppercase tracking-wide text-white/40">
+              Sistema financeiro
+            </p>
+          </div>
+        )}
       </Link>
       <div className="border-t border-white/10" />
-      <NavList onNavigate={onNavigate} />
-      <UserMenu avatarUrl={avatarUrl} email={email} locale={locale} onNavigate={onNavigate} />
+      <NavList collapsed={collapsed} onExpand={onToggleCollapse} onNavigate={onNavigate} />
+      <UserMenu avatarUrl={avatarUrl} collapsed={collapsed} email={email} locale={locale} onToggle={onToggleCollapse} />
     </div>
   );
 }
 
 export function AppSidebar({ email, locale, avatarUrl }: { email: string; locale: Locale; avatarUrl?: string | null }) {
   const [open, setOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
   const initials = ((email.split("@")[0] ?? "").replace(/[^a-zA-Z]/g, "").slice(0, 2) || "PF").toUpperCase();
+
+  // Sync collapse to <html> so the main content offset (in the app layout) can
+  // react via a Tailwind data-attribute variant, without a shared provider.
+  useEffect(() => {
+    document.documentElement.dataset.sidebarCollapsed = collapsed ? "true" : "false";
+    return () => {
+      delete document.documentElement.dataset.sidebarCollapsed;
+    };
+  }, [collapsed]);
 
   return (
     <>
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 md:block">
-        <SidebarBody avatarUrl={avatarUrl} email={email} locale={locale} />
+      <aside className={`fixed inset-y-0 left-0 z-30 hidden transition-[width] duration-300 md:block ${collapsed ? "w-20" : "w-64"}`}>
+        <SidebarBody avatarUrl={avatarUrl} collapsed={collapsed} email={email} locale={locale} onToggleCollapse={() => setCollapsed((value) => !value)} />
       </aside>
 
       <div className="sticky top-0 z-20 flex items-center justify-between border-b border-black/5 bg-white/80 px-4 py-3 backdrop-blur md:hidden">

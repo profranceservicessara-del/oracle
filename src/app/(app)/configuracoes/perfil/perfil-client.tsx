@@ -186,6 +186,10 @@ export function PerfilClient({
     }
   }
 
+  function securityNotImplemented() {
+    showToast("Disponível em breve.", "info");
+  }
+
   async function exportData() {
     setIsExporting(true);
     const response = await fetch("/api/rgpd/export", { method: "POST" });
@@ -478,6 +482,29 @@ export function PerfilClient({
               </dd>
             </div>
           </dl>
+        </div>
+      </section>
+
+      {/* Segurança — movida para dentro do Perfil (deixou de ser aba separada). */}
+      <section className="mb-6 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
+        <div className="border-b border-line bg-slate-50 px-5 py-3">
+          <h2 className="text-base font-semibold text-ink">Segurança</h2>
+        </div>
+        <div className="grid gap-4 px-5 py-5 sm:grid-cols-2">
+          <div className="rounded-xl p-4 ring-1 ring-black/5">
+            <h3 className="text-sm font-semibold text-ink">Senha</h3>
+            <p className="mt-1 text-sm text-muted">Crie ou altere a senha de acesso à sua conta.</p>
+            <Button className="mt-3" onClick={securityNotImplemented} type="button" variant="secondary">
+              Alterar senha
+            </Button>
+          </div>
+          <div className="rounded-xl p-4 ring-1 ring-black/5">
+            <h3 className="text-sm font-semibold text-ink">Dispositivos conectados</h3>
+            <p className="mt-1 text-sm text-muted">Veja os dispositivos conectados à sua conta Oracle.</p>
+            <Button className="mt-3" onClick={securityNotImplemented} type="button" variant="secondary">
+              Ver lista
+            </Button>
+          </div>
         </div>
       </section>
 

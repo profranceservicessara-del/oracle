@@ -15,8 +15,7 @@ const groups: Group[] = [
     label: "Conta",
     children: [
       { href: "/configuracoes/perfil", label: "Perfil" },
-      { href: "/configuracoes/dados", label: "Negócios" },
-      { href: "/configuracoes/seguranca", label: "Segurança" },
+      { href: "/configuracoes/dados", label: "Integrações" },
       { href: "/configuracoes/pagamentos", label: "Pagamentos / Assinatura" },
       { href: null, label: "Usuários" }
     ]
@@ -47,7 +46,6 @@ const groups: Group[] = [
 
 const soloLinks: Item[] = [
   { href: null, label: "Produtividade" },
-  { href: null, label: "Integrações" },
   { href: null, label: "Funcionalidades experimentais" }
 ];
 

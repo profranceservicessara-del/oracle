@@ -31,7 +31,7 @@ export default async function AppLayout({
     <ToastProvider>
       <div className="min-h-screen bg-[#F7F8FC]">
         <AppSidebar avatarUrl={avatarUrl} email={user.email ?? ""} locale={locale} />
-        <div className="md:pl-64">{children}</div>
+        <div className="transition-[padding] duration-300 md:pl-64 [html[data-sidebar-collapsed=true]_&]:md:pl-20">{children}</div>
       </div>
     </ToastProvider>
   );
