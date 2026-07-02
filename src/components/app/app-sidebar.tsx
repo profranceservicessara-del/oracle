@@ -91,7 +91,7 @@ const nav: NavItem[] = [
     label: "Configurações",
     icon: icons.config,
     children: [
-      { href: "/configuracoes/perfil", label: "Perfil fiscal", icon: icons.perfil },
+      { href: "/configuracoes/perfil", label: "Perfil", icon: icons.perfil },
       { href: "/configuracoes/dados", label: "Dados", icon: icons.dados },
       { href: "/configuracoes/seguranca", label: "Segurança", icon: icons.seguranca }
     ]

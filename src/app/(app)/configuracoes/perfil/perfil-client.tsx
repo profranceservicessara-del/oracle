@@ -138,9 +138,9 @@ export function PerfilClient({
 
       setProfile(data as Profile);
       setLogoFile(null);
-      showToast("Perfil fiscal salvo.", "success");
+      showToast("Perfil salvo.", "success");
     } catch {
-      showToast("Não foi possível salvar o perfil fiscal.", "error");
+      showToast("Não foi possível salvar o perfil.", "error");
     } finally {
       setIsSaving(false);
     }
@@ -173,7 +173,7 @@ export function PerfilClient({
     <main className="mx-auto max-w-4xl px-4 py-8">
       <div className="mb-6">
         <p className="text-sm font-semibold text-brand">Configurações</p>
-        <h1 className="mt-2 text-2xl font-semibold text-ink">Perfil fiscal</h1>
+        <h1 className="mt-2 text-2xl font-semibold text-ink">Perfil</h1>
         <p className="mt-2 text-sm text-muted">
           Estes dados são necessários para emitir documentos fiscais franceses.
         </p>
@@ -188,10 +188,18 @@ export function PerfilClient({
               <img alt="Logo da empresa" className="h-full w-full object-contain p-2" src={logoSignedUrl} />
             ) : (
               <svg aria-hidden="true" className="text-[#002D72]" fill="none" height="28" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" width="28">
-                <path d="M3 21h18" />
-                <path d="M6 21V5a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v16" />
-                <path d="M15 9h3a1 1 0 0 1 1 1v11" />
-                <path d="M9 8h0M9 12h0M9 16h0" />
+                <path d="M2 21h20" />
+                <path d="M8 21V6h8v15" />
+                <path d="M3 21V11h5" />
+                <path d="M16 9h5v12" />
+                <path d="M10 6V4h4v2" />
+                <path d="M11 4V2M13 4V2" />
+                <path d="M11 21v-3h2v3" />
+                <path d="M10 9h0M12 9h0M14 9h0" />
+                <path d="M10 12.5h0M12 12.5h0M14 12.5h0" />
+                <path d="M10 15.5h0M12 15.5h0M14 15.5h0" />
+                <path d="M5.5 14h0M5.5 17.5h0" />
+                <path d="M18.5 13h0M18.5 16h0M18.5 19h0" />
               </svg>
             )}
           </div>
@@ -445,7 +453,7 @@ export function PerfilClient({
               <p className="mb-2 text-sm font-medium text-ink">Logo atual</p>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                alt="Logo do perfil fiscal"
+                alt="Logo do perfil"
                 className="h-20 w-20 rounded-md border border-line object-contain"
                 src={logoSignedUrl}
               />
