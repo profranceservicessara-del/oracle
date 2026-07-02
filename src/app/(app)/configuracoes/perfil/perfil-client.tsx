@@ -88,10 +88,10 @@ export function PerfilClient({
   const [form, setForm] = useState<ProfileFormState>(() => toFormState(initialProfile));
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoSignedUrl, setLogoSignedUrl] = useState<string | null>(null);
-  const [avatarSignedUrl, setAvatarSignedUrl] = useState<string | null>(null);
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-  const [avatarUploading, setAvatarUploading] = useState(false);
-  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSaving, setIsSaving] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -144,46 +144,34 @@ export function PerfilClient({
     void loadLogo();
   }, [profile?.logo_url, supabase]);
 
-  useEffect(() => {
-    async function loadAvatar() {
-      if (!profile?.avatar_url) {
-        setAvatarSignedUrl(null);
-        return;
-      }
-      const { data } = await supabase.storage.from("logos").createSignedUrl(profile.avatar_url, 900);
-      setAvatarSignedUrl(data?.signedUrl ?? null);
+  async function exportData() {
+    setIsExporting(true);
+    const response = await fetch("/api/rgpd/export", { method: "POST" });
+    const payload = (await response.json()) as { error?: string; signedUrl?: string };
+    setIsExporting(false);
+    if (!response.ok || !payload.signedUrl) {
+      showToast(payload.error ?? "Não foi possível exportar seus dados.", "error");
+      return;
     }
-    void loadAvatar();
-  }, [profile?.avatar_url, supabase]);
+    window.open(payload.signedUrl, "_blank", "noopener,noreferrer");
+  }
 
-  async function handleAvatarChange(file: File) {
-    setAvatarPreview(URL.createObjectURL(file));
-    setAvatarUploading(true);
-    try {
-      const ext = file.name.split(".").pop()?.toLowerCase() || "png";
-      const path = `${userId}/avatar-${Date.now()}.${ext}`;
-      const { error: uploadError } = await supabase.storage.from("logos").upload(path, file, {
-        cacheControl: "3600",
-        upsert: true
-      });
-      if (uploadError) throw uploadError;
-
-      const { data, error } = await supabase
-        .from("profiles")
-        .upsert({ id: userId, avatar_url: path })
-        .select("*")
-        .single();
-      if (error) throw error;
-
-      setProfile(data as Profile);
-      showToast("Foto do perfil atualizada.", "success");
-      router.refresh();
-    } catch {
-      setAvatarPreview(null);
-      showToast("Não foi possível atualizar a foto.", "error");
-    } finally {
-      setAvatarUploading(false);
+  async function deleteAccount() {
+    setIsDeleting(true);
+    const response = await fetch("/api/rgpd/delete", {
+      body: JSON.stringify({ confirmation: deleteConfirm }),
+      headers: { "Content-Type": "application/json" },
+      method: "POST"
+    });
+    const payload = (await response.json()) as { error?: string };
+    setIsDeleting(false);
+    if (!response.ok) {
+      showToast(payload.error ?? "Não foi possível excluir a conta.", "error");
+      return;
     }
+    await supabase.auth.signOut();
+    router.replace("/login");
+    router.refresh();
   }
 
   async function uploadLogo() {
@@ -338,55 +326,6 @@ export function PerfilClient({
         </div>
       </div>
 
-      <section className="mb-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5">
-        <div className="flex flex-col items-center gap-3 text-center">
-          <div className="relative">
-            <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-[#EAF0FF] text-2xl font-bold text-[#1D4ED8] ring-1 ring-black/5">
-              {avatarPreview || avatarSignedUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img alt="Foto do perfil" className="h-full w-full object-cover" src={avatarPreview ?? avatarSignedUrl ?? ""} />
-              ) : (
-                (companyName.trim()[0] ?? "U").toUpperCase()
-              )}
-            </div>
-            <button
-              aria-label="Alterar foto do perfil"
-              className="absolute -bottom-1 -right-1 inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#002D72] text-white shadow-md ring-2 ring-white transition hover:bg-[#0140A6] disabled:opacity-60"
-              disabled={avatarUploading}
-              onClick={() => avatarInputRef.current?.click()}
-              title="Alterar foto do perfil"
-              type="button"
-            >
-              {avatarUploading ? (
-                <svg className="animate-spin" fill="none" height="15" stroke="currentColor" strokeLinecap="round" strokeWidth="2.2" viewBox="0 0 24 24" width="15">
-                  <path d="M21 12a9 9 0 1 1-6.2-8.5" />
-                </svg>
-              ) : (
-                <svg fill="none" height="15" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" width="15">
-                  <path d="M12 20h9" />
-                  <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
-                </svg>
-              )}
-            </button>
-            <input
-              accept="image/*"
-              className="hidden"
-              onChange={(event) => {
-                const file = event.target.files?.[0];
-                if (file) void handleAvatarChange(file);
-                event.target.value = "";
-              }}
-              ref={avatarInputRef}
-              type="file"
-            />
-          </div>
-          <div>
-            <p className="text-lg font-semibold text-ink">{companyName || "Meu perfil"}</p>
-            <p className="text-sm text-muted">Foto do perfil de usuário</p>
-          </div>
-        </div>
-      </section>
-
       <section className="relative mb-6 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
         <div className="h-24 bg-gradient-to-br from-[#001F4D] via-[#002D72] to-[#2B1F5B]" />
         <div className="px-6 pb-6">
@@ -450,6 +389,60 @@ export function PerfilClient({
           </dl>
         </div>
       </section>
+
+      {/* Exportar / Excluir — compacto no rodapé (RGPD). Excluir sem destaque vermelho. */}
+      <section className="mb-6 rounded-2xl bg-white px-4 text-sm shadow-sm ring-1 ring-black/5">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line py-3">
+          <span className="min-w-0 text-slate-600">
+            <span className="font-medium text-ink">Exportar meus dados</span> — ZIP dos seus dados; o link expira em 15 min (limite 2/dia).
+          </span>
+          <button
+            className="shrink-0 rounded-lg px-3 py-1.5 text-xs font-semibold text-brand ring-1 ring-inset ring-slate-200 transition hover:bg-slate-50 disabled:opacity-60"
+            disabled={isExporting}
+            onClick={() => void exportData()}
+            type="button"
+          >
+            {isExporting ? "Gerando..." : "Exportar"}
+          </button>
+        </div>
+        <div className="flex flex-wrap items-center justify-between gap-2 py-3">
+          <span className="min-w-0 text-slate-600">
+            <span className="font-medium text-ink">Excluir minha conta</span> — anonimiza os dados de contato; documentos fiscais são preservados pelo prazo legal.
+          </span>
+          <button
+            className="shrink-0 rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-700 ring-1 ring-inset ring-slate-200 transition hover:bg-slate-50"
+            onClick={() => setIsDeleteOpen(true)}
+            type="button"
+          >
+            Excluir
+          </button>
+        </div>
+      </section>
+
+      <FormModal
+        description='Digite "CONFIRMAR" para solicitar a exclusão. Esta ação encerra suas sessões.'
+        isOpen={isDeleteOpen}
+        onClose={() => setIsDeleteOpen(false)}
+        title="Confirmar exclusão"
+      >
+        <form
+          className="grid gap-4"
+          onSubmit={(event) => {
+            event.preventDefault();
+            void deleteAccount();
+          }}
+        >
+          <Input onChange={(event) => setDeleteConfirm(event.target.value)} placeholder="CONFIRMAR" value={deleteConfirm} />
+          <div className="flex justify-end gap-2">
+            <Button onClick={() => setIsDeleteOpen(false)} type="button" variant="secondary">
+              Cancelar
+            </Button>
+            <Button disabled={deleteConfirm !== "CONFIRMAR" || isDeleting} type="submit">
+              {isDeleting ? "Excluindo..." : "Confirmar exclusão"}
+            </Button>
+          </div>
+        </form>
+      </FormModal>
 
       <FormModal
         description="Estes dados são necessários para emitir documentos fiscais franceses."

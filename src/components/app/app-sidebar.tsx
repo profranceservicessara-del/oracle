@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { t, type Locale } from "@/lib/i18n/dictionaries";
+import { createClient } from "@/lib/supabase/client";
+import { useToast } from "@/components/ui/toast";
 
 // ---------------------------------------------------------------------------
 // Icons — 18px for section rows, 16px for sub-items. Rendered in the periwinkle
@@ -266,27 +268,86 @@ function BrandBadge({ initials }: { initials: string }) {
   );
 }
 
-// Bottom account block — avatar (uploaded photo, initials fallback) + email/name
-// link to the profile page; the gear links to the dedicated Configurações page
-// (which now carries the settings rail with all submenus).
-function UserMenu({ email, locale, avatarUrl, onNavigate }: { email: string; locale: Locale; avatarUrl?: string | null; onNavigate?: () => void }) {
+// Bottom account block — the avatar circle (initials of the email) is the photo
+// control: click it to upload/change the profile photo, which then replaces the
+// initials here and everywhere the avatar is shown. The email/name links to the
+// profile page; the gear links to the Configurações rail.
+function UserMenu({ email, locale, avatarUrl, userId, onNavigate }: { email: string; locale: Locale; avatarUrl?: string | null; userId?: string; onNavigate?: () => void }) {
   const initials = (email.trim()[0] ?? "U").toUpperCase();
+  const supabase = useMemo(() => createClient(), []);
+  const router = useRouter();
+  const { showToast } = useToast();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const shown = preview ?? avatarUrl ?? null;
+
+  async function onPick(file: File) {
+    if (!userId) return;
+    setPreview(URL.createObjectURL(file));
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop()?.toLowerCase() || "png";
+      const path = `${userId}/avatar-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("logos").upload(path, file, { cacheControl: "3600", upsert: true });
+      if (upErr) throw upErr;
+      const { error } = await supabase.from("profiles").upsert({ id: userId, avatar_url: path });
+      if (error) throw error;
+      showToast("Foto do perfil atualizada.", "success");
+      router.refresh();
+    } catch {
+      setPreview(null);
+      showToast("Não foi possível atualizar a foto.", "error");
+    } finally {
+      setUploading(false);
+    }
+  }
 
   return (
     <div className="flex w-full items-center gap-2 rounded-xl px-1 py-1">
+      <button
+        aria-label="Alterar foto do perfil"
+        className="group relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/15 text-sm font-semibold text-white ring-1 ring-white/10 transition hover:ring-white/40 disabled:opacity-70"
+        disabled={uploading}
+        onClick={() => inputRef.current?.click()}
+        title="Alterar foto do perfil"
+        type="button"
+      >
+        {shown ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img alt="Foto do perfil" className="h-full w-full object-cover" src={shown} />
+        ) : (
+          initials
+        )}
+        <span className="absolute inset-0 flex items-center justify-center bg-black/45 opacity-0 transition-opacity group-hover:opacity-100">
+          {uploading ? (
+            <svg className="animate-spin text-white" fill="none" height="14" stroke="currentColor" strokeLinecap="round" strokeWidth="2.2" viewBox="0 0 24 24" width="14">
+              <path d="M21 12a9 9 0 1 1-6.2-8.5" />
+            </svg>
+          ) : (
+            <svg className="text-white" fill="none" height="14" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" width="14">
+              <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" /><circle cx="12" cy="13" r="3" />
+            </svg>
+          )}
+        </span>
+        <input
+          accept="image/*"
+          className="hidden"
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            if (file) void onPick(file);
+            event.target.value = "";
+          }}
+          ref={inputRef}
+          type="file"
+        />
+      </button>
       <Link
         className="flex min-w-0 flex-1 items-center gap-3 rounded-xl px-1 py-1 text-left transition hover:-translate-y-px hover:bg-white/10"
         href="/configuracoes/perfil"
         onClick={onNavigate}
       >
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/15 text-sm font-semibold text-white ring-1 ring-white/10">
-          {avatarUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img alt="Foto do perfil" className="h-full w-full object-cover" src={avatarUrl} />
-          ) : (
-            initials
-          )}
-        </span>
         <span className="min-w-0 flex-1">
           <span className="block truncate text-sm font-medium text-white">{email || t(locale, "menu.account")}</span>
           <span className="block text-xs text-white/50">{t(locale, "menu.profile")}</span>
@@ -305,7 +366,7 @@ function UserMenu({ email, locale, avatarUrl, onNavigate }: { email: string; loc
   );
 }
 
-function SidebarBody({ email, locale, avatarUrl, onNavigate }: { email: string; locale: Locale; avatarUrl?: string | null; onNavigate?: () => void }) {
+function SidebarBody({ email, locale, avatarUrl, userId, onNavigate }: { email: string; locale: Locale; avatarUrl?: string | null; userId?: string; onNavigate?: () => void }) {
   const initials = ((email.split("@")[0] ?? "").replace(/[^a-zA-Z]/g, "").slice(0, 2) || "PF").toUpperCase();
 
   return (
@@ -326,19 +387,19 @@ function SidebarBody({ email, locale, avatarUrl, onNavigate }: { email: string; 
       </Link>
       <div className="border-t border-white/10" />
       <NavList onNavigate={onNavigate} />
-      <UserMenu avatarUrl={avatarUrl} email={email} locale={locale} onNavigate={onNavigate} />
+      <UserMenu avatarUrl={avatarUrl} email={email} locale={locale} onNavigate={onNavigate} userId={userId} />
     </div>
   );
 }
 
-export function AppSidebar({ email, locale, avatarUrl }: { email: string; locale: Locale; avatarUrl?: string | null }) {
+export function AppSidebar({ email, locale, avatarUrl, userId }: { email: string; locale: Locale; avatarUrl?: string | null; userId?: string }) {
   const [open, setOpen] = useState(false);
   const initials = ((email.split("@")[0] ?? "").replace(/[^a-zA-Z]/g, "").slice(0, 2) || "PF").toUpperCase();
 
   return (
     <>
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 md:block">
-        <SidebarBody avatarUrl={avatarUrl} email={email} locale={locale} />
+        <SidebarBody avatarUrl={avatarUrl} email={email} locale={locale} userId={userId} />
       </aside>
 
       <div className="sticky top-0 z-20 flex items-center justify-between border-b border-black/5 bg-white/80 px-4 py-3 backdrop-blur md:hidden">
@@ -371,7 +432,7 @@ export function AppSidebar({ email, locale, avatarUrl }: { email: string; locale
             type="button"
           />
           <div className="absolute inset-y-0 left-0 w-72 max-w-[80%]">
-            <SidebarBody avatarUrl={avatarUrl} email={email} locale={locale} onNavigate={() => setOpen(false)} />
+            <SidebarBody avatarUrl={avatarUrl} email={email} locale={locale} onNavigate={() => setOpen(false)} userId={userId} />
           </div>
         </div>
       ) : null}
