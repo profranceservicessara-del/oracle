@@ -53,6 +53,7 @@ export type Profile = {
   adresse_ville: string | null;
   siret: string | null;
   code_ape: string | null;
+  date_debut_activite: string | null;
   regime_tva: VatRegime;
   activite_principale: ActivityCategory | null;
   acre: boolean;

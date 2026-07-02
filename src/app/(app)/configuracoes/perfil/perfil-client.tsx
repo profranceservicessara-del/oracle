@@ -30,6 +30,7 @@ type ProfileFormState = {
   adresse_ville: string;
   siret: string;
   code_ape: string;
+  date_debut_activite: string;
   regime_tva: VatRegime;
   activite_principale: ActivityCategory;
   declaration_periodicite: DeclarationPeriodicite;
@@ -49,6 +50,7 @@ function toFormState(profile: Profile | null): ProfileFormState {
     adresse_ville: profile?.adresse_ville ?? "",
     siret: profile?.siret ? formatSiret(profile.siret) : "",
     code_ape: profile?.code_ape ?? "",
+    date_debut_activite: profile?.date_debut_activite ?? "",
     regime_tva: profile?.regime_tva ?? "franchise",
     activite_principale: profile?.activite_principale ?? "service_bic",
     declaration_periodicite: profile?.declaration_periodicite ?? "trimestral",
@@ -60,6 +62,14 @@ function toFormState(profile: Profile | null): ProfileFormState {
     ),
     couleur_principale: profile?.couleur_principale ?? ""
   };
+}
+
+function formatDebutActivite(value: string | null): string {
+  if (!value) return "—";
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(value);
+  if (!match) return value;
+  const [, year, month, day] = match;
+  return `${day}/${month}/${year}`;
 }
 
 export function PerfilClient({
@@ -190,6 +200,15 @@ export function PerfilClient({
     }
   }
 
+  async function copySiret(siret: string) {
+    try {
+      await navigator.clipboard.writeText(formatSiret(siret));
+      showToast("SIRET copiado.", "success");
+    } catch {
+      showToast("Não foi possível copiar o SIRET.", "error");
+    }
+  }
+
   const companyName = [profile?.prenom, profile?.nome].filter(Boolean).join(" ");
   const companyAddress = [
     profile?.adresse_rue,
@@ -197,17 +216,18 @@ export function PerfilClient({
   ]
     .filter(Boolean)
     .join(", ");
+  const activiteValue = profile?.activite_principale
+    ? `${categoryLabels[profile.activite_principale]}${profile.code_ape ? ` (${profile.code_ape})` : ""}`
+    : "—";
+  const debutActiviteValue = formatDebutActivite(profile?.date_debut_activite ?? null);
+  const siret = profile?.siret ?? "";
   const infoRows = [
-    {
-      label: "Atividade principal",
-      value: profile?.activite_principale ? categoryLabels[profile.activite_principale] : "—"
-    },
+    { label: "Atividade principal", value: activiteValue },
     { label: "Regime de TVA", value: profile ? vatRegimeLabels[profile.regime_tva] : "—" },
     {
       label: "Periodicidade de declaração",
       value: profile ? (profile.declaration_periodicite === "mensal" ? "Mensal" : "Trimestral") : "—"
-    },
-    { label: "Código APE", value: profile?.code_ape || "—" }
+    }
   ];
 
   return (
@@ -289,10 +309,19 @@ export function PerfilClient({
           </h2>
           <p className="mt-1 text-sm text-muted">{companyAddress || "Endereço não informado"}</p>
           <div className="mt-3 flex flex-wrap gap-2">
-            {profile?.siret ? (
-              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold tabular-nums text-slate-700 ring-1 ring-slate-200">
-                SIRET: {formatSiret(profile.siret)}
-              </span>
+            {siret ? (
+              <button
+                className="group inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold tabular-nums text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-200"
+                onClick={() => void copySiret(siret)}
+                title="Copiar SIRET"
+                type="button"
+              >
+                SIRET: {formatSiret(siret)}
+                <svg className="text-slate-400 transition group-hover:text-slate-600" fill="none" height="13" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24" width="13">
+                  <rect height="13" rx="2" ry="2" width="13" x="9" y="9" />
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                </svg>
+              </button>
             ) : null}
             <span className="rounded-full bg-[#002D72]/10 px-3 py-1 text-xs font-semibold text-[#002D72]">
               Micro-entreprise
@@ -305,6 +334,24 @@ export function PerfilClient({
                 <dd className="font-semibold text-[#1E3A8A] sm:text-right">{row.value}</dd>
               </div>
             ))}
+            <div className="flex flex-col gap-1 py-3 text-sm sm:flex-row sm:items-center sm:justify-between">
+              <dt className="text-[11px] font-bold uppercase tracking-wide text-slate-900">Início da atividade</dt>
+              <dd className="flex items-center gap-2 font-semibold text-[#1E3A8A] sm:justify-end">
+                {debutActiviteValue}
+                <button
+                  aria-label="Editar início da atividade"
+                  className="inline-flex h-7 w-7 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-[#002D72]"
+                  onClick={() => setIsEditOpen(true)}
+                  title="Editar início da atividade"
+                  type="button"
+                >
+                  <svg fill="none" height="15" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24" width="15">
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                  </svg>
+                </button>
+              </dd>
+            </div>
           </dl>
         </div>
       </section>
@@ -405,6 +452,15 @@ export function PerfilClient({
               className="mt-2"
               onChange={(event) => setForm((current) => ({ ...current, code_ape: event.target.value }))}
               value={form.code_ape}
+            />
+          </label>
+          <label className="text-sm font-medium text-ink">
+            Início da atividade
+            <Input
+              className="mt-2"
+              onChange={(event) => setForm((current) => ({ ...current, date_debut_activite: event.target.value }))}
+              type="date"
+              value={form.date_debut_activite}
             />
           </label>
         </section>

@@ -97,6 +97,7 @@ export const profileSchema = z.object({
     .transform((value) => value.replace(/\D/g, ""))
     .refine((value) => /^\d{14}$/.test(value), "O SIRET deve ter 14 dígitos."),
   code_ape: optionalText,
+  date_debut_activite: optionalText,
   regime_tva: z.enum(["franchise", "assujetti"], {
     message: "Escolha o regime de TVA."
   }),
