@@ -48,9 +48,14 @@ export function readVisibleKeys(): string[] {
     if (!raw) return ALL_KEYS;
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return ALL_KEYS;
-    // Mantém apenas chaves conhecidas, preservando a ordem canônica.
-    const set = new Set(parsed.filter((value): value is string => typeof value === "string"));
-    return ALL_KEYS.filter((key) => set.has(key));
+    // Preserva a ORDEM salva (para reordenação), filtrando chaves desconhecidas
+    // e duplicatas.
+    const known = new Set(ALL_KEYS);
+    const result: string[] = [];
+    for (const value of parsed) {
+      if (typeof value === "string" && known.has(value) && !result.includes(value)) result.push(value);
+    }
+    return result;
   } catch {
     return ALL_KEYS;
   }

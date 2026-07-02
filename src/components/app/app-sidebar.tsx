@@ -5,7 +5,11 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { t, type Locale } from "@/lib/i18n/dictionaries";
 import { createClient } from "@/lib/supabase/client";
-import { SHORTCUTS, SHORTCUTS_EVENT, readVisibleKeys } from "@/lib/shortcuts";
+import { useToast } from "@/components/ui/toast";
+import { SHORTCUTS, SHORTCUTS_EVENT, readVisibleKeys, writeVisibleKeys } from "@/lib/shortcuts";
+
+// Emoji por atalho (badge circular). Fallback ⭐. Local — não altera os dados.
+const SHORTCUT_EMOJI: Record<string, string> = { fatura: "🧾", orcamento: "📄", cliente: "👥" };
 
 // ---------------------------------------------------------------------------
 // Icons — 18px for section rows, 16px for sub-items. Rendered in the periwinkle
@@ -303,11 +307,27 @@ function BrandBadge({ initials }: { initials: string }) {
   );
 }
 
-// Shortcuts chosen in Configurações > Gerenciar atalhos, shown above the user
-// block. Reads localStorage and live-syncs via the shortcuts CustomEvent. Renders
-// nothing when none are visible. Icon-only when the sidebar is collapsed.
+const fourDotIcon = (
+  <svg fill="currentColor" height="16" viewBox="0 0 24 24" width="16"><circle cx="9" cy="9" r="1.6" /><circle cx="15" cy="9" r="1.6" /><circle cx="9" cy="15" r="1.6" /><circle cx="15" cy="15" r="1.6" /></svg>
+);
+const gripIcon = (
+  <svg fill="currentColor" height="18" viewBox="0 0 24 24" width="18"><circle cx="9" cy="6" r="1.4" /><circle cx="9" cy="12" r="1.4" /><circle cx="9" cy="18" r="1.4" /><circle cx="15" cy="6" r="1.4" /><circle cx="15" cy="12" r="1.4" /><circle cx="15" cy="18" r="1.4" /></svg>
+);
+
+function shortcutEmoji(key: string) {
+  return SHORTCUT_EMOJI[key] ?? "⭐";
+}
+
+// Shortcuts chosen in Gerenciar atalhos, shown above the user block. Reads
+// localStorage (order-preserving) and live-syncs via the shortcuts CustomEvent.
+// The "Gerenciar atalhos" row opens a lateral drawer to reorder / show-hide / save.
+// Collapsed: emoji badges only + icon-only manager entry.
 function ShortcutsBlock({ collapsed, onNavigate }: { collapsed?: boolean; onNavigate?: () => void }) {
+  const { showToast } = useToast();
   const [keys, setKeys] = useState<string[]>([]);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [draft, setDraft] = useState<{ key: string; visible: boolean }[]>([]);
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
 
   useEffect(() => {
     const sync = () => setKeys(readVisibleKeys());
@@ -320,35 +340,162 @@ function ShortcutsBlock({ collapsed, onNavigate }: { collapsed?: boolean; onNavi
     };
   }, []);
 
-  const items = SHORTCUTS.filter((item) => keys.includes(item.key));
-  if (items.length === 0) return null;
+  const byKey = new Map(SHORTCUTS.map((item) => [item.key, item]));
+  const items = keys.map((key) => byKey.get(key)).filter((item): item is (typeof SHORTCUTS)[number] => Boolean(item));
 
-  // Emoji por atalho (fallback seguro ⭐). Mapa local — não altera os dados.
-  const emoji: Record<string, string> = { fatura: "🧾", orcamento: "📄", cliente: "👥" };
+  function openDrawer() {
+    const visible = readVisibleKeys();
+    const hidden = SHORTCUTS.map((item) => item.key).filter((key) => !visible.includes(key));
+    setDraft([...visible.map((key) => ({ key, visible: true })), ...hidden.map((key) => ({ key, visible: false }))]);
+    setDragIndex(null);
+    setDrawerOpen(true);
+  }
+
+  function toggleVisible(index: number) {
+    setDraft((current) => current.map((row, i) => (i === index ? { ...row, visible: !row.visible } : row)));
+  }
+
+  function reorder(from: number, to: number) {
+    setDraft((current) => {
+      if (from === to || from < 0 || to < 0 || from >= current.length || to >= current.length) return current;
+      const next = current.slice();
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved);
+      return next;
+    });
+  }
+
+  function validate() {
+    writeVisibleKeys(draft.filter((row) => row.visible).map((row) => row.key));
+    setDrawerOpen(false);
+    showToast("Atalhos atualizados.", "success");
+  }
+
+  const visibleCount = draft.filter((row) => row.visible).length;
 
   return (
-    <div className={`shrink-0 ${collapsed ? "flex flex-col items-center gap-1" : "space-y-0.5"}`}>
-      {collapsed ? null : (
-        <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wide text-white/40">Atalhos</p>
-      )}
-      {items.map((item) => (
-        <Link
-          className={
-            collapsed
-              ? "flex h-11 w-11 items-center justify-center rounded-xl transition-all duration-200 hover:-translate-y-px hover:bg-emerald-400/10"
-              : "group/sc flex items-center gap-2.5 rounded-xl px-2.5 py-1.5 transition-all duration-200 hover:-translate-y-px hover:bg-emerald-400/10"
-          }
-          href={item.href}
-          key={item.key}
-          onClick={onNavigate}
-          title={item.label}
-        >
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-400/15 text-[15px] leading-none ring-1 ring-emerald-400/25 transition group-hover/sc:ring-emerald-400/40">
-            {emoji[item.key] ?? "⭐"}
-          </span>
-          {collapsed ? null : <span className="truncate text-[13px] font-semibold text-[#34D399]">{item.label}</span>}
-        </Link>
-      ))}
+    <div className="shrink-0">
+      {items.length > 0 ? (
+        <div className={collapsed ? "flex flex-col items-center gap-1" : "space-y-0.5"}>
+          {collapsed ? null : (
+            <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wide text-white/40">Atalhos</p>
+          )}
+          {items.map((item) => (
+            <Link
+              className={
+                collapsed
+                  ? "flex h-11 w-11 items-center justify-center rounded-xl transition-all duration-200 hover:-translate-y-px hover:bg-emerald-400/10"
+                  : "group/sc flex items-center gap-2.5 rounded-xl px-2.5 py-1.5 transition-all duration-200 hover:-translate-y-px hover:bg-emerald-400/10"
+              }
+              href={item.href}
+              key={item.key}
+              onClick={onNavigate}
+              title={item.label}
+            >
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-400/15 text-[15px] leading-none ring-1 ring-emerald-400/20 transition group-hover/sc:ring-emerald-400/35">
+                {shortcutEmoji(item.key)}
+              </span>
+              {collapsed ? null : <span className="truncate text-[13px] font-medium text-emerald-400/80">{item.label}</span>}
+            </Link>
+          ))}
+        </div>
+      ) : null}
+
+      <button
+        aria-label="Gerenciar atalhos"
+        className={
+          collapsed
+            ? "mt-1 flex h-11 w-11 items-center justify-center rounded-xl text-white/50 transition hover:bg-white/10 hover:text-white/80"
+            : "mt-1 flex w-full items-center justify-between rounded-xl px-2.5 py-2 text-[13px] font-medium text-white/60 transition hover:bg-white/10 hover:text-white/90"
+        }
+        onClick={openDrawer}
+        title="Gerenciar atalhos"
+        type="button"
+      >
+        {collapsed ? fourDotIcon : (<><span>Gerenciar atalhos</span><span className="shrink-0 text-white/40">{fourDotIcon}</span></>)}
+      </button>
+
+      {drawerOpen ? (
+        <div className="fixed inset-0 z-50 flex justify-end">
+          <button aria-label="Fechar" className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm" onClick={() => setDrawerOpen(false)} type="button" />
+          <aside className="relative flex h-full w-full max-w-sm flex-col bg-white shadow-2xl">
+            <header className="flex items-center justify-between border-b border-line px-5 py-4">
+              <h2 className="text-lg font-bold text-ink">Gerenciar atalhos</h2>
+              <button aria-label="Fechar" className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 ring-1 ring-black/5 transition hover:bg-slate-50 hover:text-ink" onClick={() => setDrawerOpen(false)} type="button">
+                <svg fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeWidth="2" viewBox="0 0 24 24" width="16"><path d="M18 6 6 18M6 6l12 12" /></svg>
+              </button>
+            </header>
+
+            <div className="flex-1 space-y-5 overflow-y-auto px-5 py-5">
+              <div className="flex items-start gap-3 rounded-2xl bg-[#EAF2FF] p-4">
+                <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-lg leading-none shadow-sm">💡</span>
+                <div>
+                  <p className="font-semibold text-[#1D4ED8]">Mostrar ou ocultar</p>
+                  <p className="mt-1 text-sm text-[#3B5BA9]">Para organizar seus atalhos, acesse o canto inferior esquerdo da tela.</p>
+                </div>
+              </div>
+
+              <p className="text-sm font-semibold text-ink">Exibido {visibleCount}/{draft.length}:</p>
+
+              <div className="space-y-2">
+                {draft.map((row, index) => {
+                  const def = byKey.get(row.key);
+                  return (
+                    <div
+                      className={`flex items-center gap-3 rounded-xl bg-white px-3 py-2.5 ring-1 ring-black/5 transition ${dragIndex === index ? "opacity-60" : ""} ${row.visible ? "" : "opacity-60"}`}
+                      draggable
+                      key={row.key}
+                      onDragEnd={() => setDragIndex(null)}
+                      onDragOver={(event) => {
+                        event.preventDefault();
+                        if (dragIndex !== null && dragIndex !== index) {
+                          reorder(dragIndex, index);
+                          setDragIndex(index);
+                        }
+                      }}
+                      onDragStart={() => setDragIndex(index)}
+                    >
+                      <span className="cursor-grab text-slate-300" title="Arrastar para reordenar">{gripIcon}</span>
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-[15px] leading-none ring-1 ring-black/5">{shortcutEmoji(row.key)}</span>
+                      <span className="flex-1 truncate text-sm font-medium text-ink">{def?.label ?? row.key}</span>
+                      <button
+                        aria-label={row.visible ? "Ocultar" : "Mostrar"}
+                        aria-pressed={row.visible}
+                        className={`flex h-8 w-8 items-center justify-center rounded-lg transition ${row.visible ? "text-[#1D4ED8] hover:bg-slate-50" : "text-slate-300 hover:bg-slate-50"}`}
+                        onClick={() => toggleVisible(index)}
+                        type="button"
+                      >
+                        {row.visible ? (
+                          <svg fill="none" height="18" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24" width="18"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" /><circle cx="12" cy="12" r="3" /></svg>
+                        ) : (
+                          <svg fill="none" height="18" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24" width="18"><path d="M9.9 4.2A9.1 9.1 0 0 1 12 4c6.5 0 10 7 10 7a13.2 13.2 0 0 1-2.2 2.9M6.6 6.6A13.3 13.3 0 0 0 2 11s3.5 7 10 7a9 9 0 0 0 4.4-1.1" /><line x1="3" x2="21" y1="3" y2="21" /></svg>
+                        )}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <footer className="flex items-center justify-between gap-2 border-t border-line px-5 py-4">
+              <button
+                className="inline-flex h-11 items-center justify-center rounded-full border border-slate-200 px-5 text-sm font-semibold text-ink transition hover:bg-slate-50"
+                onClick={() => setDrawerOpen(false)}
+                type="button"
+              >
+                Cancelar
+              </button>
+              <button
+                className="inline-flex h-11 items-center justify-center rounded-full bg-emerald-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700"
+                onClick={validate}
+                type="button"
+              >
+                Para validar
+              </button>
+            </footer>
+          </aside>
+        </div>
+      ) : null}
     </div>
   );
 }
