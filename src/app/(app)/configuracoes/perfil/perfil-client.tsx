@@ -218,8 +218,8 @@ export function PerfilClient({
           <dl className="mt-6 divide-y divide-line">
             {infoRows.map((row) => (
               <div className="flex flex-col gap-1 py-3 text-sm sm:flex-row sm:items-center sm:justify-between" key={row.label}>
-                <dt className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">{row.label}</dt>
-                <dd className="font-medium text-ink sm:text-right">{row.value}</dd>
+                <dt className="text-[11px] font-bold uppercase tracking-wide text-slate-900">{row.label}</dt>
+                <dd className="font-semibold text-[#1E3A8A] sm:text-right">{row.value}</dd>
               </div>
             ))}
           </dl>
