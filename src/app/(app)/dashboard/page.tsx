@@ -285,7 +285,7 @@ export default async function DashboardPage() {
           Bienvenue{typedProfile?.prenom || typedProfile?.nome ? `, ${typedProfile?.prenom || typedProfile?.nome}` : ""} ! 👋
         </h1>
         <p className="mt-1.5 max-w-xl text-sm text-white/75">
-          Aqui está o seu painel de controle. Acompanhe aqui suas atividades e indicadores principais.
+          Aqui está o seu painel de controle. Acompanhe suas atividades.
         </p>
         <p className="mt-1 text-xs text-white/55">Pronto para expandir seu negócio? 🚀</p>
 

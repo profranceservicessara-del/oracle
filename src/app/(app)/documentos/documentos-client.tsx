@@ -226,7 +226,7 @@ export function DocumentosClient({
             value={statusFilter}
           >
             <option value="todos">Todos</option>
-            <option value="a_relancer">À relancer</option>
+            <option value="a_relancer">A cobrar</option>
             {Object.entries(documentStatusLabels).map(([value, label]) => (
               <option key={value} value={value}>
                 {label}
