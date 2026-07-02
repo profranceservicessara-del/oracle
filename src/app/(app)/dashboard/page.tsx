@@ -276,14 +276,11 @@ export default async function DashboardPage() {
 
   return (
     <main className="mx-auto max-w-6xl space-y-6 px-4 py-8">
-      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#0A1B47] via-[#15307E] to-[#2B1E5E] px-6 py-7 shadow-sm ring-1 ring-white/10">
-        {/* Ambient light-focus shapes (decorative, non-interactive). */}
-        <div aria-hidden className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-[#5A6BFF]/45 blur-3xl" />
-        <div aria-hidden className="pointer-events-none absolute -bottom-28 right-4 h-72 w-72 rounded-full bg-[#7C4DFF]/40 blur-3xl" />
-        <div aria-hidden className="pointer-events-none absolute -bottom-24 -left-16 h-64 w-64 rounded-full bg-[#1E3A8A]/50 blur-3xl" />
-        {/* defined soft light circles (spotlight rings) */}
-        <div aria-hidden className="pointer-events-none absolute -right-16 top-1/2 h-[26rem] w-[26rem] -translate-y-1/2 rounded-full bg-white/[0.04] ring-1 ring-inset ring-white/10" />
-        <div aria-hidden className="pointer-events-none absolute -bottom-32 right-32 h-72 w-72 rounded-full bg-white/[0.03] ring-1 ring-inset ring-white/10" />
+      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#111F3B] via-[#182C57] to-[#231E44] px-6 py-7 shadow-sm ring-1 ring-white/10">
+        {/* Discreet corner light shapes (decorative, non-interactive). */}
+        <div aria-hidden className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-white/[0.05] blur-3xl" />
+        <div aria-hidden className="pointer-events-none absolute -bottom-28 -right-24 h-96 w-96 rounded-full bg-[#3E4E9A]/15 blur-3xl" />
+        <div aria-hidden className="pointer-events-none absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-[#1B2A55]/40 blur-3xl" />
         <div className="relative z-10">
         <h1 className="text-2xl font-medium text-white">
           Bienvenue{typedProfile?.prenom || typedProfile?.nome ? `, ${typedProfile?.prenom || typedProfile?.nome}` : ""} ! 👋
