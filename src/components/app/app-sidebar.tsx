@@ -97,9 +97,18 @@ const nav: NavItem[] = [
   }
 ];
 
-// Shared card look for the ACTIVE item — the lighter navy "card with white trace".
+// ACTIVE item — premium glass: translucent fill + backdrop blur, inset ring,
+// soft inner top highlight, depth shadow, and a white vertical accent stroke on
+// the left (matching the "Clientes" reference).
 const activeCard =
-  "bg-[#173463] text-white shadow-[0_8px_20px_-10px_rgba(0,0,0,0.7)] ring-1 ring-inset ring-white/25";
+  "relative bg-white/[0.1] text-white backdrop-blur-sm ring-1 ring-inset ring-white/20 " +
+  "shadow-[0_8px_22px_-10px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.12)] " +
+  "before:absolute before:left-1 before:top-1/2 before:h-5 before:w-[3px] before:-translate-y-1/2 " +
+  "before:rounded-full before:bg-white before:shadow-[0_0_8px_rgba(255,255,255,0.45)] before:content-['']";
+
+// IDLE row — lighter-blue base tone + subtle hover lift.
+const idleRow =
+  "text-[#AEBFE6] hover:-translate-y-px hover:bg-white/[0.07] hover:text-white hover:shadow-[0_5px_14px_-8px_rgba(0,0,0,0.55)]";
 
 // All destination hrefs, used to resolve the single best (most-specific) match so
 // a parent path like /facturation never stays "active" on /facturation/devis.
@@ -120,7 +129,7 @@ function LeafRow({ leaf, active, onNavigate }: { leaf: Leaf; active: boolean; on
     <Link
       aria-current={active ? "page" : undefined}
       className={`group/leaf relative flex items-center gap-2.5 rounded-xl py-2 pl-3 pr-3 text-[13px] font-medium transition-all duration-200 ${
-        active ? activeCard : "text-white/55 hover:bg-white/[0.06] hover:text-white"
+        active ? activeCard : idleRow
       }`}
       href={leaf.href}
       onClick={onNavigate}
@@ -153,8 +162,8 @@ function GroupRow({
       <button
         aria-expanded={open}
         className={`group/row flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
-          hasActiveChild && !open ? "text-white" : "text-white/70"
-        } hover:bg-white/[0.06] hover:text-white`}
+          hasActiveChild && !open ? "text-white" : idleRow
+        }`}
         onClick={onToggle}
         type="button"
       >
@@ -221,7 +230,7 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
           <Link
             aria-current={item.href === activeHref ? "page" : undefined}
             className={`group/row flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
-              item.href === activeHref ? activeCard : "text-white/70 hover:bg-white/[0.06] hover:text-white"
+              item.href === activeHref ? activeCard : idleRow
             }`}
             href={item.href}
             key={item.href}
