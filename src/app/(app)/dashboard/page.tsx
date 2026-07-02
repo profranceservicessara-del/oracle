@@ -277,11 +277,13 @@ export default async function DashboardPage() {
   return (
     <main className="mx-auto max-w-6xl space-y-6 px-4 py-8">
       <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#0A1B47] via-[#15307E] to-[#2B1E5E] px-6 py-7 shadow-sm ring-1 ring-white/10">
-        {/* Ambient light-focus orbs (decorative, non-interactive). */}
-        <div aria-hidden className="pointer-events-none absolute -right-16 -top-20 h-80 w-80 rounded-full bg-[#5A6BFF]/25 blur-3xl" />
-        <div aria-hidden className="pointer-events-none absolute -bottom-24 -left-16 h-64 w-64 rounded-full bg-[#1E3A8A]/40 blur-3xl" />
-        <div aria-hidden className="pointer-events-none absolute -bottom-10 right-24 h-44 w-44 rounded-full bg-[#7C4DFF]/25 blur-3xl" />
-        <div aria-hidden className="pointer-events-none absolute right-1/3 top-4 h-40 w-40 rounded-full bg-white/[0.06] blur-3xl" />
+        {/* Ambient light-focus shapes (decorative, non-interactive). */}
+        <div aria-hidden className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-[#5A6BFF]/45 blur-3xl" />
+        <div aria-hidden className="pointer-events-none absolute -bottom-28 right-4 h-72 w-72 rounded-full bg-[#7C4DFF]/40 blur-3xl" />
+        <div aria-hidden className="pointer-events-none absolute -bottom-24 -left-16 h-64 w-64 rounded-full bg-[#1E3A8A]/50 blur-3xl" />
+        {/* defined soft light circles (spotlight rings) */}
+        <div aria-hidden className="pointer-events-none absolute -right-16 top-1/2 h-[26rem] w-[26rem] -translate-y-1/2 rounded-full bg-white/[0.04] ring-1 ring-inset ring-white/10" />
+        <div aria-hidden className="pointer-events-none absolute -bottom-32 right-32 h-72 w-72 rounded-full bg-white/[0.03] ring-1 ring-inset ring-white/10" />
         <div className="relative z-10">
         <h1 className="text-2xl font-medium text-white">
           Bienvenue{typedProfile?.prenom || typedProfile?.nome ? `, ${typedProfile?.prenom || typedProfile?.nome}` : ""} ! 👋
