@@ -106,9 +106,9 @@ const activeCard =
   "before:absolute before:left-1 before:top-1/2 before:h-5 before:w-[3px] before:-translate-y-1/2 " +
   "before:rounded-full before:bg-white before:shadow-[0_0_8px_rgba(255,255,255,0.45)] before:content-['']";
 
-// IDLE row — lighter-blue base tone + subtle hover lift.
+// IDLE row — white text always + subtle hover lift.
 const idleRow =
-  "text-[#AEBFE6] hover:-translate-y-px hover:bg-white/[0.07] hover:text-white hover:shadow-[0_5px_14px_-8px_rgba(0,0,0,0.55)]";
+  "text-white hover:-translate-y-px hover:bg-white/[0.07] hover:shadow-[0_5px_14px_-8px_rgba(0,0,0,0.55)]";
 
 // All destination hrefs, used to resolve the single best (most-specific) match so
 // a parent path like /facturation never stays "active" on /facturation/devis.
@@ -134,7 +134,7 @@ function LeafRow({ leaf, active, onNavigate }: { leaf: Leaf; active: boolean; on
       href={leaf.href}
       onClick={onNavigate}
     >
-      <span className={`shrink-0 transition-colors ${active ? "text-[#AFC6FF]" : "text-[#6E8CF0] group-hover/leaf:text-[#9FB6FF]"}`}>
+      <span className={`shrink-0 transition-colors ${active ? "text-[#AFC6FF]" : "text-[#8FB2FF] group-hover/leaf:text-[#9FB6FF]"}`}>
         {leaf.icon}
       </span>
       <span className="truncate">{leaf.label}</span>
@@ -167,7 +167,7 @@ function GroupRow({
         onClick={onToggle}
         type="button"
       >
-        <span className={`shrink-0 transition-colors ${hasActiveChild ? "text-[#93ACFF]" : "text-[#6E8CF0] group-hover/row:text-[#9FB6FF]"}`}>
+        <span className={`shrink-0 transition-colors ${hasActiveChild ? "text-[#93ACFF]" : "text-[#8FB2FF] group-hover/row:text-[#9FB6FF]"}`}>
           {item.icon}
         </span>
         <span className="flex-1 text-left">{item.label}</span>
@@ -236,7 +236,7 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
             key={item.href}
             onClick={onNavigate}
           >
-            <span className={`shrink-0 transition-colors ${item.href === activeHref ? "text-[#AFC6FF]" : "text-[#6E8CF0] group-hover/row:text-[#9FB6FF]"}`}>
+            <span className={`shrink-0 transition-colors ${item.href === activeHref ? "text-[#AFC6FF]" : "text-[#8FB2FF] group-hover/row:text-[#9FB6FF]"}`}>
               {item.icon}
             </span>
             {item.label}
