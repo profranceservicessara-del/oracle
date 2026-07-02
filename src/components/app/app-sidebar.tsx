@@ -375,36 +375,12 @@ function ShortcutsBlock({ collapsed, onNavigate }: { collapsed?: boolean; onNavi
 
   return (
     <div className="shrink-0">
-      {items.length > 0 ? (
-        <div className={collapsed ? "flex flex-col items-center gap-1" : "space-y-0.5"}>
-          <div className={`mb-1 border-t border-white/10 ${collapsed ? "mx-auto w-8" : ""}`} />
-          {items.map((item) => (
-            <Link
-              className={
-                collapsed
-                  ? "flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-200 hover:-translate-y-px hover:bg-emerald-400/10"
-                  : "group/sc flex items-center gap-2 rounded-xl px-2.5 py-1 transition-all duration-200 hover:-translate-y-px hover:bg-emerald-400/10"
-              }
-              href={item.href}
-              key={item.key}
-              onClick={onNavigate}
-              title={item.label}
-            >
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-400/15 text-[13px] leading-none ring-1 ring-emerald-400/20 transition group-hover/sc:ring-emerald-400/35">
-                {shortcutEmoji(item.key)}
-              </span>
-              {collapsed ? null : <span className="truncate text-[12px] font-medium text-emerald-400/80">{item.label}</span>}
-            </Link>
-          ))}
-        </div>
-      ) : null}
-
       <button
         aria-label="Gerenciar atalhos"
         className={
           collapsed
-            ? "mt-1 flex h-11 w-11 items-center justify-center rounded-xl text-white/50 transition hover:bg-white/10 hover:text-white/80"
-            : "mt-1 flex w-full items-center justify-between rounded-xl px-2.5 py-2 text-[13px] font-medium text-white/60 transition hover:bg-white/10 hover:text-white/90"
+            ? "flex h-10 w-10 items-center justify-center rounded-xl text-white/50 transition hover:bg-white/10 hover:text-white/80"
+            : "flex w-full items-center justify-between rounded-xl px-2.5 py-1.5 text-[12px] font-medium text-white/60 transition hover:bg-white/10 hover:text-white/90"
         }
         onClick={openDrawer}
         title="Gerenciar atalhos"
@@ -412,6 +388,30 @@ function ShortcutsBlock({ collapsed, onNavigate }: { collapsed?: boolean; onNavi
       >
         {collapsed ? fourDotIcon : (<><span>Gerenciar atalhos</span><span className="shrink-0 text-white/40">{fourDotIcon}</span></>)}
       </button>
+
+      {items.length > 0 ? (
+        <div className={collapsed ? "mt-1 flex flex-col items-center gap-0.5" : "mt-1 space-y-0"}>
+          <div className={`mb-0.5 border-t border-white/10 ${collapsed ? "mx-auto w-8" : ""}`} />
+          {items.map((item) => (
+            <Link
+              className={
+                collapsed
+                  ? "flex h-9 w-9 items-center justify-center rounded-lg transition-all duration-200 hover:-translate-y-px hover:bg-emerald-400/10"
+                  : "group/sc flex items-center gap-2 rounded-lg px-2.5 py-0.5 transition-all duration-200 hover:-translate-y-px hover:bg-emerald-400/10"
+              }
+              href={item.href}
+              key={item.key}
+              onClick={onNavigate}
+              title={item.label}
+            >
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-400/15 text-[11px] leading-none ring-1 ring-emerald-400/20 transition group-hover/sc:ring-emerald-400/35">
+                {shortcutEmoji(item.key)}
+              </span>
+              {collapsed ? null : <span className="truncate text-[11px] font-medium text-emerald-400/80">{item.label}</span>}
+            </Link>
+          ))}
+        </div>
+      ) : null}
 
       {drawerOpen ? (
         <div className="fixed inset-0 z-50 flex justify-end">
