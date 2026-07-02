@@ -323,6 +323,9 @@ function ShortcutsBlock({ collapsed, onNavigate }: { collapsed?: boolean; onNavi
   const items = SHORTCUTS.filter((item) => keys.includes(item.key));
   if (items.length === 0) return null;
 
+  // Emoji por atalho (fallback seguro ⭐). Mapa local — não altera os dados.
+  const emoji: Record<string, string> = { fatura: "🧾", orcamento: "📄", cliente: "👥" };
+
   return (
     <div className={`shrink-0 ${collapsed ? "flex flex-col items-center gap-1" : "space-y-0.5"}`}>
       {collapsed ? null : (
@@ -332,16 +335,18 @@ function ShortcutsBlock({ collapsed, onNavigate }: { collapsed?: boolean; onNavi
         <Link
           className={
             collapsed
-              ? `flex h-11 w-11 items-center justify-center rounded-xl ${idleRow}`
-              : `flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium ${idleRow}`
+              ? "flex h-11 w-11 items-center justify-center rounded-xl transition-all duration-200 hover:-translate-y-px hover:bg-emerald-400/10"
+              : "group/sc flex items-center gap-2.5 rounded-xl px-2.5 py-1.5 transition-all duration-200 hover:-translate-y-px hover:bg-emerald-400/10"
           }
           href={item.href}
           key={item.key}
           onClick={onNavigate}
           title={item.label}
         >
-          <span className="shrink-0 text-[#8FB2FF]">{item.icon}</span>
-          {collapsed ? null : <span className="truncate">{item.label}</span>}
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-400/15 text-[15px] leading-none ring-1 ring-emerald-400/25 transition group-hover/sc:ring-emerald-400/40">
+            {emoji[item.key] ?? "⭐"}
+          </span>
+          {collapsed ? null : <span className="truncate text-[13px] font-semibold text-[#34D399]">{item.label}</span>}
         </Link>
       ))}
     </div>
