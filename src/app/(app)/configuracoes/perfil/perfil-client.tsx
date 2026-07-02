@@ -187,7 +187,7 @@ export function PerfilClient({
               // eslint-disable-next-line @next/next/no-img-element
               <img alt="Logo da empresa" className="h-full w-full object-contain p-2" src={logoSignedUrl} />
             ) : (
-              <svg aria-hidden="true" className="text-[#002D72]" fill="none" height="28" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" width="28">
+              <svg aria-hidden="true" className="text-[#002D72]" fill="none" height="46" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.6" viewBox="0 0 24 24" width="46">
                 <path d="M2 21h20" />
                 <path d="M8 21V6h8v15" />
                 <path d="M3 21V11h5" />
