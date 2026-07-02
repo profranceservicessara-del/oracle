@@ -284,7 +284,9 @@ export function PerfilClient({
               <img alt="" aria-hidden="true" className="h-full w-full object-contain p-1" src="/illustrations/predio.png" />
             )}
           </div>
-          <h2 className="mt-4 text-2xl font-semibold text-ink">{companyName || "Sua empresa"}</h2>
+          <h2 className="mt-4 text-[26px] font-semibold tracking-tight text-ink" style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}>
+            {companyName || "Sua empresa"}
+          </h2>
           <p className="mt-1 text-sm text-muted">{companyAddress || "Endereço não informado"}</p>
           <div className="mt-3 flex flex-wrap gap-2">
             {profile?.siret ? (
