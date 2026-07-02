@@ -2,9 +2,6 @@ import Link from "next/link";
 
 const items = [
   { key: "factures", label: "Faturas", href: "/facturation" },
-  { key: "devis", label: "Orçamentos", href: "/facturation/devis" },
-  { key: "clients", label: "Clientes", href: "/clientes" },
-  { key: "produits", label: "Produtos e serviços", href: "/facturation/produits" },
   { key: "recurrentes", label: "Faturas recorrentes", href: "/facturation/recurrentes" },
   { key: "fournisseurs", label: "Faturas de fornecedores", href: "/facturation/fournisseurs" }
 ];

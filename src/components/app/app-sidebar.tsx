@@ -72,9 +72,7 @@ const nav: NavItem[] = [
       { href: "/facturation", label: "Faturas", icon: icons.faturas },
       { href: "/facturation/devis", label: "Orçamentos", icon: icons.orcamentos },
       { href: "/facturation/produits", label: "Produtos e serviços", icon: icons.produtos },
-      { href: "/catalogo", label: "Catálogo", icon: icons.catalogoLeaf },
-      { href: "/facturation/recurrentes", label: "Faturas recorrentes", icon: icons.recorrentes },
-      { href: "/facturation/fournisseurs", label: "Faturas de fornecedores", icon: icons.fornecedores }
+      { href: "/catalogo", label: "Catálogo", icon: icons.catalogoLeaf }
     ]
   },
   {
