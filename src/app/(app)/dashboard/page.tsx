@@ -345,24 +345,123 @@ export default async function DashboardPage() {
         </div>
       ) : null}
 
-      {actionItems.length > 0 ? (
-        <section className="rounded-2xl bg-rose-50 p-4 shadow-sm ring-1 ring-rose-200">
-          <p className="text-[11px] font-medium uppercase tracking-wide text-rose-500">Ação necessária</p>
-          <div className="mt-3 flex flex-wrap gap-3">
-            {actionItems.map((item) => (
-              <div
-                className="flex flex-1 basis-[260px] items-center justify-between gap-3 rounded-xl bg-white px-4 py-3 text-sm ring-1 ring-rose-100"
-                key={item.label}
-              >
-                <span className="text-slate-700">{item.label}</span>
-                <span className="inline-flex min-w-[1.75rem] justify-center rounded-full bg-rose-100 px-2 py-0.5 text-sm font-medium tabular-nums text-rose-700">
-                  {item.count}
-                </span>
+      <section className="space-y-4">
+        {/* Ação necessária — red accent */}
+        <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
+          <div className="h-1 bg-gradient-to-r from-rose-400 to-rose-500" />
+          <div className="p-5">
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <div>
+                <h2 className="text-sm font-semibold text-ink">Ação necessária</h2>
+                <p className="mt-0.5 text-xs text-muted">
+                  {actionItems.length} {actionItems.length === 1 ? "item para atenção" : "itens para atenção"}
+                </p>
               </div>
-            ))}
+              <Link className="text-xs font-semibold text-brand hover:underline" href="/documentos">
+                Ver documentos →
+              </Link>
+            </div>
+            <ul className="mt-3 divide-y divide-line text-sm">
+              {actionItems.length > 0 ? (
+                actionItems.map((item) => (
+                  <li className="flex items-center justify-between gap-3 py-2.5" key={item.label}>
+                    <span className="flex items-center gap-2.5 text-slate-700">
+                      <span className="h-2 w-2 shrink-0 rounded-full bg-rose-500" />
+                      {item.label}
+                    </span>
+                    <span className="inline-flex min-w-[1.75rem] justify-center rounded-full bg-rose-100 px-2 py-0.5 text-xs font-semibold tabular-nums text-rose-700">
+                      {item.count}
+                    </span>
+                  </li>
+                ))
+              ) : (
+                <li className="py-2.5 text-sm text-muted">Tudo em dia por aqui. ✅</li>
+              )}
+            </ul>
           </div>
-        </section>
-      ) : null}
+        </div>
+
+        {/* Atividade recente — blue accent */}
+        <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
+          <div className="h-1 bg-gradient-to-r from-sky-400 to-blue-500" />
+          <div className="p-5">
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <div>
+                <h2 className="text-sm font-semibold text-ink">Atividade recente</h2>
+                <p className="mt-0.5 text-xs text-muted">
+                  {documents.length} {documents.length === 1 ? "documento em aberto" : "documentos em aberto"}
+                </p>
+              </div>
+              <Link className="text-xs font-semibold text-brand hover:underline" href="/documentos">
+                Ver documentos →
+              </Link>
+            </div>
+            {documents.length > 0 ? (
+              <ul className="mt-3 divide-y divide-line text-sm">
+                {documents.slice(0, 5).map((document) => (
+                  <li className="flex items-center justify-between gap-3 py-2.5" key={document.id}>
+                    <span className="min-w-0">
+                      <span className="block truncate font-medium text-ink">
+                        {document.numero ?? (document.type === "facture" ? "Fatura" : "Orçamento")}
+                      </span>
+                      <span className="block text-xs uppercase tracking-wide text-muted">
+                        {document.type === "facture" ? "Fatura" : "Orçamento"}
+                      </span>
+                    </span>
+                    <span className="shrink-0 font-semibold tabular-nums text-ink">
+                      {euroFormatter.format(Number(document.total_ttc))}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-6 text-center text-sm text-muted">Nenhum documento recente.</p>
+            )}
+          </div>
+        </div>
+
+        {/* Próximas 24h — green accent */}
+        <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
+          <div className="h-1 bg-gradient-to-r from-emerald-400 to-teal-500" />
+          <div className="p-5">
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <div>
+                <h2 className="text-sm font-semibold text-ink">Próximas 24h</h2>
+                <p className="mt-0.5 text-xs text-muted">
+                  {deadlineDays <= 1 || devisExpiring.length > 0 ? "Vencimentos próximos" : "Sem vencimentos agendados."}
+                </p>
+              </div>
+              <Link className="text-xs font-semibold text-brand hover:underline" href="/documentos">
+                Ver documentos →
+              </Link>
+            </div>
+            {deadlineDays <= 1 || devisExpiring.length > 0 ? (
+              <ul className="mt-3 divide-y divide-line text-sm">
+                {deadlineDays <= 1 ? (
+                  <li className="flex items-center justify-between gap-3 py-2.5">
+                    <span className="flex items-center gap-2.5 text-slate-700">
+                      <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
+                      Declaração URSSAF
+                    </span>
+                    <span className="text-xs font-semibold text-emerald-700">D-{Math.max(0, deadlineDays)}</span>
+                  </li>
+                ) : null}
+                {devisExpiring.length > 0 ? (
+                  <li className="flex items-center justify-between gap-3 py-2.5">
+                    <span className="flex items-center gap-2.5 text-slate-700">
+                      <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
+                      Orçamentos expirando
+                    </span>
+                    <span className="text-xs font-semibold text-emerald-700">{devisExpiring.length}</span>
+                  </li>
+                ) : null}
+              </ul>
+            ) : (
+              <p className="mt-6 text-center text-sm text-muted">🗓️ Nenhum vencimento nas próximas 24h.</p>
+            )}
+          </div>
+        </div>
+      </section>
 
       <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
         <div className="mb-4">
