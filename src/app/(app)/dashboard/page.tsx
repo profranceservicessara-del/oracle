@@ -270,23 +270,27 @@ export default async function DashboardPage() {
   const actionItems = [
     { count: devisExpiring.length, label: "Orçamentos expiram nos próximos 7 dias" },
     { count: lateFactures.length, label: "Faturas a cobrar" },
-    { count: deadlineDays <= 7 ? 1 : 0, label: `Déclaration URSSAF em D-${Math.max(0, deadlineDays)}` },
+    { count: deadlineDays <= 7 ? 1 : 0, label: `Declaração URSSAF em D-${Math.max(0, deadlineDays)}` },
     { count: profileFields.length, label: `Perfil incompleto: ${profileFields.join(", ")}` }
   ].filter((item) => item.count > 0);
 
   return (
     <main className="mx-auto max-w-6xl space-y-6 px-4 py-8">
-      <section className="overflow-hidden rounded-2xl bg-gradient-to-br from-[#001F4D] via-[#002D72] to-[#2B1F5B] px-6 py-7 shadow-sm">
-        <p className="text-[11px] font-semibold uppercase tracking-wide text-white/60">Dashboard</p>
-        <h1 className="mt-1 text-2xl font-semibold text-white">Painel fiscal</h1>
+      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#00153A] via-[#052A63] to-[#0A2E6E] px-6 py-7 shadow-sm ring-1 ring-white/10">
+        <div aria-hidden className="pointer-events-none absolute -right-12 -top-24 h-72 w-72 rounded-full bg-[#5D7BEA]/30 blur-3xl" />
+        <div aria-hidden className="pointer-events-none absolute -bottom-28 right-20 h-64 w-64 rounded-full bg-[#7FA0FF]/20 blur-3xl" />
+        <div aria-hidden className="pointer-events-none absolute -left-16 top-1/3 h-56 w-56 rounded-full bg-white/[0.07] blur-3xl" />
+        <div className="relative z-10">
+        <p className="text-[11px] font-medium uppercase tracking-wide text-white/60">Análise</p>
+        <h1 className="mt-1 text-2xl font-medium text-white">Painel fiscal</h1>
         <p className="mt-1 text-sm text-white/70">
-          CA baseado em encaissements, conforme o livre de recettes.
+          Faturamento com base nos recebimentos, conforme o livro de receitas.
         </p>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-xl bg-white/10 p-4 ring-1 ring-white/15">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-white/60">CA encaissé {currentYear}</p>
-            <p className="mt-2 text-2xl font-semibold tabular-nums text-white">{euroFormatter.format(annualTotal)}</p>
+            <p className="text-[11px] font-medium uppercase tracking-wide text-white/60">Faturamento recebido {currentYear}</p>
+            <p className="mt-2 text-2xl font-medium tabular-nums text-white">{euroFormatter.format(annualTotal)}</p>
             <p className="mt-1 text-xs text-white/60">
               {annualDelta === null
                 ? "Sem base do ano anterior."
@@ -298,8 +302,8 @@ export default async function DashboardPage() {
             className="rounded-xl bg-white/10 p-4 ring-1 ring-white/15 transition hover:bg-white/15"
             href="/documentos?status=sent"
           >
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-white/60">Factures en attente</p>
-            <p className="mt-2 text-2xl font-semibold tabular-nums text-white">{pendingFactures.length}</p>
+            <p className="text-[11px] font-medium uppercase tracking-wide text-white/60">Faturas em aberto</p>
+            <p className="mt-2 text-2xl font-medium tabular-nums text-white">{pendingFactures.length}</p>
             <p className="mt-1 text-xs tabular-nums text-white/60">{euroFormatter.format(pendingAmount)}</p>
           </Link>
 
@@ -307,14 +311,14 @@ export default async function DashboardPage() {
             className="rounded-xl bg-white/10 p-4 ring-1 ring-white/15 transition hover:bg-white/15"
             href="/documentos?status=a_relancer"
           >
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-white/60">Factures en retard</p>
-            <p className="mt-2 text-2xl font-semibold tabular-nums text-white">{lateFactures.length}</p>
+            <p className="text-[11px] font-medium uppercase tracking-wide text-white/60">Faturas em atraso</p>
+            <p className="mt-2 text-2xl font-medium tabular-nums text-white">{lateFactures.length}</p>
             <p className="mt-1 text-xs tabular-nums text-white/60">{euroFormatter.format(lateAmount)}</p>
           </Link>
 
           <div className="rounded-xl bg-white/10 p-4 ring-1 ring-white/15">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-white/60">Projection {currentYear}</p>
-            <p className="mt-2 text-2xl font-semibold tabular-nums text-white">{euroFormatter.format(projection)}</p>
+            <p className="text-[11px] font-medium uppercase tracking-wide text-white/60">Projeção {currentYear}</p>
+            <p className="mt-2 text-2xl font-medium tabular-nums text-white">{euroFormatter.format(projection)}</p>
             <p className="mt-1 text-xs text-white/60">Estimativa anual</p>
           </div>
         </div>
@@ -330,6 +334,7 @@ export default async function DashboardPage() {
             Service BNC: <span className="tabular-nums text-white/80">{euroFormatter.format(yearTotals.service_bnc)}</span>
           </p>
         </div>
+        </div>
       </section>
 
       {isProfileIncomplete(typedProfile) ? (
@@ -340,7 +345,7 @@ export default async function DashboardPage() {
 
       {actionItems.length > 0 ? (
         <section className="rounded-2xl bg-rose-50 p-4 shadow-sm ring-1 ring-rose-200">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-rose-500">Action requise</p>
+          <p className="text-[11px] font-medium uppercase tracking-wide text-rose-500">Ação necessária</p>
           <div className="mt-3 flex flex-wrap gap-3">
             {actionItems.map((item) => (
               <div
@@ -348,7 +353,7 @@ export default async function DashboardPage() {
                 key={item.label}
               >
                 <span className="text-slate-700">{item.label}</span>
-                <span className="inline-flex min-w-[1.75rem] justify-center rounded-full bg-rose-100 px-2 py-0.5 text-sm font-semibold tabular-nums text-rose-700">
+                <span className="inline-flex min-w-[1.75rem] justify-center rounded-full bg-rose-100 px-2 py-0.5 text-sm font-medium tabular-nums text-rose-700">
                   {item.count}
                 </span>
               </div>
@@ -359,25 +364,25 @@ export default async function DashboardPage() {
 
       <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
         <div className="mb-4">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">CA mensal encaissé</p>
-          <h2 className="mt-1 text-xl font-semibold text-ink">12 meses de {currentYear}</h2>
+          <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Faturamento mensal recebido</p>
+          <h2 className="mt-1 text-xl font-medium text-ink">12 meses de {currentYear}</h2>
         </div>
         {monthlyValues.some((value) => value > 0) ? (
           monthlyChart(monthlyValues)
         ) : (
           <div className="flex h-28 flex-col items-center justify-center gap-1 rounded-xl bg-slate-50 text-center ring-1 ring-black/5">
-            <p className="text-sm font-medium text-slate-500">Sem encaissements registrados em {currentYear}</p>
+            <p className="text-sm font-medium text-slate-500">Sem recebimentos registrados em {currentYear}</p>
             <p className="text-xs text-slate-400">O gráfico aparece assim que houver receita lançada.</p>
           </div>
         )}
       </section>
 
       <div className="space-y-4 pt-2">
-        <p className="px-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Acompanhamento fiscal</p>
+        <p className="px-1 text-[11px] font-medium uppercase tracking-wide text-slate-400">Acompanhamento fiscal</p>
 
         <section className="grid gap-4 lg:grid-cols-2">
         <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Seuils micro-entreprise</p>
+          <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Limites micro-entreprise</p>
           {activeCategories.length > 0 ? (
             <div className="mt-4 space-y-5">
               {activeCategories.map((category) =>
@@ -396,7 +401,7 @@ export default async function DashboardPage() {
         </div>
 
         <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Franchise TVA</p>
+          <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Franchise TVA</p>
           {activeCategories.length === 0 ? (
             <p className="mt-4 text-sm text-slate-400">
               O acompanhamento da franchise TVA aparece quando houver categoria de atividade ativa.
@@ -423,7 +428,7 @@ export default async function DashboardPage() {
                   {tone ? (
                     <div className={`rounded-xl border px-3 py-2 text-sm ${tone}`}>
                       Acompanhamento informativo: o faturamento dessa categoria aproxima-se do limite de TVA. Esta indicação não constitui aconselhamento fiscal.{" "}
-                      <a className="font-semibold underline" href="#">
+                      <a className="font-medium underline" href="#">
                         Saiba mais
                       </a>
                     </div>
@@ -436,7 +441,7 @@ export default async function DashboardPage() {
       </section>
 
       <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
-        <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Cotisations estimées</p>
+        <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Contribuições estimadas</p>
         <p className="mt-1 text-sm text-muted">
           Período atual: {declarationPeriod.label}. Vencimento estimado: {deadline} ({deadlineDays} dias).
         </p>
@@ -445,14 +450,14 @@ export default async function DashboardPage() {
             cotisations.map((row) => (
               <div className="rounded-xl p-4 text-sm ring-1 ring-black/5" key={row.category}>
                 <p className="font-medium text-ink">{categoryLabel(row.category)}</p>
-                <p className="tabular-nums text-muted">CA: {euroFormatter.format(row.total)}</p>
-                <p className="tabular-nums text-muted">Cotisations: {euroFormatter.format(row.cotisations)}</p>
+                <p className="tabular-nums text-muted">Faturamento: {euroFormatter.format(row.total)}</p>
+                <p className="tabular-nums text-muted">Contribuições: {euroFormatter.format(row.cotisations)}</p>
                 {typedProfile?.versement_liberatoire ? (
                   <p className="tabular-nums text-muted">
                     Versement libératoire: {euroFormatter.format(row.versementLiberatoire)}
                   </p>
                 ) : null}
-                <p className="mt-1 font-semibold tabular-nums text-brand">
+                <p className="mt-1 font-medium tabular-nums text-brand">
                   Net estimado: {euroFormatter.format(row.net)}
                 </p>
               </div>
@@ -462,24 +467,24 @@ export default async function DashboardPage() {
           )}
         </div>
         <p className="mt-4 text-xs text-muted">
-          Estimation indicative, ne constitue pas un conseil fiscal.
+          Estimativa indicativa, não constitui aconselhamento fiscal.
         </p>
       </section>
 
       <section className="grid gap-4 sm:grid-cols-3">
         <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">CA encaissé ce trimestre</p>
-          <p className="mt-1 text-xl font-semibold tabular-nums text-slate-700">
+          <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Faturamento recebido no trimestre</p>
+          <p className="mt-1 text-xl font-medium tabular-nums text-slate-700">
             {euroFormatter.format(totalCategoryAmount(quarterTotals))}
           </p>
         </div>
         <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Vente</p>
-          <p className="mt-1 text-xl font-semibold tabular-nums text-slate-700">{euroFormatter.format(quarterTotals.vente)}</p>
+          <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Vente</p>
+          <p className="mt-1 text-xl font-medium tabular-nums text-slate-700">{euroFormatter.format(quarterTotals.vente)}</p>
         </div>
         <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Services</p>
-          <p className="mt-1 text-xl font-semibold tabular-nums text-slate-700">
+          <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Services</p>
+          <p className="mt-1 text-xl font-medium tabular-nums text-slate-700">
             {euroFormatter.format(quarterTotals.service_bic + quarterTotals.service_bnc)}
           </p>
         </div>
