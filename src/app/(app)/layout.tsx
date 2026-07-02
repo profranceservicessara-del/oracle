@@ -30,7 +30,7 @@ export default async function AppLayout({
   return (
     <ToastProvider>
       <div className="min-h-screen bg-[#F7F8FC]">
-        <AppSidebar avatarUrl={avatarUrl} email={user.email ?? ""} locale={locale} userId={user.id} />
+        <AppSidebar avatarUrl={avatarUrl} email={user.email ?? ""} locale={locale} />
         <div className="md:pl-64">{children}</div>
       </div>
     </ToastProvider>
