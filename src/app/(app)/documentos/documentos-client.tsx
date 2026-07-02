@@ -214,8 +214,8 @@ export function DocumentosClient({
             value={typeFilter}
           >
             <option value="todos">Todos</option>
-            <option value="devis">Devis</option>
-            <option value="facture">Factures</option>
+            <option value="devis">Orçamentos</option>
+            <option value="facture">Faturas</option>
           </Select>
         </label>
         <label className="text-sm font-medium text-ink">
