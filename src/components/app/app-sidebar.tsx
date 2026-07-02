@@ -377,25 +377,23 @@ function ShortcutsBlock({ collapsed, onNavigate }: { collapsed?: boolean; onNavi
     <div className="shrink-0">
       {items.length > 0 ? (
         <div className={collapsed ? "flex flex-col items-center gap-1" : "space-y-0.5"}>
-          {collapsed ? null : (
-            <p className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wide text-white/40">Atalhos</p>
-          )}
+          <div className={`mb-1 border-t border-white/10 ${collapsed ? "mx-auto w-8" : ""}`} />
           {items.map((item) => (
             <Link
               className={
                 collapsed
-                  ? "flex h-11 w-11 items-center justify-center rounded-xl transition-all duration-200 hover:-translate-y-px hover:bg-emerald-400/10"
-                  : "group/sc flex items-center gap-2.5 rounded-xl px-2.5 py-1.5 transition-all duration-200 hover:-translate-y-px hover:bg-emerald-400/10"
+                  ? "flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-200 hover:-translate-y-px hover:bg-emerald-400/10"
+                  : "group/sc flex items-center gap-2 rounded-xl px-2.5 py-1 transition-all duration-200 hover:-translate-y-px hover:bg-emerald-400/10"
               }
               href={item.href}
               key={item.key}
               onClick={onNavigate}
               title={item.label}
             >
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-400/15 text-[15px] leading-none ring-1 ring-emerald-400/20 transition group-hover/sc:ring-emerald-400/35">
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-400/15 text-[13px] leading-none ring-1 ring-emerald-400/20 transition group-hover/sc:ring-emerald-400/35">
                 {shortcutEmoji(item.key)}
               </span>
-              {collapsed ? null : <span className="truncate text-[13px] font-medium text-emerald-400/80">{item.label}</span>}
+              {collapsed ? null : <span className="truncate text-[12px] font-medium text-emerald-400/80">{item.label}</span>}
             </Link>
           ))}
         </div>
