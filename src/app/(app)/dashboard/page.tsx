@@ -281,11 +281,13 @@ export default async function DashboardPage() {
         <div aria-hidden className="pointer-events-none absolute -bottom-28 right-20 h-64 w-64 rounded-full bg-[#7FA0FF]/20 blur-3xl" />
         <div aria-hidden className="pointer-events-none absolute -left-16 top-1/3 h-56 w-56 rounded-full bg-white/[0.07] blur-3xl" />
         <div className="relative z-10">
-        <p className="text-[11px] font-medium uppercase tracking-wide text-white/60">Análise</p>
-        <h1 className="mt-1 text-2xl font-medium text-white">Painel fiscal</h1>
-        <p className="mt-1 text-sm text-white/70">
-          Faturamento com base nos recebimentos, conforme o livro de receitas.
+        <h1 className="text-2xl font-medium text-white">
+          Bienvenue{typedProfile?.prenom || typedProfile?.nome ? `, ${typedProfile?.prenom || typedProfile?.nome}` : ""} ! 👋
+        </h1>
+        <p className="mt-1.5 max-w-xl text-sm text-white/75">
+          Aqui está o seu painel de controle. Acompanhe aqui suas atividades e indicadores principais.
         </p>
+        <p className="mt-1 text-xs text-white/55">Pronto para expandir seu negócio? 🚀</p>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-xl bg-white/10 p-4 ring-1 ring-white/15">
