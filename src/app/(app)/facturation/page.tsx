@@ -162,14 +162,44 @@ export default async function FacturationPage() {
 
           {factures.length === 0 ? (
             <div className="mt-6 flex flex-col items-center rounded-2xl bg-white px-6 py-16 text-center shadow-sm ring-1 ring-black/5">
-              <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-50 text-slate-400 ring-1 ring-black/5">
-                <svg fill="none" height="28" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.6" viewBox="0 0 24 24" width="28">
-                  <path d="M14 3v4a1 1 0 0 0 1 1h4" />
-                  <path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z" />
-                  <line x1="9" x2="15" y1="13" y2="13" />
-                  <line x1="9" x2="13" y1="17" y2="17" />
-                </svg>
-              </span>
+              <svg aria-hidden="true" className="h-52 w-auto" fill="none" viewBox="0 0 230 270" xmlns="http://www.w3.org/2000/svg">
+                {/* document */}
+                <g transform="rotate(-8 115 150)">
+                  <rect fill="#fff" height="116" rx="11" stroke="#22304F" strokeWidth="5" width="84" x="73" y="90" />
+                  <g stroke="#8FB2FF" strokeLinecap="round" strokeWidth="5">
+                    <path d="M89 122h52M89 142h48M89 162h36" />
+                  </g>
+                  <circle cx="93" cy="188" fill="#8FB2FF" r="4" />
+                </g>
+                {/* cursor + click sparks */}
+                <path d="M150 44l42 15-17 7 11 21-9 4-11-21-16 12z" fill="#fff" stroke="#22304F" strokeLinejoin="round" strokeWidth="5" />
+                <g stroke="#22304F" strokeLinecap="round" strokeWidth="5">
+                  <path d="M178 20l6-14M202 30l14-8M206 56l14 3" />
+                </g>
+                {/* top hand — points at the document */}
+                <g stroke="#22304F" strokeLinecap="round" strokeLinejoin="round" strokeWidth="5">
+                  <ellipse cx="150" cy="98" fill="#fff" rx="30" ry="21" transform="rotate(22 150 98)" />
+                  <path d="M137 84l-3-13M154 80l4-13M170 86l9-11" />
+                  <path d="M174 112l18 18c5 5 1 15-7 15l-24-1c-8 0-11-12-3-17z" fill="#22304F" />
+                  <path d="M182 124l14-4" stroke="#8FB2FF" />
+                </g>
+                <circle cx="184" cy="132" fill="#0d1526" r="2.5" />
+                {/* bottom hand — holds the document */}
+                <g stroke="#22304F" strokeLinecap="round" strokeLinejoin="round" strokeWidth="5">
+                  <ellipse cx="80" cy="206" fill="#fff" rx="32" ry="22" transform="rotate(-16 80 206)" />
+                  <path d="M66 190l4-14M82 188l3-14M98 192l6-12" />
+                  <path d="M52 222l-15 24c-4 6-14 4-15-4l-4-26c-1-8 9-12 15-7z" fill="#22304F" />
+                  <path d="M44 230l-14 5" stroke="#8FB2FF" />
+                </g>
+                <circle cx="34" cy="238" fill="#0d1526" r="2.5" />
+                {/* sparkles + dots */}
+                <g fill="none" stroke="#8FB2FF" strokeLinejoin="round" strokeWidth="4.5">
+                  <path d="M208 102l14 14-14 14-14-14z" />
+                  <path d="M28 150l12 12-12 12-12-12z" />
+                </g>
+                <circle cx="50" cy="116" fill="#8FB2FF" r="4" />
+                <circle cx="196" cy="158" fill="#8FB2FF" r="4" />
+              </svg>
               <h2 className="mt-5 text-lg font-semibold text-ink">Configure, crie… fature!</h2>
               <p className="mt-2 max-w-sm text-sm text-muted">Configure e crie sua fatura com toda a simplicidade.</p>
               <Link className={`mt-6 ${primaryButton}`} href="/documentos/novo?type=facture">
