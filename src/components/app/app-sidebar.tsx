@@ -48,7 +48,11 @@ const icons = {
   perfil: (<svg {...s16}><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></svg>),
   dados: (<svg {...s16}><ellipse cx="12" cy="5" rx="8" ry="3" /><path d="M4 5v6c0 1.66 3.58 3 8 3s8-1.34 8-3V5" /><path d="M4 11v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6" /></svg>),
   seguranca: (<svg {...s16}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>),
-  catalogoLeaf: (<svg {...s16}><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" /><path d="m3.3 7 8.7 5 8.7-5" /><path d="M12 22V12" /></svg>)
+  catalogoLeaf: (<svg {...s16}><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" /><path d="m3.3 7 8.7 5 8.7-5" /><path d="M12 22V12" /></svg>),
+  contabilidadeLeaf: (<svg {...s16}><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></svg>),
+  declaracoes: (<svg {...s16}><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z" /><line x1="9" x2="14" y1="13" y2="13" /></svg>),
+  comprovantes: (<svg {...s16}><rect height="4" rx="1" width="8" x="8" y="3" /><path d="M9 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3" /><path d="m9 14 2 2 4-4" /></svg>),
+  faturasRecebidas: (<svg {...s16}><path d="M22 12h-6l-2 3h-4l-2-3H2" /><path d="M5.5 5.5 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.5-6.5A2 2 0 0 0 16.8 4H7.2a2 2 0 0 0-1.7 1.5z" /></svg>)
 } as const;
 
 type Leaf = { href: string; label: string; icon: ReactNode };
@@ -84,7 +88,18 @@ const nav: NavItem[] = [
       { href: "/clientes", label: "Clientes", icon: icons.clientesLeaf }
     ]
   },
-  { kind: "link", href: "/documents", label: "Contabilidade", icon: icons.contabilidade },
+  {
+    kind: "group",
+    key: "contabilidade",
+    label: "Contabilidade",
+    icon: icons.contabilidade,
+    children: [
+      { href: "/documents", label: "Contabilidade", icon: icons.contabilidadeLeaf },
+      { href: "#", label: "Declarações fiscais", icon: icons.declaracoes },
+      { href: "#", label: "Comprovantes", icon: icons.comprovantes },
+      { href: "/facturation/fournisseurs", label: "Faturas recebidas", icon: icons.faturasRecebidas }
+    ]
+  },
   {
     kind: "group",
     key: "config",
