@@ -1,18 +1,18 @@
 import Link from "next/link";
 
 const items = [
-  { key: "comptabilite", label: "Comptabilité", href: "/documents" },
-  // TODO: Create "Déclarations fiscales" route when backend support exists.
-  { key: "declarations", label: "Déclarations fiscales", href: "#" },
+  { key: "comptabilite", label: "Contabilidade", href: "/documents" },
+  // TODO: Create "Declarações fiscais" route when backend support exists.
+  { key: "declarations", label: "Declarações fiscais", href: "#" },
   // TODO: Create "Justificatifs" route when backend support exists.
-  { key: "justificatifs", label: "Justificatifs", href: "#" },
-  { key: "factures-recues", label: "Factures reçues", href: "/facturation/fournisseurs" }
+  { key: "justificatifs", label: "Comprovantes", href: "#" },
+  { key: "factures-recues", label: "Faturas recebidas", href: "/facturation/fournisseurs" }
 ];
 
 export function DocumentsNav({ active }: { active: string }) {
   return (
     <nav
-      aria-label="Documents"
+      aria-label="Contabilidade"
       className="flex gap-1 overflow-x-auto pb-1 lg:w-56 lg:shrink-0 lg:flex-col lg:overflow-visible lg:pb-0"
     >
       {items.map((item) => {

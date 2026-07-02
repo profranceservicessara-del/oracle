@@ -33,10 +33,10 @@ export default async function ProduitsPage() {
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h1 className="text-2xl font-semibold text-ink">Produits et services</h1>
+            <h1 className="text-2xl font-semibold text-ink">Produtos e serviços</h1>
             {/* O fluxo de criação/edição vive em /catalogo (modal). */}
             <Link className={primaryButton} href="/catalogo">
-              + Nouveau
+              + Novo
             </Link>
           </div>
 
@@ -49,10 +49,10 @@ export default async function ProduitsPage() {
                   <path d="M12 22V12" />
                 </svg>
               </span>
-              <h2 className="mt-5 text-lg font-semibold text-ink">En avant pour votre 1er produit ou service !</h2>
-              <p className="mt-2 max-w-sm text-sm text-muted">Ajoutez-le facilement en quelques clics.</p>
+              <h2 className="mt-5 text-lg font-semibold text-ink">Vamos ao seu 1º produto ou serviço!</h2>
+              <p className="mt-2 max-w-sm text-sm text-muted">Adicione facilmente em alguns cliques.</p>
               <Link className={`mt-6 ${primaryButton}`} href="/catalogo">
-                Ajouter un produit ou service
+                Adicionar produto ou serviço
               </Link>
             </div>
           ) : (
@@ -61,10 +61,10 @@ export default async function ProduitsPage() {
                 <table className="w-full min-w-[640px] border-collapse text-left text-sm">
                   <thead className="bg-slate-50 text-xs uppercase text-muted">
                     <tr>
-                      <th className="border-b border-line px-4 py-3 font-semibold" scope="col">Nom</th>
-                      <th className="border-b border-line px-4 py-3 font-semibold" scope="col">Nature</th>
-                      <th className="border-b border-line px-4 py-3 font-semibold" scope="col">Unité</th>
-                      <th className="border-b border-line px-4 py-3 text-right font-semibold" scope="col">Prix unitaire HT</th>
+                      <th className="border-b border-line px-4 py-3 font-semibold" scope="col">Nome</th>
+                      <th className="border-b border-line px-4 py-3 font-semibold" scope="col">Natureza</th>
+                      <th className="border-b border-line px-4 py-3 font-semibold" scope="col">Unidade</th>
+                      <th className="border-b border-line px-4 py-3 text-right font-semibold" scope="col">Preço unitário sem imposto</th>
                       <th className="border-b border-line px-4 py-3 text-right font-semibold" scope="col">TVA</th>
                     </tr>
                   </thead>

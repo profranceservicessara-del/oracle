@@ -10,7 +10,7 @@ import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
 import { logActivity } from "@/lib/crm/activity";
-import { t, type Locale } from "@/lib/i18n/dictionaries";
+import { t, type Locale, type TranslationKey } from "@/lib/i18n/dictionaries";
 import { createClient } from "@/lib/supabase/client";
 import { documentStatusLabels, documentTypeLabels, type Document, type DocumentStatus } from "@/lib/types";
 import type {
@@ -38,23 +38,23 @@ const docStatusClass: Record<DocumentStatus, string> = {
   refused: "bg-rose-100 text-rose-700"
 };
 
-const entityLabel: Record<string, string> = {
-  client: "Client",
-  contact: "Contact",
-  dossier: "Dossier",
-  note: "Note",
-  task: "Tâche",
-  document: "Document"
+const entityKey: Record<string, TranslationKey> = {
+  client: "entity.client",
+  contact: "entity.contact",
+  dossier: "entity.dossier",
+  note: "entity.note",
+  task: "entity.task",
+  document: "entity.document"
 };
 
 const actionSymbol: Record<string, string> = { create: "+", update: "✎", delete: "✕" };
 
-const taskStatusLabel: Record<CrmTaskStatus, string> = { todo: "À faire", doing: "En cours", done: "Terminé" };
+const taskStatusKey: Record<CrmTaskStatus, TranslationKey> = { todo: "task.todo", doing: "task.doing", done: "task.done" };
 const taskNext: Record<CrmTaskStatus, CrmTaskStatus> = { todo: "doing", doing: "done", done: "todo" };
-const dossierStatusLabel: Record<CrmDossierStatus, string> = {
-  open: "Ouvert",
-  in_progress: "En cours",
-  closed: "Fermé"
+const dossierStatusKey: Record<CrmDossierStatus, TranslationKey> = {
+  open: "dossier.open",
+  in_progress: "dossier.in_progress",
+  closed: "dossier.closed"
 };
 const dossierNext: Record<CrmDossierStatus, CrmDossierStatus> = {
   open: "in_progress",
@@ -222,7 +222,7 @@ export function CrmClientDetail({
       .insert({ ...base, email: contactForm.email.trim() || null, name: contactForm.name.trim() })
       .select("*")
       .single();
-    if (error || !data) return showToast("Impossible d'ajouter le contact.", "error");
+    if (error || !data) return showToast(t(locale, "detail.addError"), "error");
     const created = data as CrmContact;
     setContacts((current) => [created, ...current]);
     setContactForm({ name: "", email: "" });
@@ -260,7 +260,7 @@ export function CrmClientDetail({
       .insert({ ...base, title: dossierTitle.trim() })
       .select("*")
       .single();
-    if (error || !data) return showToast("Impossible de créer le dossier.", "error");
+    if (error || !data) return showToast(t(locale, "detail.addError"), "error");
     const created = data as CrmDossier;
     setDossiers((current) => [created, ...current]);
     setDossierTitle("");
@@ -304,7 +304,7 @@ export function CrmClientDetail({
       .insert({ ...base, due_date: taskForm.due || null, title: taskForm.title.trim() })
       .select("*")
       .single();
-    if (error || !data) return showToast("Impossible de créer la tâche.", "error");
+    if (error || !data) return showToast(t(locale, "detail.addError"), "error");
     const created = data as CrmTask;
     setTasks((current) => [created, ...current]);
     setTaskForm({ title: "", due: "" });
@@ -348,7 +348,7 @@ export function CrmClientDetail({
       .insert({ ...base, author_id: userId, body: noteBody.trim() })
       .select("*")
       .single();
-    if (error || !data) return showToast("Impossible d'ajouter la note.", "error");
+    if (error || !data) return showToast(t(locale, "detail.addError"), "error");
     const created = data as CrmNote;
     setNotes((current) => [created, ...current]);
     setNoteBody("");
@@ -439,7 +439,7 @@ export function CrmClientDetail({
           <div className="min-w-0">
             <h1 className="text-2xl font-semibold text-ink">{clientState.name}</h1>
             <p className="text-sm text-muted">
-              {clientState.type === "particulier" ? "Particulier" : "Professionnel"}
+              {clientState.type === "particulier" ? t(locale, "crm.particular") : t(locale, "crm.professional")}
               {clientState.email ? ` · ${clientState.email}` : ""}
               {clientState.phone ? ` · ${clientState.phone}` : ""}
             </p>
@@ -507,8 +507,8 @@ export function CrmClientDetail({
       <div className="grid gap-4 lg:grid-cols-2">
         <Section count={contacts.length} title={t(locale, "detail.contacts")}>
           <form className="mb-3 flex flex-wrap gap-2" onSubmit={(event) => void addContact(event)}>
-            <Input aria-label="Nom du contact" className="min-w-[8rem] flex-1" onChange={(event) => setContactForm((current) => ({ ...current, name: event.target.value }))} placeholder="Nom" value={contactForm.name} />
-            <Input aria-label="Email du contact" className="min-w-[8rem] flex-1" onChange={(event) => setContactForm((current) => ({ ...current, email: event.target.value }))} placeholder="Email" type="email" value={contactForm.email} />
+            <Input aria-label={t(locale, "crm.name")} className="min-w-[8rem] flex-1" onChange={(event) => setContactForm((current) => ({ ...current, name: event.target.value }))} placeholder={t(locale, "crm.name")} value={contactForm.name} />
+            <Input aria-label={t(locale, "crm.email")} className="min-w-[8rem] flex-1" onChange={(event) => setContactForm((current) => ({ ...current, email: event.target.value }))} placeholder={t(locale, "crm.email")} type="email" value={contactForm.email} />
             <Button disabled={!contactForm.name.trim()} type="submit">{t(locale, "detail.add")}</Button>
           </form>
           <ul className="divide-y divide-line text-sm">
@@ -558,7 +558,7 @@ export function CrmClientDetail({
                     <span className="min-w-0 truncate font-medium text-ink">{dossier.title}</span>
                     <span className="flex shrink-0 items-center gap-2">
                       <button className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-200" onClick={() => void cycleDossier(dossier)} type="button">
-                        {dossierStatusLabel[dossier.status]}
+                        {t(locale, dossierStatusKey[dossier.status])}
                       </button>
                       <RowActions deleteLabel={t(locale, "detail.delete")} editLabel={t(locale, "detail.edit")} onDelete={() => void deleteDossier(dossier)} onEdit={() => { setEditDossierId(dossier.id); setEditDossierTitle(dossier.title); }} />
                     </span>
@@ -595,7 +595,7 @@ export function CrmClientDetail({
                     </span>
                     <span className="flex shrink-0 items-center gap-2">
                       <button className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-200" onClick={() => void cycleTask(task)} type="button">
-                        {taskStatusLabel[task.status]}
+                        {t(locale, taskStatusKey[task.status])}
                       </button>
                       <RowActions deleteLabel={t(locale, "detail.delete")} editLabel={t(locale, "detail.edit")} onDelete={() => void deleteTask(task)} onEdit={() => { setEditTaskId(task.id); setEditTask({ title: task.title, due: task.due_date ?? "" }); }} />
                     </span>
@@ -689,7 +689,7 @@ export function CrmClientDetail({
             {activity.map((item) => (
               <li className="flex items-center justify-between gap-3" key={item.id}>
                 <span className="truncate text-slate-700">
-                  {actionSymbol[item.action] ?? "•"} {entityLabel[item.entity ?? ""] ?? item.entity} ·{" "}
+                  {actionSymbol[item.action] ?? "•"} {item.entity && entityKey[item.entity] ? t(locale, entityKey[item.entity]) : item.entity} ·{" "}
                   {String((item.payload as { label?: string }).label ?? "")}
                 </span>
                 <span className="shrink-0 text-xs text-muted">{new Date(item.created_at).toLocaleDateString("fr-FR")}</span>

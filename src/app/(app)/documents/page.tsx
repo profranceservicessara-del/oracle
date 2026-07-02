@@ -41,10 +41,10 @@ export default async function DocumentsPage() {
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h1 className="text-2xl font-semibold text-ink">Comptabilité</h1>
+            <h1 className="text-2xl font-semibold text-ink">Contabilidade</h1>
             {/* TODO: Connect exercise selector to real fiscal years. */}
             <button className={secondaryButton} type="button">
-              Exercice {exercice}
+              Exercício {exercice}
               <svg aria-hidden="true" fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeWidth="2" viewBox="0 0 24 24" width="16">
                 <path d="m6 9 6 6 6-6" />
               </svg>
@@ -54,15 +54,15 @@ export default async function DocumentsPage() {
           <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-rose-50 p-5 ring-1 ring-rose-200">
             <div className="min-w-0">
               <span className="inline-flex rounded-full bg-rose-500 px-2.5 py-0.5 text-xs font-semibold text-white">
-                Réservé aux abonnés
+                Exclusivo para assinantes
               </span>
               <p className="mt-3 text-sm font-medium text-rose-900">
-                <span className="font-semibold">Abonnez-vous</span> pour consulter et télécharger vos documents quand
-                vous en avez besoin.
+                <span className="font-semibold">Assine</span> para consultar e baixar seus documentos sempre
+                que precisar.
               </p>
               {/* Voir nos offres -> página de offres existente. */}
               <Link className={`mt-4 ${secondaryButton}`} href="/offres">
-                Voir nos offres
+                Ver nossos planos
               </Link>
             </div>
             <span aria-hidden="true" className="hidden text-rose-300 sm:block">
@@ -81,7 +81,7 @@ export default async function DocumentsPage() {
                   <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
                 </svg>
               }
-              name="Grand Livre"
+              name="Livro Razão"
             />
             <DocRow
               actions={<DocActions />}
@@ -93,7 +93,7 @@ export default async function DocumentsPage() {
                   <path d="m17 7-3 6a3 3 0 0 0 6 0z" />
                 </svg>
               }
-              name="Balance"
+              name="Balanço"
             />
             <DocRow
               actions={<DocActions />}
@@ -112,7 +112,7 @@ export default async function DocumentsPage() {
                   <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
                 </svg>
               }
-              name="Export comptable"
+              name="Exportação contábil"
             />
           </div>
         </div>

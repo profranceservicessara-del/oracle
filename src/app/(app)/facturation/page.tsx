@@ -88,21 +88,21 @@ export default async function FacturationPage() {
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h1 className="text-2xl font-semibold text-ink">Factures</h1>
+            <h1 className="text-2xl font-semibold text-ink">Faturas</h1>
             <div className="flex items-center gap-2">
               {/* TODO: Connect exercise selector to real fiscal years. */}
               <button className={secondaryButton} type="button">
-                Tous les exercices
+                Todos os exercícios
               </button>
               <Link className={primaryButton} href="/documentos/novo?type=facture">
-                + Nouveau
+                + Novo
               </Link>
             </div>
           </div>
 
           <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Total facturé</p>
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Total faturado</p>
               <p className="mt-1 text-2xl font-semibold tabular-nums text-ink">
                 {euro.format(totalFacture)} <span className="text-sm font-normal text-muted">TTC</span>
               </p>
@@ -116,10 +116,10 @@ export default async function FacturationPage() {
                     <path d="m20 20-3-3" />
                   </svg>
                 </span>
-                <Input aria-label="Rechercher une facture" className="w-full pl-9 sm:w-64" placeholder="Rechercher..." type="search" />
+                <Input aria-label="Buscar fatura" className="w-full pl-9 sm:w-64" placeholder="Buscar..." type="search" />
               </div>
               <button className={secondaryButton} type="button">
-                Filtrer
+                Filtrar
               </button>
             </div>
           </div>
@@ -131,7 +131,7 @@ export default async function FacturationPage() {
                   <path d="M20 6 9 17l-5-5" />
                 </svg>
               }
-              label="Encaissé"
+              label="Recebido"
               tone="emerald"
               value={euro.format(encaisse)}
             />
@@ -142,7 +142,7 @@ export default async function FacturationPage() {
                   <path d="M12 7v5l3 2" />
                 </svg>
               }
-              label="Non payées"
+              label="Não pagas"
               tone="amber"
               value={euro.format(nonPayees)}
             />
@@ -154,7 +154,7 @@ export default async function FacturationPage() {
                   <line x1="12" x2="12" y1="16" y2="16" />
                 </svg>
               }
-              label="En retard"
+              label="Em atraso"
               tone="rose"
               value={euro.format(enRetard)}
             />
@@ -170,19 +170,19 @@ export default async function FacturationPage() {
                   <line x1="9" x2="13" y1="17" y2="17" />
                 </svg>
               </span>
-              <h2 className="mt-5 text-lg font-semibold text-ink">Configurez, créez… facturez !</h2>
-              <p className="mt-2 max-w-sm text-sm text-muted">Configurez et créez votre facture en toute simplicité.</p>
+              <h2 className="mt-5 text-lg font-semibold text-ink">Configure, crie… fature!</h2>
+              <p className="mt-2 max-w-sm text-sm text-muted">Configure e crie sua fatura com toda a simplicidade.</p>
               <Link className={`mt-6 ${primaryButton}`} href="/documentos/novo?type=facture">
-                Créer une facture
+                Criar fatura
               </Link>
             </div>
           ) : (
             <div className="mt-6 flex flex-col items-center gap-3 rounded-2xl bg-white px-6 py-10 text-center shadow-sm ring-1 ring-black/5 sm:flex-row sm:justify-between sm:text-left">
               <p className="text-sm text-muted">
-                <span className="font-semibold tabular-nums text-ink">{factures.length}</span> facture(s) émise(s).
+                <span className="font-semibold tabular-nums text-ink">{factures.length}</span> fatura(s) emitida(s).
               </p>
               <Link className={secondaryButton} href="/documentos">
-                Voir toutes les factures
+                Ver todas as faturas
               </Link>
             </div>
           )}

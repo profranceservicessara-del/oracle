@@ -91,7 +91,17 @@ const dictionaries = {
     "detail.uploading": "Envoi…",
     "detail.noDocuments": "Aucun document.",
     "detail.uploadError": "Téléversement impossible.",
-    "detail.download": "Télécharger"
+    "detail.download": "Télécharger",
+    "detail.addError": "Impossible d’ajouter.",
+    "entity.client": "Client",
+    "entity.contact": "Contact",
+    "entity.dossier": "Dossier",
+    "entity.note": "Note",
+    "entity.task": "Tâche",
+    "entity.document": "Document",
+    "dossier.open": "Ouvert",
+    "dossier.in_progress": "En cours",
+    "dossier.closed": "Fermé"
   },
   pt: {
     "menu.account": "Minha conta",
@@ -180,7 +190,17 @@ const dictionaries = {
     "detail.uploading": "Enviando…",
     "detail.noDocuments": "Nenhum documento.",
     "detail.uploadError": "Não foi possível enviar o arquivo.",
-    "detail.download": "Baixar"
+    "detail.download": "Baixar",
+    "detail.addError": "Não foi possível adicionar.",
+    "entity.client": "Cliente",
+    "entity.contact": "Contato",
+    "entity.dossier": "Dossiê",
+    "entity.note": "Nota",
+    "entity.task": "Tarefa",
+    "entity.document": "Documento",
+    "dossier.open": "Aberto",
+    "dossier.in_progress": "Em andamento",
+    "dossier.closed": "Fechado"
   }
 } as const;
 

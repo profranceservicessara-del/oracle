@@ -82,10 +82,10 @@ const navIcons: Record<string, ReactNode> = {
 };
 
 const links = [
-  { href: "/dashboard", label: "Dashboard" },
+  { href: "/dashboard", label: "Análise" },
   { href: "/documentos", label: "Documentos" },
-  { href: "/facturation", label: "Facturation" },
-  { href: "/documents", label: "Documents" },
+  { href: "/facturation", label: "Faturamento" },
+  { href: "/documents", label: "Contabilidade" },
   { href: "/crm", label: "CRM" },
   { href: "/clientes", label: "Clientes" },
   { href: "/catalogo", label: "Catálogo" },

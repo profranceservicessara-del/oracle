@@ -57,9 +57,9 @@ export default async function FournisseursPage() {
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h1 className="text-2xl font-semibold text-ink">Factures fournisseurs</h1>
+            <h1 className="text-2xl font-semibold text-ink">Faturas de fornecedores</h1>
             <Link className={primaryButton} href="/registre-des-achats">
-              + Nouveau
+              + Novo
             </Link>
           </div>
 
@@ -71,7 +71,7 @@ export default async function FournisseursPage() {
                   <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
                 </svg>
               }
-              label="Factures à payer"
+              label="Faturas a pagar"
               value={zero}
             />
             <SummaryCard
@@ -81,7 +81,7 @@ export default async function FournisseursPage() {
                   <path d="M12 7v5l3 2" />
                 </svg>
               }
-              label="Factures planifiées"
+              label="Faturas agendadas"
               value={zero}
             />
             <SummaryCard
@@ -90,25 +90,25 @@ export default async function FournisseursPage() {
                   <path d="M20 6 9 17l-5-5" />
                 </svg>
               }
-              label="Factures payées"
+              label="Faturas pagas"
               value={zero}
             />
           </div>
 
           <div className="mt-4 grid gap-3">
-            <SectionRow label="À payer" />
-            <SectionRow label="Terminées" />
+            <SectionRow label="A pagar" />
+            <SectionRow label="Concluídas" />
           </div>
 
           <div className="mt-4 flex flex-col items-center rounded-2xl bg-white px-6 py-12 text-center shadow-sm ring-1 ring-black/5">
-            <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">Bientôt disponible</span>
-            <h2 className="mt-4 text-lg font-semibold text-ink">Vous êtes prêt pour la facture électronique</h2>
+            <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">Disponível em breve</span>
+            <h2 className="mt-4 text-lg font-semibold text-ink">Você está pronto para a fatura eletrônica</h2>
             <p className="mt-2 max-w-md text-sm text-muted">
-              La réception de vos factures fournisseurs sera disponible prochainement. Vous les trouverez dans
-              l’onglet Documents.
+              O recebimento das suas faturas de fornecedores estará disponível em breve. Você as encontrará na
+              aba Documentos.
             </p>
             <Link className={`mt-6 ${secondaryButton}`} href="/documentos">
-              Voir mes factures
+              Ver minhas faturas
             </Link>
           </div>
         </div>

@@ -163,10 +163,10 @@ export const documentStatusLabels: Record<DocumentStatus, string> = {
 };
 
 export const paymentMethodLabels: Record<PaymentMethod, string> = {
-  virement: "Virement",
-  cheque: "Chèque",
-  especes: "Espèces",
-  cb: "Carte bancaire",
+  virement: "Transferência",
+  cheque: "Cheque",
+  especes: "Dinheiro",
+  cb: "Cartão",
   stripe: "Stripe",
-  autre: "Autre"
+  autre: "Outro"
 };

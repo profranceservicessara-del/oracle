@@ -268,8 +268,8 @@ export default async function DashboardPage() {
   const cotisations = calculateResteAVivre(declarationTotals, typedProfile);
 
   const actionItems = [
-    { count: devisExpiring.length, label: "Devis expiram nos próximos 7 dias" },
-    { count: lateFactures.length, label: "Factures à relancer" },
+    { count: devisExpiring.length, label: "Orçamentos expiram nos próximos 7 dias" },
+    { count: lateFactures.length, label: "Faturas a cobrar" },
     { count: deadlineDays <= 7 ? 1 : 0, label: `Déclaration URSSAF em D-${Math.max(0, deadlineDays)}` },
     { count: profileFields.length, label: `Perfil incompleto: ${profileFields.join(", ")}` }
   ].filter((item) => item.count > 0);
@@ -382,7 +382,7 @@ export default async function DashboardPage() {
             <div className="mt-4 space-y-5">
               {activeCategories.map((category) =>
                 categoryBar({
-                  label: `${categoryLabel(category)} · seuil micro`,
+                  label: `${categoryLabel(category)} · limite micro`,
                   threshold: microThreshold(category),
                   value: yearTotals[category]
                 })
@@ -390,7 +390,7 @@ export default async function DashboardPage() {
             </div>
           ) : (
             <p className="mt-4 text-sm text-slate-400">
-              Defina sua atividade principal ou registre receita para acompanhar os seuils micro-entreprise.
+              Defina sua atividade principal ou registre receita para acompanhar os limites da micro-entreprise.
             </p>
           )}
         </div>
@@ -411,18 +411,18 @@ export default async function DashboardPage() {
               return (
                 <div className="space-y-3" key={category}>
                   {categoryBar({
-                    label: `${categoryLabel(category)} · seuil base`,
+                    label: `${categoryLabel(category)} · limite base`,
                     threshold: thresholds.base,
                     value: yearTotals[category]
                   })}
                   {categoryBar({
-                    label: `${categoryLabel(category)} · seuil majoré`,
+                    label: `${categoryLabel(category)} · limite majorado`,
                     threshold: thresholds.increased,
                     value: yearTotals[category]
                   })}
                   {tone ? (
                     <div className={`rounded-xl border px-3 py-2 text-sm ${tone}`}>
-                      Suivi informativo: o CA dessa categoria aproxima-se do seuil de TVA. Esta indicação não constitui conselho fiscal.{" "}
+                      Acompanhamento informativo: o faturamento dessa categoria aproxima-se do limite de TVA. Esta indicação não constitui aconselhamento fiscal.{" "}
                       <a className="font-semibold underline" href="#">
                         Saiba mais
                       </a>
@@ -438,7 +438,7 @@ export default async function DashboardPage() {
       <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
         <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Cotisations estimées</p>
         <p className="mt-1 text-sm text-muted">
-          Période actuelle: {declarationPeriod.label}. Échéance estimée: {deadline} ({deadlineDays} dias).
+          Período atual: {declarationPeriod.label}. Vencimento estimado: {deadline} ({deadlineDays} dias).
         </p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           {cotisations.length > 0 ? (

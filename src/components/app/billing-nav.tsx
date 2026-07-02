@@ -1,18 +1,18 @@
 import Link from "next/link";
 
 const items = [
-  { key: "factures", label: "Factures", href: "/facturation" },
-  { key: "devis", label: "Devis", href: "/facturation/devis" },
-  { key: "clients", label: "Clients", href: "/clientes" },
-  { key: "produits", label: "Produits et services", href: "/facturation/produits" },
-  { key: "recurrentes", label: "Factures récurrentes", href: "/facturation/recurrentes" },
-  { key: "fournisseurs", label: "Factures fournisseurs", href: "/facturation/fournisseurs" }
+  { key: "factures", label: "Faturas", href: "/facturation" },
+  { key: "devis", label: "Orçamentos", href: "/facturation/devis" },
+  { key: "clients", label: "Clientes", href: "/clientes" },
+  { key: "produits", label: "Produtos e serviços", href: "/facturation/produits" },
+  { key: "recurrentes", label: "Faturas recorrentes", href: "/facturation/recurrentes" },
+  { key: "fournisseurs", label: "Faturas de fornecedores", href: "/facturation/fournisseurs" }
 ];
 
 export function BillingNav({ active }: { active: string }) {
   return (
     <nav
-      aria-label="Facturation"
+      aria-label="Faturamento"
       className="flex gap-1 overflow-x-auto pb-1 lg:w-56 lg:shrink-0 lg:flex-col lg:overflow-visible lg:pb-0"
     >
       {items.map((item) => {

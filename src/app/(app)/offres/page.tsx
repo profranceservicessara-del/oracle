@@ -15,40 +15,40 @@ type Plan = {
 
 const plans: Plan[] = [
   {
-    name: "Essentiel",
+    name: "Essencial",
     price: "0 €",
-    description: "Les outils essentiels pour gérer votre activité simplement et gratuitement.",
-    cta: "Offre en cours",
+    description: "As ferramentas essenciais para gerenciar seu negócio de forma simples e gratuita.",
+    cta: "Plano atual",
     ctaDisabled: true,
-    features: ["Comptabilité automatisée", "Support limité", "Devis et facturation", "Documents essentiels"]
+    features: ["Contabilidade automatizada", "Suporte limitado", "Orçamentos e faturamento", "Documentos essenciais"]
   },
   {
     name: "Plus",
     price: "9 €",
     oldPrice: "12 €",
-    description: "Toutes les fonctionnalités avancées pour gagner du temps et piloter votre activité.",
-    cta: "Choisir Plus",
+    description: "Todos os recursos avançados para ganhar tempo e gerenciar seu negócio.",
+    cta: "Escolher Plus",
     features: [
-      "Accompagnement personnalisé",
-      "Signature électronique de devis",
-      "Relances automatiques d'impayé",
-      "Factures récurrentes",
-      "Suivi des seuils de TVA"
+      "Acompanhamento personalizado",
+      "Assinatura eletrônica de orçamentos",
+      "Cobranças automáticas de inadimplência",
+      "Faturas recorrentes",
+      "Acompanhamento dos limites de TVA"
     ]
   },
   {
     name: "Premium",
     price: "15 €",
     oldPrice: "19 €",
-    description: "Toutes vos déclarations et votre suivi administratif avec accompagnement prioritaire.",
-    cta: "Choisir Premium",
+    description: "Todas as suas declarações e acompanhamento administrativo com suporte prioritário.",
+    cta: "Escolher Premium",
     highlighted: true,
     features: [
-      "Accompagnement prioritaire",
-      "Déclarations fiscales",
-      "Déclaration de TVA",
-      "Aide à la déclaration de revenus",
-      "Support prioritaire"
+      "Acompanhamento prioritário",
+      "Declarações fiscais",
+      "Declaração de TVA",
+      "Ajuda na declaração de renda",
+      "Suporte prioritário"
     ]
   }
 ];
@@ -75,23 +75,23 @@ export default async function OffresPage() {
     <main className="mx-auto max-w-5xl px-4 py-10">
       <div className="flex items-center justify-between">
         <Link className="text-sm font-semibold text-muted transition hover:text-ink" href="/facturation">
-          ← Retour
+          ← Voltar
         </Link>
       </div>
 
       <div className="mt-6 text-center">
         <h1 className="mx-auto max-w-2xl text-2xl font-semibold leading-tight text-ink sm:text-3xl">
-          Le logiciel de gestion le mieux adapté à votre activité
+          O software de gestão mais adequado ao seu negócio
         </h1>
         <p className="mt-3 text-sm text-muted">
-          <span className="font-semibold text-emerald-600">Trustpilot 4.8/5</span> · +13 000 avis
+          <span className="font-semibold text-emerald-600">Trustpilot 4.8/5</span> · +13 000 avaliações
         </p>
 
         {/* TODO: Connect billing period toggle (Mensuel/Annuel) to subscription pricing. */}
         <div className="mt-6 inline-flex items-center gap-1 rounded-2xl bg-slate-100 p-1 text-sm font-semibold">
-          <span className="rounded-xl px-4 py-2 text-slate-500">Mensuel</span>
-          <span className="rounded-xl bg-white px-4 py-2 text-ink shadow-sm">Annuel</span>
-          <span className="ml-1 rounded-full bg-[#002D72]/10 px-2.5 py-0.5 text-xs font-semibold text-[#002D72]">Jusqu’à -48€</span>
+          <span className="rounded-xl px-4 py-2 text-slate-500">Mensal</span>
+          <span className="rounded-xl bg-white px-4 py-2 text-ink shadow-sm">Anual</span>
+          <span className="ml-1 rounded-full bg-[#002D72]/10 px-2.5 py-0.5 text-xs font-semibold text-[#002D72]">Até -48€</span>
         </div>
       </div>
 
@@ -105,14 +105,14 @@ export default async function OffresPage() {
           >
             {plan.highlighted ? (
               <span className="mb-3 inline-flex w-fit rounded-full bg-[#002D72]/10 px-2.5 py-0.5 text-[11px] font-semibold text-[#002D72]">
-                Le plus populaire
+                O mais popular
               </span>
             ) : null}
             <p className="text-sm font-semibold text-ink">{plan.name}</p>
             <p className="mt-3 flex items-baseline gap-2">
               <span className="text-3xl font-semibold tabular-nums text-ink">{plan.price}</span>
               {plan.oldPrice ? <span className="text-sm text-slate-400 line-through">{plan.oldPrice}</span> : null}
-              <span className="text-sm text-muted">/mois HT</span>
+              <span className="text-sm text-muted">/mês sem imposto</span>
             </p>
             <p className="mt-2 text-sm leading-6 text-muted">{plan.description}</p>
             {/* TODO: Connect plan selection to subscription/payment flow. */}

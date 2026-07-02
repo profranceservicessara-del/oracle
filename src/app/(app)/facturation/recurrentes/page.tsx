@@ -8,8 +8,8 @@ const primaryButton =
 
 // TODO: Connect recurring invoices to subscription permissions.
 const previewRows = [
-  { initials: "LJ", name: "Louise Jonquille", item: "Abonnement vidéo…", frequency: "Hebdomadaire", date: "30/06/26", amount: "500,00 €" },
-  { initials: "LD", name: "Laurianne Delcour", item: "Pack illustrations…", frequency: "Mensuelle", date: "Non définie", amount: "30,00 €" }
+  { initials: "LJ", name: "Louise Jonquille", item: "Assinatura vídeo…", frequency: "Semanal", date: "30/06/26", amount: "500,00 €" },
+  { initials: "LD", name: "Laurianne Delcour", item: "Pacote ilustrações…", frequency: "Mensal", date: "Não definida", amount: "30,00 €" }
 ];
 
 export default async function RecurrentesPage() {
@@ -29,15 +29,15 @@ export default async function RecurrentesPage() {
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h1 className="text-2xl font-semibold text-ink">Factures récurrentes</h1>
+            <h1 className="text-2xl font-semibold text-ink">Faturas recorrentes</h1>
             <Link className={primaryButton} href="/offres">
-              + Nouveau
+              + Novo
             </Link>
           </div>
 
           <div className="relative mt-6 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
             <div className="flex items-center gap-2 border-b border-line px-5 py-3.5">
-              <p className="text-sm font-semibold text-ink">Actives</p>
+              <p className="text-sm font-semibold text-ink">Ativas</p>
               <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold tabular-nums text-slate-600">0</span>
             </div>
             <div aria-hidden="true" className="divide-y divide-line opacity-40">
@@ -56,14 +56,14 @@ export default async function RecurrentesPage() {
             </div>
 
             <div className="flex flex-col items-center px-6 py-10 text-center">
-              <span className="rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-500">Réservé aux abonnés</span>
-              <h2 className="mt-4 text-lg font-semibold text-ink">Gagnez du temps avec les factures récurrentes</h2>
+              <span className="rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-500">Exclusivo para assinantes</span>
+              <h2 className="mt-4 text-lg font-semibold text-ink">Ganhe tempo com as faturas recorrentes</h2>
               <p className="mt-2 max-w-md text-sm text-muted">
-                La facturation récurrente vous permet de générer automatiquement vos factures, à la fréquence de votre
-                choix.
+                O faturamento recorrente permite gerar suas faturas automaticamente, na frequência que você
+                escolher.
               </p>
               <Link className={`mt-6 ${primaryButton}`} href="/offres">
-                Voir nos offres
+                Ver nossos planos
               </Link>
             </div>
           </div>

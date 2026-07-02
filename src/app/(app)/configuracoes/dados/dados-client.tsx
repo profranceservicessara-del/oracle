@@ -80,7 +80,7 @@ export function DadosClient() {
         </div>
 
         <div className="rounded-md border border-red-200 bg-red-50 p-4">
-          <h2 className="font-semibold text-red-900">Supprimer mon compte</h2>
+          <h2 className="font-semibold text-red-900">Excluir minha conta</h2>
           <p className="mt-2 text-sm text-red-800">
             A exclusão anonimiza dados de contato imediatamente. Documentos fiscais emitidos
             são preservados pelo prazo legal em conta técnica anonimizada.
@@ -91,7 +91,7 @@ export function DadosClient() {
             type="button"
             variant="secondary"
           >
-            Supprimer mon compte
+            Excluir minha conta
           </Button>
         </div>
       </section>

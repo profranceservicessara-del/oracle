@@ -86,21 +86,21 @@ export default async function DevisPage() {
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h1 className="text-2xl font-semibold text-ink">Devis</h1>
+            <h1 className="text-2xl font-semibold text-ink">Orçamentos</h1>
             <div className="flex items-center gap-2">
               {/* TODO: Connect exercise selector to real fiscal years. */}
               <button className={secondaryButton} type="button">
-                Tous les exercices
+                Todos os exercícios
               </button>
               <Link className={primaryButton} href="/documentos/novo?type=devis">
-                + Nouveau
+                + Novo
               </Link>
             </div>
           </div>
 
           <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Total des devis</p>
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Total dos orçamentos</p>
               <p className="mt-1 text-2xl font-semibold tabular-nums text-ink">
                 {euro.format(totalDevis)} <span className="text-sm font-normal text-muted">TTC</span>
               </p>
@@ -114,10 +114,10 @@ export default async function DevisPage() {
                     <path d="m20 20-3-3" />
                   </svg>
                 </span>
-                <Input aria-label="Rechercher un devis" className="w-full pl-9 sm:w-64" placeholder="Rechercher..." type="search" />
+                <Input aria-label="Buscar um orçamento" className="w-full pl-9 sm:w-64" placeholder="Buscar..." type="search" />
               </div>
               <button className={secondaryButton} type="button">
-                Filtrer
+                Filtrar
               </button>
             </div>
           </div>
@@ -131,7 +131,7 @@ export default async function DevisPage() {
                   <line x1="4" x2="13" y1="14" y2="14" />
                 </svg>
               }
-              label="Facturés"
+              label="Faturados"
               tone="blue"
               value={euro.format(factures)}
             />
@@ -141,7 +141,7 @@ export default async function DevisPage() {
                   <path d="M20 6 9 17l-5-5" />
                 </svg>
               }
-              label="Signés"
+              label="Assinados"
               tone="emerald"
               value={euro.format(signes)}
             />
@@ -152,7 +152,7 @@ export default async function DevisPage() {
                   <path d="M12 7v5l3 2" />
                 </svg>
               }
-              label="En attente de signature"
+              label="Aguardando assinatura"
               tone="amber"
               value={euro.format(enAttente)}
             />
@@ -168,19 +168,19 @@ export default async function DevisPage() {
                   <line x1="9" x2="13" y1="17" y2="17" />
                 </svg>
               </span>
-              <h2 className="mt-5 text-lg font-semibold text-ink">Lancez-vous avec votre 1er devis !</h2>
-              <p className="mt-2 max-w-sm text-sm text-muted">Configurez et créez votre devis en toute simplicité.</p>
+              <h2 className="mt-5 text-lg font-semibold text-ink">Comece pelo seu 1º orçamento!</h2>
+              <p className="mt-2 max-w-sm text-sm text-muted">Configure e crie seu orçamento com toda a simplicidade.</p>
               <Link className={`mt-6 ${primaryButton}`} href="/documentos/novo?type=devis">
-                Créer un devis
+                Criar orçamento
               </Link>
             </div>
           ) : (
             <div className="mt-6 flex flex-col items-center gap-3 rounded-2xl bg-white px-6 py-10 text-center shadow-sm ring-1 ring-black/5 sm:flex-row sm:justify-between sm:text-left">
               <p className="text-sm text-muted">
-                <span className="font-semibold tabular-nums text-ink">{devis.length}</span> devis émis.
+                <span className="font-semibold tabular-nums text-ink">{devis.length}</span> orçamentos emitidos.
               </p>
               <Link className={secondaryButton} href="/documentos">
-                Voir tous les devis
+                Ver todos os orçamentos
               </Link>
             </div>
           )}

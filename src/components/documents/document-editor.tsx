@@ -448,7 +448,7 @@ export function DocumentEditor({
             <h2 className="text-lg font-semibold text-ink">Datas</h2>
             <div className="mt-4 grid gap-4 sm:grid-cols-3">
               <label className="text-sm font-medium text-ink">
-                Émission
+                Emissão
                 <Input
                   className="mt-2"
                   onChange={(event) => setDateEmission(event.target.value)}
@@ -457,7 +457,7 @@ export function DocumentEditor({
                 />
               </label>
               <label className="text-sm font-medium text-ink">
-                Prestation
+                Prestação
                 <Input
                   className="mt-2"
                   onChange={(event) => setDatePrestation(event.target.value)}
@@ -467,7 +467,7 @@ export function DocumentEditor({
               </label>
               {documentType !== "devis" ? (
                 <label className="text-sm font-medium text-ink">
-                  Échéance
+                  Vencimento
                   <Input
                     className="mt-2"
                     onChange={(event) => setDateEcheance(event.target.value)}
@@ -477,7 +477,7 @@ export function DocumentEditor({
                 </label>
               ) : (
                 <label className="text-sm font-medium text-ink">
-                  Validité (jours)
+                  Validade (dias)
                   <Input
                     className="mt-2"
                     min="0"
@@ -522,7 +522,7 @@ export function DocumentEditor({
                 <div className="rounded-md border border-line p-4" key={line.id}>
                   <div className="grid gap-3 md:grid-cols-[1fr_140px_140px]">
                     <label className="text-sm font-medium text-ink">
-                      Désignation
+                      Designação
                       <Input
                         className="mt-2"
                         onChange={(event) => updateLine(line.id, { designation: event.target.value })}
@@ -530,7 +530,7 @@ export function DocumentEditor({
                       />
                     </label>
                     <label className="text-sm font-medium text-ink">
-                      Quantité
+                      Quantidade
                       <Input
                         className="mt-2"
                         min="0.001"
@@ -543,7 +543,7 @@ export function DocumentEditor({
                       />
                     </label>
                     <label className="text-sm font-medium text-ink">
-                      Prix HT
+                      Preço HT
                       <Input
                         className="mt-2"
                         min="0"
@@ -632,7 +632,7 @@ export function DocumentEditor({
             <h2 className="text-lg font-semibold text-ink">Condições</h2>
             <div className="mt-4 grid gap-4">
               <label className="text-sm font-medium text-ink">
-                Conditions de paiement
+                Condições de pagamento
                 <Input
                   className="mt-2"
                   onChange={(event) => setConditionsPaiement(event.target.value)}
@@ -640,7 +640,7 @@ export function DocumentEditor({
                 />
               </label>
               <label className="text-sm font-medium text-ink">
-                Notes de bas de page
+                Notas de rodapé
                 <Textarea
                   className="mt-2"
                   onChange={(event) => setNotesBasPage(event.target.value)}

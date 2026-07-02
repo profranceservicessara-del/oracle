@@ -14,7 +14,7 @@ export function DocActions({ exporter }: { exporter?: boolean }) {
   // TODO: Connect document preview when backend support exists.
   // TODO: Connect accounting export when backend support exists.
   function soon() {
-    showToast("Disponible prochainement.", "info");
+    showToast("Disponível em breve.", "info");
   }
 
   if (exporter) {
