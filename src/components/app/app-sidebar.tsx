@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { t, type Locale } from "@/lib/i18n/dictionaries";
+import { createClient } from "@/lib/supabase/client";
 import { SHORTCUTS, SHORTCUTS_EVENT, readVisibleKeys } from "@/lib/shortcuts";
 
 // ---------------------------------------------------------------------------
@@ -336,58 +337,168 @@ function ShortcutsBlock({ collapsed, onNavigate }: { collapsed?: boolean; onNavi
   );
 }
 
-// Bottom account block — clicking it collapses/expands the sidebar (icon-only
-// mode). No gear. The avatar (photo or email initial) stays visible in both
-// states. Profile is reached from the Configurações rail.
-function UserMenu({ email, locale, avatarUrl, collapsed, onToggle }: { email: string; locale: Locale; avatarUrl?: string | null; collapsed?: boolean; onToggle?: () => void }) {
-  const initials = (email.trim()[0] ?? "U").toUpperCase();
+const menuIcons = {
+  config: (<svg fill="none" height="17" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24" width="17"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6h.09A1.65 1.65 0 0 0 10 3.09V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>),
+  perfil: (<svg fill="none" height="17" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24" width="17"><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></svg>),
+  empresa: (<svg fill="none" height="17" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24" width="17"><path d="M3 21h18" /><path d="M5 21V5a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v16" /><path d="M15 9h3a1 1 0 0 1 1 1v11" /><path d="M8 8h2M8 12h2M8 16h2" /></svg>),
+  pagamentos: (<svg fill="none" height="17" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24" width="17"><rect height="14" rx="2" width="20" x="2" y="5" /><line x1="2" x2="22" y1="10" y2="10" /></svg>)
+} as const;
 
-  const avatar = (
-    <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/15 text-sm font-semibold text-white ring-1 ring-white/10">
-      {avatarUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img alt="Foto do perfil" className="h-full w-full object-cover" src={avatarUrl} />
-      ) : (
-        initials
-      )}
-    </span>
-  );
+// Bottom account block — clicking it opens a floating account dropdown (user
+// preview + shortcuts + Sair). "Configurações" navigates and collapses the main
+// sidebar (settings tabs live in the page). The avatar stays visible collapsed.
+function UserMenu({ email, locale, avatarUrl, name, collapsed, onCollapse, onNavigate }: { email: string; locale: Locale; avatarUrl?: string | null; name?: string; collapsed?: boolean; onCollapse?: () => void; onNavigate?: () => void }) {
+  const initials = (email.trim()[0] ?? "U").toUpperCase();
+  const router = useRouter();
+  const supabase = useMemo(() => createClient(), []);
+  const ref = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    function onDown(event: MouseEvent) {
+      if (ref.current && !ref.current.contains(event.target as Node)) setOpen(false);
+    }
+    function onKey(event: KeyboardEvent) {
+      if (event.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  const displayName = name?.trim() || (email.split("@")[0] || t(locale, "menu.account"));
+
+  function go(href: string, extra?: () => void) {
+    setOpen(false);
+    onNavigate?.();
+    extra?.();
+    router.push(href);
+  }
+
+  async function signOut() {
+    setLoggingOut(true);
+    await supabase.auth.signOut();
+    router.replace("/login");
+    router.refresh();
+  }
+
+  const rows = [
+    { label: "Configurações", icon: menuIcons.config, onClick: () => go("/configuracoes/perfil", onCollapse) },
+    { label: "Perfil", icon: menuIcons.perfil, onClick: () => go("/configuracoes/perfil") },
+    { label: "Minha empresa", icon: menuIcons.empresa, onClick: () => go("/configuracoes/perfil") },
+    { label: "Pagamentos / Assinatura", icon: menuIcons.pagamentos, onClick: () => go("/configuracoes/pagamentos") }
+  ];
 
   return (
-    <button
-      aria-expanded={!collapsed}
-      aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
-      className={`flex w-full items-center gap-3 rounded-xl px-1 py-1.5 text-left transition hover:-translate-y-px hover:bg-white/10 ${collapsed ? "justify-center" : ""}`}
-      onClick={onToggle}
-      title={collapsed ? "Expandir menu" : "Recolher menu"}
-      type="button"
-    >
-      {avatar}
-      {collapsed ? null : (
-        <>
-          <span className="min-w-0 flex-1">
-            <span className="block truncate text-sm font-medium text-white">{email || t(locale, "menu.account")}</span>
-            <span className="block text-xs text-white/50">{t(locale, "menu.profile")}</span>
-          </span>
-          <svg aria-hidden="true" className="shrink-0 text-white/40" fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeWidth="2" viewBox="0 0 24 24" width="16">
-            <path d="m15 18-6-6 6-6" />
-          </svg>
-        </>
-      )}
-    </button>
+    <div className="relative" ref={ref}>
+      {open ? (
+        <div className="absolute bottom-full left-0 z-30 mb-2 w-64 max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl bg-white shadow-xl ring-1 ring-black/10" role="menu">
+          <div className="flex items-center gap-3 p-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#EAF0FF] text-sm font-bold text-[#1D4ED8] ring-1 ring-black/5">
+              {avatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img alt="Foto do perfil" className="h-full w-full object-cover" src={avatarUrl} />
+              ) : (
+                initials
+              )}
+            </span>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-ink">{displayName}</p>
+              <p className="truncate text-xs text-muted">{email || "—"}</p>
+              <p className="truncate text-[11px] text-slate-400">Versão de avaliação para empresas</p>
+            </div>
+          </div>
+          <div className="px-3 pb-2">
+            <button
+              className="w-full rounded-full border border-slate-200 px-3 py-2 text-sm font-semibold text-ink transition hover:bg-slate-50"
+              onClick={() => go("/configuracoes/pagamentos")}
+              type="button"
+            >
+              Assine agora
+            </button>
+          </div>
+          <div className="border-t border-black/5 p-1.5">
+            {rows.map((row) => (
+              <button
+                className="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-50"
+                key={row.label}
+                onClick={row.onClick}
+                role="menuitem"
+                type="button"
+              >
+                <span className="shrink-0 text-slate-400">{row.icon}</span>
+                {row.label}
+              </button>
+            ))}
+          </div>
+          <div className="border-t border-black/5 p-1.5">
+            <button
+              className="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-sm font-medium text-red-600 transition hover:bg-red-50 disabled:opacity-60"
+              disabled={loggingOut}
+              onClick={() => void signOut()}
+              role="menuitem"
+              type="button"
+            >
+              <svg className="shrink-0" fill="none" height="17" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24" width="17">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><path d="m16 17 5-5-5-5" /><line x1="21" x2="9" y1="12" y2="12" />
+              </svg>
+              {loggingOut ? "…" : t(locale, "menu.logout")}
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      <button
+        aria-expanded={open}
+        aria-haspopup="menu"
+        aria-label="Conta"
+        className={`flex w-full items-center gap-3 rounded-xl px-1 py-1.5 text-left transition hover:-translate-y-px hover:bg-white/10 ${collapsed ? "justify-center" : ""}`}
+        onClick={() => setOpen((value) => !value)}
+        type="button"
+      >
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/15 text-sm font-semibold text-white ring-1 ring-white/10">
+          {avatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img alt="Foto do perfil" className="h-full w-full object-cover" src={avatarUrl} />
+          ) : (
+            initials
+          )}
+        </span>
+        {collapsed ? null : (
+          <>
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-sm font-medium text-white">{displayName}</span>
+              <span className="block truncate text-xs text-white/50">{email || t(locale, "menu.profile")}</span>
+            </span>
+            <svg aria-hidden="true" className={`shrink-0 text-white/40 transition-transform ${open ? "rotate-180" : ""}`} fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeWidth="2" viewBox="0 0 24 24" width="16">
+              <path d="m6 15 6-6 6 6" />
+            </svg>
+          </>
+        )}
+      </button>
+    </div>
   );
 }
 
-function SidebarBody({ email, locale, avatarUrl, onNavigate, collapsed, onToggleCollapse }: { email: string; locale: Locale; avatarUrl?: string | null; onNavigate?: () => void; collapsed?: boolean; onToggleCollapse?: () => void }) {
+function SidebarBody({ email, locale, avatarUrl, name, onNavigate, collapsed, onSetCollapsed }: { email: string; locale: Locale; avatarUrl?: string | null; name?: string; onNavigate?: () => void; collapsed?: boolean; onSetCollapsed?: (value: boolean) => void }) {
   const initials = ((email.split("@")[0] ?? "").replace(/[^a-zA-Z]/g, "").slice(0, 2) || "PF").toUpperCase();
 
   return (
     <div className={`flex h-full flex-col gap-5 bg-gradient-to-b from-[#00153A] via-[#032A63] to-[#061A3E] ${collapsed ? "px-2 py-4" : "p-4"}`}>
       <Link
-        aria-label="Ir para Análise"
+        aria-label={collapsed ? "Expandir menu" : "Ir para Análise"}
         className={`flex items-center gap-3 rounded-xl px-1 pt-1 transition hover:opacity-90 ${collapsed ? "justify-center" : ""}`}
         href="/dashboard"
-        onClick={onNavigate}
+        onClick={() => {
+          onSetCollapsed?.(false);
+          onNavigate?.();
+        }}
+        title={collapsed ? "Expandir menu" : "Oracle"}
       >
         <BrandBadge initials={initials} />
         {collapsed ? null : (
@@ -400,14 +511,14 @@ function SidebarBody({ email, locale, avatarUrl, onNavigate, collapsed, onToggle
         )}
       </Link>
       <div className="border-t border-white/10" />
-      <NavList collapsed={collapsed} onExpand={onToggleCollapse} onNavigate={onNavigate} />
+      <NavList collapsed={collapsed} onExpand={() => onSetCollapsed?.(false)} onNavigate={onNavigate} />
       <ShortcutsBlock collapsed={collapsed} onNavigate={onNavigate} />
-      <UserMenu avatarUrl={avatarUrl} collapsed={collapsed} email={email} locale={locale} onToggle={onToggleCollapse} />
+      <UserMenu avatarUrl={avatarUrl} collapsed={collapsed} email={email} locale={locale} name={name} onCollapse={() => onSetCollapsed?.(true)} onNavigate={onNavigate} />
     </div>
   );
 }
 
-export function AppSidebar({ email, locale, avatarUrl }: { email: string; locale: Locale; avatarUrl?: string | null }) {
+export function AppSidebar({ email, locale, avatarUrl, name }: { email: string; locale: Locale; avatarUrl?: string | null; name?: string }) {
   const [open, setOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const initials = ((email.split("@")[0] ?? "").replace(/[^a-zA-Z]/g, "").slice(0, 2) || "PF").toUpperCase();
@@ -424,7 +535,7 @@ export function AppSidebar({ email, locale, avatarUrl }: { email: string; locale
   return (
     <>
       <aside className={`fixed inset-y-0 left-0 z-30 hidden transition-[width] duration-300 md:block ${collapsed ? "w-20" : "w-64"}`}>
-        <SidebarBody avatarUrl={avatarUrl} collapsed={collapsed} email={email} locale={locale} onToggleCollapse={() => setCollapsed((value) => !value)} />
+        <SidebarBody avatarUrl={avatarUrl} collapsed={collapsed} email={email} locale={locale} name={name} onSetCollapsed={setCollapsed} />
       </aside>
 
       <div className="sticky top-0 z-20 flex items-center justify-between border-b border-black/5 bg-white/80 px-4 py-3 backdrop-blur md:hidden">
@@ -457,7 +568,7 @@ export function AppSidebar({ email, locale, avatarUrl }: { email: string; locale
             type="button"
           />
           <div className="absolute inset-y-0 left-0 w-72 max-w-[80%]">
-            <SidebarBody avatarUrl={avatarUrl} email={email} locale={locale} onNavigate={() => setOpen(false)} />
+            <SidebarBody avatarUrl={avatarUrl} email={email} locale={locale} name={name} onNavigate={() => setOpen(false)} />
           </div>
         </div>
       ) : null}
