@@ -375,6 +375,7 @@ function ShortcutsBlock({ collapsed, onNavigate }: { collapsed?: boolean; onNavi
 
   return (
     <div className="shrink-0">
+      <div className={`mb-1 border-t border-white/10 ${collapsed ? "mx-auto w-8" : ""}`} />
       <button
         aria-label="Gerenciar atalhos"
         className={
@@ -390,8 +391,7 @@ function ShortcutsBlock({ collapsed, onNavigate }: { collapsed?: boolean; onNavi
       </button>
 
       {items.length > 0 ? (
-        <div className={collapsed ? "mt-1 flex flex-col items-center gap-0.5" : "mt-1 space-y-0"}>
-          <div className={`mb-0.5 border-t border-white/10 ${collapsed ? "mx-auto w-8" : ""}`} />
+        <div className={collapsed ? "mt-0.5 flex flex-col items-center gap-0.5" : "mt-0.5 space-y-0"}>
           {items.map((item) => (
             <Link
               className={
