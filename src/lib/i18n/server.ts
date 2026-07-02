@@ -1,7 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import type { Locale } from "@/lib/i18n/dictionaries";
 
-// Reads the signed-in user's preferred locale (default 'fr').
+// Reads the signed-in user's preferred locale. Portuguese is the default;
+// French is opt-in and persisted per user in user_preferences.locale.
 export async function getLocale(): Promise<Locale> {
   const supabase = createClient();
   const {
@@ -9,7 +10,7 @@ export async function getLocale(): Promise<Locale> {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return "fr";
+    return "pt";
   }
 
   const { data } = await supabase
@@ -18,5 +19,5 @@ export async function getLocale(): Promise<Locale> {
     .eq("user_id", user.id)
     .maybeSingle();
 
-  return data?.locale === "pt" ? "pt" : "fr";
+  return data?.locale === "fr" ? "fr" : "pt";
 }
