@@ -107,9 +107,11 @@ const activeCard =
   "before:absolute before:left-1 before:top-1/2 before:h-5 before:w-[3px] before:-translate-y-1/2 " +
   "before:rounded-full before:bg-white before:shadow-[0_0_8px_rgba(255,255,255,0.45)] before:content-['']";
 
-// IDLE row — white text always + subtle hover lift.
+// IDLE row — white text + premium glass-blue hover: rounded surface (rows are
+// already rounded-xl), subtle blue fill + backdrop blur, border highlight, soft
+// depth shadow, and a gentle lift. Applied to every menu item for consistency.
 const idleRow =
-  "text-white hover:-translate-y-px hover:bg-white/[0.07] hover:shadow-[0_5px_14px_-8px_rgba(0,0,0,0.55)]";
+  "text-white hover:-translate-y-px hover:bg-[#7EA0FF]/10 hover:backdrop-blur-sm hover:ring-1 hover:ring-inset hover:ring-white/10 hover:shadow-[0_6px_16px_-8px_rgba(0,0,0,0.55)]";
 
 // All destination hrefs, used to resolve the single best (most-specific) match so
 // a parent path like /facturation never stays "active" on /facturation/devis.
@@ -162,9 +164,7 @@ function GroupRow({
     <div>
       <button
         aria-expanded={open}
-        className={`group/row flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
-          hasActiveChild && !open ? "text-white" : idleRow
-        }`}
+        className={`group/row flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ${idleRow}`}
         onClick={onToggle}
         type="button"
       >
