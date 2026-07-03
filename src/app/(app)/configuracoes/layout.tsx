@@ -14,9 +14,12 @@ const groups: Group[] = [
     key: "conta",
     label: "Conta",
     children: [
+      { href: "/configuracoes/empresa", label: "Empresa" },
       { href: "/configuracoes/perfil", label: "Perfil" },
       { href: "/configuracoes/dados", label: "Integrações" },
       { href: "/configuracoes/pagamentos", label: "Pagamentos / Assinatura" },
+      { href: "/configuracoes/seguranca", label: "Segurança" },
+      { href: "/configuracoes/moedas", label: "Moedas e idiomas" },
       { href: null, label: "Usuários" }
     ]
   },
@@ -29,7 +32,6 @@ const groups: Group[] = [
       { href: null, label: "Pagamento" },
       { href: null, label: "Lembretes automáticos" },
       { href: null, label: "Envio de e-mails" },
-      { href: "/configuracoes/moedas", label: "Moedas e idiomas" },
       { href: null, label: "Numeração" },
       { href: null, label: "Faturação eletrônica", dot: true }
     ]

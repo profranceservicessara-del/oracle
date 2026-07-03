@@ -1,14 +1,54 @@
 "use client";
 
+import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { FormModal } from "@/components/ui/form-modal";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
+import { createClient } from "@/lib/supabase/client";
 
 export default function SegurancaPage() {
+  const router = useRouter();
+  const supabase = useMemo(() => createClient(), []);
   const { showToast } = useToast();
+  const [isExporting, setIsExporting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState("");
 
-  // TODO: Conectar backend (alterar senha via supabase.auth.updateUser; listar sessões/dispositivos). UI pronta.
   function notImplemented() {
     showToast("Disponível em breve.", "info");
+  }
+
+  async function exportData() {
+    setIsExporting(true);
+    const response = await fetch("/api/rgpd/export", { method: "POST" });
+    const payload = (await response.json()) as { error?: string; signedUrl?: string };
+    setIsExporting(false);
+    if (!response.ok || !payload.signedUrl) {
+      showToast(payload.error ?? "Não foi possível exportar seus dados.", "error");
+      return;
+    }
+    window.open(payload.signedUrl, "_blank", "noopener,noreferrer");
+  }
+
+  async function deleteAccount() {
+    setIsDeleting(true);
+    const response = await fetch("/api/rgpd/delete", {
+      body: JSON.stringify({ confirmation: deleteConfirm }),
+      headers: { "Content-Type": "application/json" },
+      method: "POST"
+    });
+    const payload = (await response.json()) as { error?: string };
+    setIsDeleting(false);
+    if (!response.ok) {
+      showToast(payload.error ?? "Não foi possível excluir a conta.", "error");
+      return;
+    }
+    await supabase.auth.signOut();
+    router.replace("/login");
+    router.refresh();
   }
 
   return (
@@ -16,64 +56,85 @@ export default function SegurancaPage() {
       <div className="mb-6">
         <p className="text-sm font-semibold text-brand">Configurações</p>
         <h1 className="mt-2 text-2xl font-semibold text-ink">Segurança</h1>
-        <p className="mt-2 text-sm text-muted">Proteja o acesso à sua conta Oracle.</p>
+        <p className="mt-2 text-sm text-muted">Proteja o acesso à sua conta e gerencie seus dados.</p>
       </div>
 
-      <div className="flex items-start gap-3 rounded-2xl bg-emerald-50 p-4 ring-1 ring-emerald-200">
-        <svg aria-hidden="true" className="mt-0.5 shrink-0 text-emerald-600" fill="none" height="20" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" width="20">
-          <path d="M20 6 9 17l-5-5" />
-        </svg>
-        <div>
-          <p className="font-semibold text-emerald-800">Conta protegida</p>
-          <p className="mt-1 text-sm text-emerald-700">Você acessa o Oracle com email e senha.</p>
+      {/* Módulos de segurança */}
+      <section className="mb-6 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
+        <div className="border-b border-line bg-slate-50 px-5 py-3">
+          <h2 className="text-base font-semibold text-ink">Segurança</h2>
         </div>
-      </div>
-
-      <section className="mt-6">
-        <h2 className="text-lg font-semibold text-ink">Segurança da sua conta</h2>
-        <p className="mt-2 text-sm leading-6 text-muted">
-          A segurança da sua conta depende, em primeiro lugar, da sua vigilância. Para reduzir riscos,
-          recomendamos ativar as proteções abaixo.
-        </p>
-        <div className="mt-4 flex items-start gap-3 rounded-2xl bg-amber-50 p-4 ring-1 ring-amber-200">
-          <svg aria-hidden="true" className="mt-0.5 shrink-0 text-amber-600" fill="none" height="20" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" width="20">
-            <circle cx="12" cy="12" r="9" />
-            <line x1="12" x2="12" y1="8" y2="13" />
-            <line x1="12" x2="12" y1="16" y2="16" />
-          </svg>
-          <div>
-            <p className="font-semibold text-amber-800">Lembrete</p>
-            <p className="mt-1 text-sm text-amber-700">
-              A equipe Oracle nunca pedirá informações sensíveis. Se detectarmos algum problema de
-              segurança, entraremos em contato por email ou diretamente no aplicativo.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section className="mt-6">
-        <h2 className="text-lg font-semibold text-ink">Módulos de segurança</h2>
-        <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5">
-            <h3 className="font-semibold text-ink">Senha</h3>
-            <p className="mt-2 text-sm leading-6 text-muted">
-              Crie ou altere a senha de acesso à sua conta.
-            </p>
-            <Button className="mt-4" onClick={notImplemented} type="button" variant="secondary">
+        <div className="grid gap-4 px-5 py-5 sm:grid-cols-2">
+          <div className="rounded-xl p-4 ring-1 ring-black/5">
+            <h3 className="text-sm font-semibold text-ink">Senha</h3>
+            <p className="mt-1 text-sm text-muted">Crie ou altere a senha de acesso à sua conta.</p>
+            <Button className="mt-3" onClick={notImplemented} type="button" variant="secondary">
               Alterar senha
             </Button>
           </div>
-          <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5">
-            <h3 className="font-semibold text-ink">Dispositivos conectados</h3>
-            <p className="mt-2 text-sm leading-6 text-muted">
-              Veja os dispositivos conectados à sua conta Oracle.
-            </p>
-            <Button className="mt-4" onClick={notImplemented} type="button" variant="secondary">
+          <div className="rounded-xl p-4 ring-1 ring-black/5">
+            <h3 className="text-sm font-semibold text-ink">Dispositivos conectados</h3>
+            <p className="mt-1 text-sm text-muted">Veja os dispositivos conectados à sua conta Oracle.</p>
+            <Button className="mt-3" onClick={notImplemented} type="button" variant="secondary">
               Ver lista
             </Button>
           </div>
         </div>
       </section>
+
+      {/* Exportar / Excluir (RGPD) */}
+      <section className="mb-6 rounded-2xl bg-white px-4 text-sm shadow-sm ring-1 ring-black/5">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line py-3">
+          <span className="min-w-0 text-slate-600">
+            <span className="font-medium text-ink">Exportar meus dados</span> — ZIP dos seus dados; o link expira em 15 min (limite 2/dia).
+          </span>
+          <button
+            className="shrink-0 rounded-lg px-3 py-1.5 text-xs font-semibold text-brand ring-1 ring-inset ring-slate-200 transition hover:bg-slate-50 disabled:opacity-60"
+            disabled={isExporting}
+            onClick={() => void exportData()}
+            type="button"
+          >
+            {isExporting ? "Gerando..." : "Exportar"}
+          </button>
+        </div>
+        <div className="flex flex-wrap items-center justify-between gap-2 py-3">
+          <span className="min-w-0 text-slate-600">
+            <span className="font-medium text-ink">Excluir minha conta</span> — anonimiza os dados de contato; documentos fiscais são preservados pelo prazo legal.
+          </span>
+          <button
+            className="shrink-0 rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-700 ring-1 ring-inset ring-slate-200 transition hover:bg-slate-50"
+            onClick={() => setIsDeleteOpen(true)}
+            type="button"
+          >
+            Excluir
+          </button>
+        </div>
+      </section>
+
+      <FormModal
+        description='Digite "CONFIRMAR" para solicitar a exclusão. Esta ação encerra suas sessões.'
+        isOpen={isDeleteOpen}
+        onClose={() => setIsDeleteOpen(false)}
+        title="Confirmar exclusão"
+      >
+        <form
+          className="grid gap-4"
+          onSubmit={(event) => {
+            event.preventDefault();
+            void deleteAccount();
+          }}
+        >
+          <Input onChange={(event) => setDeleteConfirm(event.target.value)} placeholder="CONFIRMAR" value={deleteConfirm} />
+          <div className="flex justify-end gap-2">
+            <Button onClick={() => setIsDeleteOpen(false)} type="button" variant="secondary">
+              Cancelar
+            </Button>
+            <Button disabled={deleteConfirm !== "CONFIRMAR" || isDeleting} type="submit">
+              {isDeleting ? "Excluindo..." : "Confirmar exclusão"}
+            </Button>
+          </div>
+        </form>
+      </FormModal>
     </main>
   );
 }

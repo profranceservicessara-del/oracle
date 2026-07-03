@@ -551,7 +551,7 @@ function UserMenu({ email, locale, avatarUrl, name, collapsed, onCollapse, onNav
   const rows = [
     { label: "Configurações", icon: menuIcons.config, onClick: () => go("/configuracoes/perfil", onCollapse) },
     { label: "Perfil", icon: menuIcons.perfil, onClick: () => go("/configuracoes/perfil") },
-    { label: "Minha empresa", icon: menuIcons.empresa, onClick: () => go("/configuracoes/perfil") },
+    { label: "Minha empresa", icon: menuIcons.empresa, onClick: () => go("/configuracoes/empresa") },
     { label: "Pagamentos / Assinatura", icon: menuIcons.pagamentos, onClick: () => go("/configuracoes/pagamentos") }
   ];
 
