@@ -173,13 +173,15 @@ function GroupRow({
   activeHref,
   open,
   onToggle,
-  onNavigate
+  onNavigate,
+  onCollapse
 }: {
   item: Extract<NavItem, { kind: "group" }>;
   activeHref: string;
   open: boolean;
   onToggle: () => void;
   onNavigate?: () => void;
+  onCollapse?: () => void;
 }) {
   const hasActiveChild = item.children.some((child) => child.href === activeHref);
 
@@ -216,7 +218,16 @@ function GroupRow({
         <div className="overflow-hidden">
           <div className="ml-[1.35rem] mt-1 space-y-0.5 border-l border-white/10 pb-1 pl-2.5">
             {item.children.map((child) => (
-              <LeafRow active={child.href === activeHref} key={child.href} leaf={child} onNavigate={onNavigate} />
+              <LeafRow
+                active={child.href === activeHref}
+                key={child.href}
+                leaf={child}
+                onNavigate={() => {
+                  onNavigate?.();
+                  // Clicar "Faturas" recolhe a sidebar (como o atalho da conta).
+                  if (child.href === "/facturation") onCollapse?.();
+                }}
+              />
             ))}
           </div>
         </div>
@@ -225,26 +236,23 @@ function GroupRow({
   );
 }
 
-function NavList({ onNavigate, collapsed, onExpand }: { onNavigate?: () => void; collapsed?: boolean; onExpand?: () => void }) {
+function ownerGroupKey(activeHref: string): string | null {
+  for (const item of nav) {
+    if (item.kind === "group" && item.children.some((child) => child.href === activeHref)) return item.key;
+  }
+  return null;
+}
+
+function NavList({ onNavigate, collapsed, onExpand, onCollapse }: { onNavigate?: () => void; collapsed?: boolean; onExpand?: () => void; onCollapse?: () => void }) {
   const pathname = usePathname();
   const activeHref = activeHrefFor(pathname);
-  const [open, setOpen] = useState<Record<string, boolean>>(() => {
-    const initial: Record<string, boolean> = {};
-    for (const item of nav) {
-      if (item.kind === "group" && item.children.some((child) => child.href === activeHref)) {
-        initial[item.key] = true;
-      }
-    }
-    return initial;
-  });
+  // Single-open accordion: at most one group open at a time.
+  const [openKey, setOpenKey] = useState<string | null>(() => ownerGroupKey(activeHref));
 
-  // Auto-open the group that owns the active route on navigation (keeps others as-is).
+  // Auto-open the group that owns the active route (closing any other group).
   useEffect(() => {
-    for (const item of nav) {
-      if (item.kind === "group" && item.children.some((child) => child.href === activeHref)) {
-        setOpen((current) => (current[item.key] ? current : { ...current, [item.key]: true }));
-      }
-    }
+    const owner = ownerGroupKey(activeHref);
+    if (owner) setOpenKey(owner);
   }, [activeHref]);
 
   if (collapsed) {
@@ -294,9 +302,10 @@ function NavList({ onNavigate, collapsed, onExpand }: { onNavigate?: () => void;
             activeHref={activeHref}
             item={item}
             key={item.key}
+            onCollapse={onCollapse}
             onNavigate={onNavigate}
-            onToggle={() => setOpen((current) => ({ ...current, [item.key]: !current[item.key] }))}
-            open={Boolean(open[item.key])}
+            onToggle={() => setOpenKey((current) => (current === item.key ? null : item.key))}
+            open={openKey === item.key}
           />
         )
       )}
@@ -696,7 +705,7 @@ function SidebarBody({ email, locale, avatarUrl, name, onNavigate, collapsed, on
         )}
       </Link>
       <div className="border-t border-white/10" />
-      <NavList collapsed={collapsed} onExpand={() => onSetCollapsed?.(false)} onNavigate={onNavigate} />
+      <NavList collapsed={collapsed} onCollapse={() => onSetCollapsed?.(true)} onExpand={() => onSetCollapsed?.(false)} onNavigate={onNavigate} />
       <ShortcutsBlock collapsed={collapsed} onNavigate={onNavigate} />
       <div className={`border-t border-white/10 ${collapsed ? "mx-auto w-8" : ""}`} />
       <UserMenu avatarUrl={avatarUrl} collapsed={collapsed} email={email} locale={locale} name={name} onCollapse={() => onSetCollapsed?.(true)} onNavigate={onNavigate} />
