@@ -276,10 +276,15 @@ export default async function DashboardPage() {
 
   return (
     <main className="mx-auto max-w-6xl space-y-6 px-4 py-8">
-      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#00153A] via-[#052A63] to-[#0A2E6E] px-6 py-7 shadow-sm ring-1 ring-white/10">
-        <div aria-hidden className="pointer-events-none absolute -right-12 -top-24 h-72 w-72 rounded-full bg-[#5D7BEA]/30 blur-3xl" />
-        <div aria-hidden className="pointer-events-none absolute -bottom-28 right-20 h-64 w-64 rounded-full bg-[#7FA0FF]/20 blur-3xl" />
+      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#00153A]/95 via-[#052A63]/90 to-[#0A2E6E]/90 px-6 py-7 shadow-[0_24px_60px_-24px_rgba(2,12,40,0.75)] ring-1 ring-inset ring-white/15 backdrop-blur-xl">
+        {/* Soft circular light spots (behind content, non-interactive) */}
+        <div aria-hidden className="pointer-events-none absolute -right-10 -top-20 h-80 w-80 rounded-full bg-[#6E86FF]/30 blur-[90px]" />
+        <div aria-hidden className="pointer-events-none absolute -bottom-28 right-16 h-64 w-64 rounded-full bg-[#7FA0FF]/20 blur-[90px]" />
+        <div aria-hidden className="pointer-events-none absolute -bottom-24 left-1/4 h-72 w-72 rounded-full bg-[#7C5CFF]/20 blur-[100px]" />
         <div aria-hidden className="pointer-events-none absolute -left-16 top-1/3 h-56 w-56 rounded-full bg-white/[0.07] blur-3xl" />
+        {/* Glass layers: soft inner highlight + top sheen */}
+        <div aria-hidden className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-b from-white/[0.10] via-transparent to-transparent" />
+        <div aria-hidden className="pointer-events-none absolute inset-0 rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.16)]" />
         <div className="relative z-10">
         <h1 className="text-2xl font-medium text-white">
           Bienvenue{typedProfile?.prenom || typedProfile?.nome ? `, ${typedProfile?.prenom || typedProfile?.nome}` : ""} ! 👋
@@ -290,7 +295,7 @@ export default async function DashboardPage() {
         <p className="mt-1 text-xs text-white/55">Pronto para expandir seu negócio? 🚀</p>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-xl bg-white/10 p-4 ring-1 ring-white/15">
+          <div className="rounded-xl bg-white/[0.08] p-4 ring-1 ring-inset ring-white/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-md">
             <p className="text-[11px] font-medium uppercase tracking-wide text-white/60">Faturamento recebido {currentYear}</p>
             <p className="mt-2 text-2xl font-medium tabular-nums text-white">{euroFormatter.format(annualTotal)}</p>
             <p className="mt-1 text-xs text-white/60">
@@ -301,7 +306,7 @@ export default async function DashboardPage() {
           </div>
 
           <Link
-            className="rounded-xl bg-white/10 p-4 ring-1 ring-white/15 transition hover:bg-white/15"
+            className="rounded-xl bg-white/[0.08] p-4 ring-1 ring-inset ring-white/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-md transition hover:bg-white/[0.14]"
             href="/documentos?status=sent"
           >
             <p className="text-[11px] font-medium uppercase tracking-wide text-white/60">Faturas em aberto</p>
@@ -310,7 +315,7 @@ export default async function DashboardPage() {
           </Link>
 
           <Link
-            className="rounded-xl bg-white/10 p-4 ring-1 ring-white/15 transition hover:bg-white/15"
+            className="rounded-xl bg-white/[0.08] p-4 ring-1 ring-inset ring-white/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-md transition hover:bg-white/[0.14]"
             href="/documentos?status=a_relancer"
           >
             <p className="text-[11px] font-medium uppercase tracking-wide text-white/60">Faturas em atraso</p>
@@ -318,7 +323,7 @@ export default async function DashboardPage() {
             <p className="mt-1 text-xs tabular-nums text-white/60">{euroFormatter.format(lateAmount)}</p>
           </Link>
 
-          <div className="rounded-xl bg-white/10 p-4 ring-1 ring-white/15">
+          <div className="rounded-xl bg-white/[0.08] p-4 ring-1 ring-inset ring-white/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-md">
             <p className="text-[11px] font-medium uppercase tracking-wide text-white/60">Projeção {currentYear}</p>
             <p className="mt-2 text-2xl font-medium tabular-nums text-white">{euroFormatter.format(projection)}</p>
             <p className="mt-1 text-xs text-white/60">Estimativa anual</p>
