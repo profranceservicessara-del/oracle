@@ -276,10 +276,12 @@ export default async function DashboardPage() {
 
   return (
     <main className="mx-auto max-w-6xl space-y-6 px-4 py-8">
-      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#00153A] via-[#052A63] to-[#0A2E6E] px-6 py-7 shadow-sm ring-1 ring-white/10">
-        <div aria-hidden className="pointer-events-none absolute -right-12 -top-24 h-72 w-72 rounded-full bg-[#5D7BEA]/30 blur-3xl" />
-        <div aria-hidden className="pointer-events-none absolute -bottom-28 right-20 h-64 w-64 rounded-full bg-[#7FA0FF]/20 blur-3xl" />
-        <div aria-hidden className="pointer-events-none absolute -left-16 top-1/3 h-56 w-56 rounded-full bg-white/[0.07] blur-3xl" />
+      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#020D2C] via-[#0A2352] to-[#122C6E] px-6 py-7 shadow-[0_22px_55px_-26px_rgba(2,10,35,0.85)] ring-1 ring-inset ring-white/12 [box-shadow:inset_0_1px_0_rgba(255,255,255,0.10)]">
+        {/* Soft circular light spots behind content (non-interactive) */}
+        <div aria-hidden className="pointer-events-none absolute -right-16 -top-24 h-96 w-96 rounded-full bg-[#4F6BE0]/25 blur-[80px]" />
+        <div aria-hidden className="pointer-events-none absolute -bottom-20 right-8 h-64 w-64 rounded-full bg-[#3A5AC0]/20 blur-[70px]" />
+        <div aria-hidden className="pointer-events-none absolute -bottom-24 right-24 h-56 w-56 rounded-full bg-[#5B3FA0]/16 blur-[90px]" />
+        <div aria-hidden className="pointer-events-none absolute -bottom-24 -left-20 h-72 w-72 rounded-full bg-[#061A46]/70 blur-[80px]" />
         <div className="relative z-10">
         <h1 className="text-2xl font-medium text-white">
           Bienvenue{typedProfile?.prenom || typedProfile?.nome ? `, ${typedProfile?.prenom || typedProfile?.nome}` : ""} ! 👋
@@ -290,7 +292,7 @@ export default async function DashboardPage() {
         <p className="mt-1 text-xs text-white/55">Pronto para expandir seu negócio? 🚀</p>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-xl bg-white/10 p-4 ring-1 ring-white/15">
+          <div className="rounded-xl bg-white/[0.06] p-4 ring-1 ring-inset ring-white/12 [box-shadow:inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-sm">
             <p className="text-[11px] font-medium uppercase tracking-wide text-white/60">Faturamento recebido {currentYear}</p>
             <p className="mt-2 text-2xl font-medium tabular-nums text-white">{euroFormatter.format(annualTotal)}</p>
             <p className="mt-1 text-xs text-white/60">
@@ -301,7 +303,7 @@ export default async function DashboardPage() {
           </div>
 
           <Link
-            className="rounded-xl bg-white/10 p-4 ring-1 ring-white/15 transition hover:bg-white/15"
+            className="rounded-xl bg-white/[0.06] p-4 ring-1 ring-inset ring-white/12 [box-shadow:inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-sm transition hover:bg-white/[0.11]"
             href="/documentos?status=sent"
           >
             <p className="text-[11px] font-medium uppercase tracking-wide text-white/60">Faturas em aberto</p>
@@ -310,7 +312,7 @@ export default async function DashboardPage() {
           </Link>
 
           <Link
-            className="rounded-xl bg-white/10 p-4 ring-1 ring-white/15 transition hover:bg-white/15"
+            className="rounded-xl bg-white/[0.06] p-4 ring-1 ring-inset ring-white/12 [box-shadow:inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-sm transition hover:bg-white/[0.11]"
             href="/documentos?status=a_relancer"
           >
             <p className="text-[11px] font-medium uppercase tracking-wide text-white/60">Faturas em atraso</p>
@@ -318,7 +320,7 @@ export default async function DashboardPage() {
             <p className="mt-1 text-xs tabular-nums text-white/60">{euroFormatter.format(lateAmount)}</p>
           </Link>
 
-          <div className="rounded-xl bg-white/10 p-4 ring-1 ring-white/15">
+          <div className="rounded-xl bg-white/[0.06] p-4 ring-1 ring-inset ring-white/12 [box-shadow:inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-sm">
             <p className="text-[11px] font-medium uppercase tracking-wide text-white/60">Projeção {currentYear}</p>
             <p className="mt-2 text-2xl font-medium tabular-nums text-white">{euroFormatter.format(projection)}</p>
             <p className="mt-1 text-xs text-white/60">Estimativa anual</p>
