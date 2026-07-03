@@ -41,17 +41,14 @@ function TrendBadge({ children, tone = "green" }: { children: ReactNode; tone?: 
   );
 }
 
-const receivables = [
-  { name: "Aurelys", date: "26/06/2026", via: "Transferência", amount: 100 },
-  { name: "Jean Louis", date: "26/06/2026", via: "Transferência", amount: 100 }
-];
+// Lançamentos vêm de fonte real quando existir. Sem backend financeiro, começa
+// vazio — todos os valores são gerados a partir destas listas (tudo zero).
+const receivables: { name: string; date: string; via: string; amount: number }[] = [];
+const cashRows: { name: string; date: string; type: string; status: string; amount: number }[] = [];
 
-const cashRows = [
-  { name: "Aurelys", date: "26/06/2026", type: "Repasse Vendedor", status: "Pendente", amount: 100 },
-  { name: "Jean Louis", date: "26/06/2026", type: "Repasse Vendedor", status: "Pendente", amount: 100 },
-  { name: "Raquel Aparecida", date: "19/06/2026", type: "Repasse Vendedor", status: "Pago", amount: 50 },
-  { name: "Gleicy Kelly", date: "19/06/2026", type: "Repasse Vendedor", status: "Em haver", amount: 115 }
-];
+const sum = (list: { amount: number }[]) => list.reduce((total, item) => total + item.amount, 0);
+const receitaTotal = sum(cashRows);
+const saldoTotal = receitaTotal;
 
 const statusStyles: Record<string, string> = {
   Pendente: "bg-amber-100 text-amber-700",
@@ -118,7 +115,7 @@ function VisaoGeral() {
             <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-white/60">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Saldo atual
             </p>
-            <p className="mt-1 text-3xl font-bold tabular-nums text-white sm:text-4xl">{eur(1250)}</p>
+            <p className="mt-1 text-3xl font-bold tabular-nums text-white sm:text-4xl">{eur(saldoTotal)}</p>
             <div className="mt-3 flex flex-wrap gap-2">
               <span className="inline-flex items-center gap-1.5 rounded-lg bg-white/10 px-2.5 py-1 text-xs font-medium text-white/80 ring-1 ring-white/15">📅 2026-06</span>
               <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500/15 px-2.5 py-1 text-xs font-medium text-emerald-300 ring-1 ring-emerald-400/20">● Tudo em dia</span>
@@ -126,7 +123,7 @@ function VisaoGeral() {
           </div>
           <div className="text-right">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-white/60">Lucro real ProFrance</p>
-            <p className="mt-1 text-2xl font-bold tabular-nums text-emerald-300 sm:text-3xl">{eur(295)}</p>
+            <p className="mt-1 text-2xl font-bold tabular-nums text-emerald-300 sm:text-3xl">{eur(0)}</p>
             <p className="mt-1 text-xs text-white/50">Receita − Despesas − Comissões</p>
           </div>
         </div>
@@ -134,10 +131,10 @@ function VisaoGeral() {
 
       {/* 4 metric cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <MetricCard badge={<TrendBadge>▲ +7% mês anterior</TrendBadge>} label="Entradas do mês" tone="blue" value={eur(1250)} />
+        <MetricCard badge={<TrendBadge tone="slate">→ 0% vs mês anterior</TrendBadge>} label="Entradas do mês" tone="blue" value={eur(receitaTotal)} />
         <MetricCard badge={<TrendBadge tone="slate">→ 0% vs mês anterior</TrendBadge>} label="Saídas do mês" tone="red" value={eur(0)} />
-        <MetricCard badge={<TrendBadge>▲ +7% mês anterior</TrendBadge>} label="Saldo atual" tone="green" value={eur(1250)} />
-        <MetricCard label="Lucro estimado" tone="purple" value={eur(1250)} />
+        <MetricCard badge={<TrendBadge tone="slate">→ 0% vs mês anterior</TrendBadge>} label="Saldo atual" tone="green" value={eur(saldoTotal)} />
+        <MetricCard label="Lucro estimado" tone="purple" value={eur(saldoTotal)} />
       </div>
 
       {/* Últimos 7 dias strip */}
@@ -165,16 +162,16 @@ function VisaoGeral() {
             <span className="rounded-lg bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-500 ring-1 ring-black/5">2026-06</span>
           </div>
           <dl className="divide-y divide-line px-5 text-sm">
-            <Row label="Receita" value={`+ ${eur(1250)}`} valueClass="text-emerald-600" />
+            <Row label="Receita" value={`+ ${eur(receitaTotal)}`} valueClass="text-emerald-600" />
             <Row label="Despesas" value={`− ${eur(0)}`} valueClass="text-rose-500" />
-            <Row label="Comissões vendedor" value={`− ${eur(955)}`} valueClass="text-rose-500" />
+            <Row label="Comissões vendedor" value={`− ${eur(0)}`} valueClass="text-rose-500" />
           </dl>
           <div className="flex items-center justify-between gap-3 bg-gradient-to-r from-emerald-50 to-transparent px-5 py-4">
             <span className="inline-flex items-center gap-2 font-semibold text-ink">
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-xs text-white">✓</span>
               Lucro real ProFrance
             </span>
-            <span className="text-xl font-bold tabular-nums text-emerald-600">{eur(295)}</span>
+            <span className="text-xl font-bold tabular-nums text-emerald-600">{eur(0)}</span>
           </div>
         </section>
 
@@ -188,33 +185,36 @@ function VisaoGeral() {
           </div>
           <div className="flex items-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm shadow-sm ring-1 ring-black/5">
             <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Top categorias</span>
-            <span className="ml-1 text-slate-500">🧾 Pedido</span>
-            <span className="font-bold text-[#2563EB]">100%</span>
+            <span className="ml-1 text-slate-400">Sem dados ainda</span>
           </div>
         </div>
       </div>
 
       {/* A receber */}
-      <ListCard badge="2 Financeiro" badgeTone="blue" title="A receber">
-        {receivables.map((r) => (
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-slate-50/60 p-4 ring-1 ring-black/5" key={r.name}>
-            <div className="flex items-center gap-3">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 text-lg">🤝</span>
-              <div>
-                <p className="font-semibold text-ink">{r.name}</p>
-                <p className="text-xs text-muted">{r.date} · {r.via}</p>
+      <ListCard badge={`${receivables.length} Financeiro`} badgeTone="blue" title="A receber">
+        {receivables.length === 0 ? (
+          <p className="rounded-2xl border border-dashed border-line px-4 py-6 text-center text-sm text-muted">Nenhum recebível pendente.</p>
+        ) : (
+          receivables.map((r) => (
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-slate-50/60 p-4 ring-1 ring-black/5" key={r.name}>
+              <div className="flex items-center gap-3">
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 text-lg">🤝</span>
+                <div>
+                  <p className="font-semibold text-ink">{r.name}</p>
+                  <p className="text-xs text-muted">{r.date} · {r.via}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="rounded-full px-2.5 py-1 text-xs font-semibold text-[#2563EB] ring-1 ring-[#2563EB]/30">Serviço</span>
+                <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 ring-1 ring-amber-200">Pendente</span>
+              </div>
+              <div className="flex w-full items-center justify-between sm:w-auto sm:gap-8">
+                <span className="font-bold tabular-nums text-emerald-600">+{eur(r.amount)}</span>
+                <span className="text-sm font-medium text-slate-500">Entrada</span>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="rounded-full px-2.5 py-1 text-xs font-semibold text-[#2563EB] ring-1 ring-[#2563EB]/30">Serviço</span>
-              <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 ring-1 ring-amber-200">Pendente</span>
-            </div>
-            <div className="flex w-full items-center justify-between sm:w-auto sm:gap-8">
-              <span className="font-bold tabular-nums text-emerald-600">+{eur(r.amount)}</span>
-              <span className="text-sm font-medium text-slate-500">Entrada</span>
-            </div>
-          </div>
-        ))}
+          ))
+        )}
       </ListCard>
 
       {/* A pagar */}
@@ -226,7 +226,7 @@ function VisaoGeral() {
       <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
         <p className="mb-4 font-semibold text-ink">Financeiro — Método de pagamento</p>
         <div className="space-y-3">
-          {[["Pago", 93], ["Pendente", 0], ["Parcial", 0], ["Atrasado", 0]].map(([label, pct]) => (
+          {[["Pago", 0], ["Pendente", 0], ["Parcial", 0], ["Atrasado", 0]].map(([label, pct]) => (
             <div key={label as string}>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-slate-600">{label}</span>
@@ -270,9 +270,9 @@ function FluxoDeCaixa({
 
       {/* 3 large summary cards */}
       <div className="grid gap-4 sm:grid-cols-3">
-        <BigStat label="Receita" tone="blue" value={eur(1250)} />
+        <BigStat label="Receita" tone="blue" value={eur(receitaTotal)} />
         <BigStat label="Saídas" tone="red" value={eur(0)} />
-        <BigStat label="Saldo líquido" tone="green" value={eur(1250)} />
+        <BigStat label="Saldo líquido" tone="green" value={eur(saldoTotal)} />
       </div>
 
       {/* Filters */}
@@ -321,23 +321,27 @@ function FluxoDeCaixa({
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line bg-slate-50 px-5 py-3">
           <p className="font-semibold text-ink">junho de 2026</p>
           <div className="flex gap-4 text-sm font-semibold tabular-nums">
-            <span className="text-emerald-600">+{eur(1250)}</span>
+            <span className="text-emerald-600">+{eur(receitaTotal)}</span>
             <span className="text-rose-500">-{eur(0)}</span>
-            <span className="text-ink">= {eur(1250)}</span>
+            <span className="text-ink">= {eur(saldoTotal)}</span>
           </div>
         </div>
         <div className="divide-y divide-line">
-          {cashRows.map((row, i) => (
-            <div className="flex flex-wrap items-center gap-3 px-5 py-3 text-sm" key={`${row.name}-${i}`}>
-              <div className="min-w-[150px] flex-1">
-                <p className="font-semibold text-ink">{row.name}</p>
-                <p className="text-xs text-muted">{row.date} · {row.type}</p>
+          {cashRows.length === 0 ? (
+            <p className="px-5 py-8 text-center text-sm text-muted">Nenhum lançamento neste período.</p>
+          ) : (
+            cashRows.map((row, i) => (
+              <div className="flex flex-wrap items-center gap-3 px-5 py-3 text-sm" key={`${row.name}-${i}`}>
+                <div className="min-w-[150px] flex-1">
+                  <p className="font-semibold text-ink">{row.name}</p>
+                  <p className="text-xs text-muted">{row.date} · {row.type}</p>
+                </div>
+                <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${statusStyles[row.status] ?? "bg-slate-100 text-slate-600"}`}>{row.status}</span>
+                <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-500">Não afeta caixa</span>
+                <span className="ml-auto font-bold tabular-nums text-emerald-600">+{eur(row.amount)}</span>
               </div>
-              <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${statusStyles[row.status] ?? "bg-slate-100 text-slate-600"}`}>{row.status}</span>
-              <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-500">Não afeta caixa</span>
-              <span className="ml-auto font-bold tabular-nums text-emerald-600">+{eur(row.amount)}</span>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </section>
 
@@ -351,29 +355,33 @@ function FluxoDeCaixa({
           <span className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-emerald-600 ring-1 ring-emerald-200">Fluxo de caixa</span>
         </div>
         <div className="space-y-3">
-          {receivables.map((r) => (
-            <div className="rounded-2xl bg-slate-50/60 p-4 ring-1 ring-black/5" key={r.name}>
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 text-lg">🤝</span>
-                  <div>
-                    <p className="font-semibold text-ink">{r.name}</p>
-                    <p className="text-xs text-muted">Serviço</p>
+          {receivables.length === 0 ? (
+            <p className="rounded-2xl border border-dashed border-line px-4 py-8 text-center text-sm text-muted">Nenhuma transação registrada ainda.</p>
+          ) : (
+            receivables.map((r) => (
+              <div className="rounded-2xl bg-slate-50/60 p-4 ring-1 ring-black/5" key={r.name}>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 text-lg">🤝</span>
+                    <div>
+                      <p className="font-semibold text-ink">{r.name}</p>
+                      <p className="text-xs text-muted">Serviço</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-bold tabular-nums text-emerald-600">+{eur(r.amount)}</p>
+                    <span className="mt-1 inline-block rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-700 ring-1 ring-amber-200">Em haver</span>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="font-bold tabular-nums text-emerald-600">+{eur(r.amount)}</p>
-                  <span className="mt-1 inline-block rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-700 ring-1 ring-amber-200">Em haver</span>
+                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+                  <span className="rounded-full px-2.5 py-0.5 font-semibold text-emerald-600 ring-1 ring-emerald-200">Entrada</span>
+                  <span className="rounded-full px-2.5 py-0.5 font-semibold text-[#7C3AED] ring-1 ring-[#7C3AED]/30">🤝 Serviço</span>
+                  <span className="text-muted">{r.date} · Transferência prevista</span>
+                  <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-slate-500">Auditoria · não afeta caixa</span>
                 </div>
               </div>
-              <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
-                <span className="rounded-full px-2.5 py-0.5 font-semibold text-emerald-600 ring-1 ring-emerald-200">Entrada</span>
-                <span className="rounded-full px-2.5 py-0.5 font-semibold text-[#7C3AED] ring-1 ring-[#7C3AED]/30">🤝 Serviço</span>
-                <span className="text-muted">{r.date} · Transferência prevista</span>
-                <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-slate-500">Auditoria · não afeta caixa</span>
-              </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </section>
     </div>
