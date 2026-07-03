@@ -63,7 +63,12 @@ const icons = {
   declaracoes: (<svg {...s16}><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z" /><line x1="9" x2="14" y1="13" y2="13" /></svg>),
   comprovantes: (<svg {...s16}><rect height="4" rx="1" width="8" x="8" y="3" /><path d="M9 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3" /><path d="m9 14 2 2 4-4" /></svg>),
   faturasRecebidas: (<svg {...s16}><path d="M22 12h-6l-2 3h-4l-2-3H2" /><path d="M5.5 5.5 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.5-6.5A2 2 0 0 0 16.8 4H7.2a2 2 0 0 0-1.7 1.5z" /></svg>),
-  moedas: (<svg {...s16}><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18" /></svg>)
+  moedas: (<svg {...s16}><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18" /></svg>),
+  receitasDespesas: (<svg {...s16}><path d="M17 3l4 4-4 4" /><path d="M21 7H7a4 4 0 0 0-4 4v1" /><path d="M7 21l-4-4 4-4" /><path d="M3 17h14a4 4 0 0 0 4-4v-1" /></svg>),
+  urssaf: (<svg {...s16}><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z" /><path d="M13.5 11.5a2 2 0 1 0 0 3H10" /><path d="M9 13h4" /></svg>),
+  declAux: (<svg {...s16}><rect height="18" rx="2" width="18" x="3" y="3" /><path d="M3 9h18M3 15h18M9 3v18M15 3v18" /></svg>),
+  contrato: (<svg {...s16}><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z" /><path d="M9 13c1.5-1.5 3 1 4.5-.5" /><line x1="9" x2="15" y1="17" y2="17" /></svg>),
+  conselheiro: (<svg {...s16}><path d="M13 2 3 14h7l-1 8 10-12h-7z" /></svg>)
 } as const;
 
 type Leaf = { href: string; label: string; icon: ReactNode };
@@ -94,8 +99,11 @@ const nav: NavItem[] = [
     label: "Gestão",
     icon: icons.gestao,
     children: [
-      { href: "#", label: "Equipe", icon: icons.clientesLeaf },
-      { href: "#", label: "Relatórios", icon: icons.declaracoes }
+      { href: "#", label: "Receitas e despesas", icon: icons.receitasDespesas },
+      { href: "#", label: "Declaração de Urssaf", icon: icons.urssaf },
+      { href: "#", label: "Declarações auxiliares", icon: icons.declAux },
+      { href: "#", label: "Modelos de contrato", icon: icons.contrato },
+      { href: "#", label: "Meu Conselheiro", icon: icons.conselheiro }
     ]
   },
   {
