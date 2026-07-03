@@ -335,7 +335,7 @@ function BrandBadge({ initials }: { initials: string }) {
   return (
     <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl shadow-sm ring-1 ring-white/20">
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img alt="Oracle" className="h-full w-full object-cover" onError={() => setImgError(true)} ref={imgRef} src="/illustrations/genio.png" />
+      <img alt="Oracle" className="h-full w-full object-cover" onError={() => setImgError(true)} ref={imgRef} src="/illustrations/oracle.png" />
     </span>
   );
 }
