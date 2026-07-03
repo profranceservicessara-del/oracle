@@ -100,7 +100,7 @@ const nav: NavItem[] = [
     icon: icons.gestao,
     children: [
       { href: "/financeiro", label: "Fluxo de Caixa", icon: icons.receitasDespesas },
-      { href: "#", label: "Declaração de Urssaf", icon: icons.urssaf },
+      { href: "/urssaf", label: "Declaração de Urssaf", icon: icons.urssaf },
       { href: "#", label: "Declarações auxiliares", icon: icons.declAux },
       { href: "#", label: "Modelos de contrato", icon: icons.contrato },
       { href: "#", label: "Meu Conselheiro", icon: icons.conselheiro }
