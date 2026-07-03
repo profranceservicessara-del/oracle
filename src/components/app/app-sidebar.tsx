@@ -22,6 +22,12 @@ const icons = {
   dashboard: (
     <svg {...s18}><path d="M4 4v16h16" /><path d="M8 16l3.5-4 3 2.5 5.5-6.5" /><path d="M16 8h4v4" /></svg>
   ),
+  painel: (
+    <svg {...s18}><rect height="9" rx="1" width="7" x="3" y="3" /><rect height="5" rx="1" width="7" x="14" y="3" /><rect height="9" rx="1" width="7" x="14" y="12" /><rect height="5" rx="1" width="7" x="3" y="16" /></svg>
+  ),
+  gestao: (
+    <svg {...s18}><rect height="14" rx="2" width="20" x="2" y="7" /><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /><path d="M2 13h20" /></svg>
+  ),
   documentos: (
     <svg {...s18}><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z" /><line x1="9" x2="15" y1="13" y2="13" /><line x1="9" x2="13" y1="17" y2="17" /></svg>
   ),
@@ -66,7 +72,7 @@ type NavItem =
   | { kind: "group"; key: string; label: string; icon: ReactNode; children: Leaf[] };
 
 const nav: NavItem[] = [
-  { kind: "link", href: "/dashboard", label: "Análise", icon: icons.dashboard },
+  { kind: "link", href: "/dashboard", label: "Painel de controle", icon: icons.painel },
   {
     kind: "group",
     key: "faturamento",
@@ -80,6 +86,16 @@ const nav: NavItem[] = [
       { href: "/crm", label: "CRM", icon: icons.crm },
       { href: "/crm/agenda", label: "Agenda", icon: icons.agenda },
       { href: "/clientes", label: "Clientes", icon: icons.clientesLeaf }
+    ]
+  },
+  {
+    kind: "group",
+    key: "gestao",
+    label: "Gestão",
+    icon: icons.gestao,
+    children: [
+      { href: "#", label: "Equipe", icon: icons.clientesLeaf },
+      { href: "#", label: "Relatórios", icon: icons.declaracoes }
     ]
   },
   {
