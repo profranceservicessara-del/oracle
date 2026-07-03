@@ -118,7 +118,7 @@ function VisaoGeral() {
             <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-white/60">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Saldo atual
             </p>
-            <p className="mt-1 text-4xl font-bold tabular-nums text-white sm:text-5xl">{eur(1250)}</p>
+            <p className="mt-1 text-3xl font-bold tabular-nums text-white sm:text-4xl">{eur(1250)}</p>
             <div className="mt-3 flex flex-wrap gap-2">
               <span className="inline-flex items-center gap-1.5 rounded-lg bg-white/10 px-2.5 py-1 text-xs font-medium text-white/80 ring-1 ring-white/15">📅 2026-06</span>
               <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500/15 px-2.5 py-1 text-xs font-medium text-emerald-300 ring-1 ring-emerald-400/20">● Tudo em dia</span>
@@ -126,7 +126,7 @@ function VisaoGeral() {
           </div>
           <div className="text-right">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-white/60">Lucro real ProFrance</p>
-            <p className="mt-1 text-3xl font-bold tabular-nums text-emerald-300">{eur(295)}</p>
+            <p className="mt-1 text-2xl font-bold tabular-nums text-emerald-300 sm:text-3xl">{eur(295)}</p>
             <p className="mt-1 text-xs text-white/50">Receita − Despesas − Comissões</p>
           </div>
         </div>
