@@ -125,10 +125,10 @@ const nav: NavItem[] = [
 // soft inner top highlight, depth shadow, and a white vertical accent stroke on
 // the left (matching the "Clientes" reference).
 const activeCard =
-  "relative bg-white/[0.1] text-white backdrop-blur-sm ring-1 ring-inset ring-white/20 " +
-  "shadow-[0_8px_22px_-10px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.12)] " +
+  "relative bg-gradient-to-r from-[#6E8CFF]/25 via-[#5B7BFF]/12 to-white/[0.05] text-white backdrop-blur-md ring-1 ring-inset ring-white/25 " +
+  "shadow-[0_12px_28px_-12px_rgba(2,10,40,0.7),inset_0_1px_0_rgba(255,255,255,0.16)] " +
   "before:absolute before:left-1 before:top-1/2 before:h-5 before:w-[3px] before:-translate-y-1/2 " +
-  "before:rounded-full before:bg-white before:shadow-[0_0_8px_rgba(255,255,255,0.45)] before:content-['']";
+  "before:rounded-full before:bg-white before:shadow-[0_0_8px_rgba(255,255,255,0.5)] before:content-['']";
 
 // IDLE row — white text + premium glass-blue hover: rounded surface (rows are
 // already rounded-xl), subtle blue fill + backdrop blur, border highlight, soft
