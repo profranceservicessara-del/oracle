@@ -68,7 +68,9 @@ const icons = {
   urssaf: (<svg {...s16}><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z" /><path d="M13.5 11.5a2 2 0 1 0 0 3H10" /><path d="M9 13h4" /></svg>),
   declAux: (<svg {...s16}><rect height="18" rx="2" width="18" x="3" y="3" /><path d="M3 9h18M3 15h18M9 3v18M15 3v18" /></svg>),
   contrato: (<svg {...s16}><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z" /><path d="M9 13c1.5-1.5 3 1 4.5-.5" /><line x1="9" x2="15" y1="17" y2="17" /></svg>),
-  conselheiro: (<svg {...s16}><path d="M13 2 3 14h7l-1 8 10-12h-7z" /></svg>)
+  conselheiro: (<svg {...s16}><path d="M13 2 3 14h7l-1 8 10-12h-7z" /></svg>),
+  produtividade: (<svg {...s18}><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91 0z" /><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" /><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" /><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" /></svg>),
+  tarefas: (<svg {...s16}><rect height="18" rx="2" width="14" x="5" y="3" /><path d="m9 8 1.5 1.5L13 7" /><path d="m9 14 1.5 1.5L13 13" /><line x1="16" x2="16" y1="8" y2="8" /><line x1="16" x2="16" y1="14" y2="14" /></svg>)
 } as const;
 
 type Leaf = { href: string; label: string; icon: ReactNode };
@@ -104,6 +106,15 @@ const nav: NavItem[] = [
       { href: "#", label: "Declarações auxiliares", icon: icons.declAux },
       { href: "#", label: "Modelos de contrato", icon: icons.contrato },
       { href: "/conselheiro", label: "Meu Conselheiro", icon: icons.conselheiro }
+    ]
+  },
+  {
+    kind: "group",
+    key: "produtividade",
+    label: "Produtividade",
+    icon: icons.produtividade,
+    children: [
+      { href: "/tarefas", label: "Tarefas", icon: icons.tarefas }
     ]
   },
   {
