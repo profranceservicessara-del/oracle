@@ -582,7 +582,7 @@ function UserMenu({ email, locale, avatarUrl, name, collapsed, onCollapse, onNav
   return (
     <div className="relative" ref={ref}>
       {open ? (
-        <div className="absolute bottom-full left-0 z-30 mb-2 w-64 max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl bg-white shadow-xl ring-1 ring-black/10" role="menu">
+        <div className="absolute bottom-0 left-full z-30 ml-2 w-64 max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl bg-white shadow-xl ring-1 ring-black/10" role="menu">
           <div className="flex items-center gap-3 p-3">
             <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#EAF0FF] text-sm font-bold text-[#1D4ED8] ring-1 ring-black/5">
               {avatarUrl ? (
