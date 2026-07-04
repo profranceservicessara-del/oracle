@@ -701,26 +701,40 @@ function SidebarBody({ email, locale, avatarUrl, name, onNavigate, collapsed, on
 
   return (
     <div className={`flex h-full flex-col gap-5 bg-gradient-to-b from-[#00153A] via-[#032A63] to-[#061A3E] ${collapsed ? "px-2 py-4" : "p-4"}`}>
-      <Link
-        aria-label={collapsed ? "Expandir menu" : "Ir para Análise"}
-        className={`flex items-center gap-3 rounded-xl px-1 pt-1 transition hover:opacity-90 ${collapsed ? "justify-center" : ""}`}
-        href="/dashboard"
-        onClick={() => {
-          onSetCollapsed?.(false);
-          onNavigate?.();
-        }}
-        title={collapsed ? "Expandir menu" : "Oracle"}
-      >
-        <BrandBadge initials={initials} />
-        {collapsed ? null : (
-          <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-white">Oracle</p>
-            <p className="truncate text-[10px] font-medium uppercase tracking-wide text-white/40">
-              Sistema financeiro
-            </p>
-          </div>
-        )}
-      </Link>
+      <div className={`flex gap-2 ${collapsed ? "flex-col items-center" : "items-center"}`}>
+        <Link
+          aria-label={collapsed ? "Expandir menu" : "Ir para Análise"}
+          className={`flex items-center gap-3 rounded-xl px-1 pt-1 transition hover:opacity-90 ${collapsed ? "justify-center" : "min-w-0 flex-1"}`}
+          href="/dashboard"
+          onClick={() => {
+            onSetCollapsed?.(false);
+            onNavigate?.();
+          }}
+          title={collapsed ? "Expandir menu" : "Oracle"}
+        >
+          <BrandBadge initials={initials} />
+          {collapsed ? null : (
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-white">Oracle</p>
+              <p className="truncate text-[10px] font-medium uppercase tracking-wide text-white/40">
+                Sistema financeiro
+              </p>
+            </div>
+          )}
+        </Link>
+        <button
+          aria-label={collapsed ? "Abrir menu" : "Minimizar menu"}
+          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white/50 transition hover:bg-white/10 hover:text-white"
+          onClick={() => onSetCollapsed?.(!collapsed)}
+          title={collapsed ? "Abrir menu" : "Minimizar menu"}
+          type="button"
+        >
+          <svg className={collapsed ? "rotate-180" : ""} fill="none" height="18" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" width="18">
+            <path d="m11 17-5-5 5-5" />
+            <path d="m18 17-5-5 5-5" />
+          </svg>
+        </button>
+      </div>
       <div className="border-t border-white/10" />
       <NavList collapsed={collapsed} onCollapse={() => onSetCollapsed?.(true)} onExpand={() => onSetCollapsed?.(false)} onNavigate={onNavigate} />
       <ShortcutsBlock collapsed={collapsed} onCollapse={() => onSetCollapsed?.(true)} onNavigate={onNavigate} />
