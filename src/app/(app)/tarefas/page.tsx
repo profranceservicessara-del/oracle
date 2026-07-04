@@ -159,10 +159,6 @@ export default function TarefasPage() {
       <div className="mb-6 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
         <p className="font-semibold text-ink">Gerencie suas tarefas</p>
         <p className="mt-1 text-sm text-muted">Adicione, planeje e associe suas tarefas a um projeto para manter a organização.</p>
-        <div className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-sm">
-          <button className="inline-flex items-center gap-1.5 font-medium text-brand hover:underline" onClick={soon} type="button">📘 Como funciona?</button>
-          <button className="inline-flex items-center gap-1.5 font-medium text-brand hover:underline" onClick={soon} type="button">❓ Perguntas frequentes sobre produtividade</button>
-        </div>
       </div>
 
       {/* Compose */}
