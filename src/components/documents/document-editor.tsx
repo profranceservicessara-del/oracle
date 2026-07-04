@@ -352,6 +352,12 @@ export function DocumentEditor({
     showToast("Cliente criado e selecionado.", "success");
   }
 
+  function openClientModal(type: ClientType) {
+    setClientForm({ ...emptyClientForm, type });
+    setClientErrors({});
+    setIsClientModalOpen(true);
+  }
+
   async function emitDocument() {
     setIsEmitting(true);
     const savedDocumentId = await saveDraft();
@@ -436,9 +442,12 @@ export function DocumentEditor({
                   ))}
                 </Select>
               </label>
-              <div className="flex items-end">
-                <Button onClick={() => setIsClientModalOpen(true)} type="button" variant="secondary">
-                  Criar cliente
+              <div className="flex flex-wrap items-end gap-2">
+                <Button onClick={() => openClientModal("professionnel")} type="button" variant="secondary">
+                  Adicionar uma empresa
+                </Button>
+                <Button onClick={() => openClientModal("particulier")} type="button" variant="secondary">
+                  Adicionar um indivíduo privado
                 </Button>
               </div>
             </div>
@@ -691,8 +700,8 @@ export function DocumentEditor({
               }
               value={clientForm.type}
             >
-              <option value="particulier">Particular</option>
-              <option value="professionnel">Profissional</option>
+              <option value="particulier">Indivíduo privado</option>
+              <option value="professionnel">Empresa</option>
             </Select>
           </label>
           <label className="text-sm font-medium text-ink">
