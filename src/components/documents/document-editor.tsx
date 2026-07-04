@@ -142,7 +142,32 @@ export function DocumentEditor({
   const [isEmitting, setIsEmitting] = useState(false);
   const [clientForm, setClientForm] = useState<ClientFormState>(emptyClientForm);
   const [clientErrors, setClientErrors] = useState<Record<string, string>>({});
+  const [termOpen, setTermOpen] = useState(false);
+  const [customDays, setCustomDays] = useState("");
+  const termRef = useRef<HTMLDivElement>(null);
   const hasHydrated = useRef(false);
+
+  useEffect(() => {
+    if (!termOpen) return;
+    function onDown(event: MouseEvent) {
+      if (termRef.current && !termRef.current.contains(event.target as Node)) setTermOpen(false);
+    }
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [termOpen]);
+
+  function applyPaymentTerm(term: number | "fim") {
+    const base = /^\d{4}-\d{2}-\d{2}$/.test(dateEmission) ? new Date(`${dateEmission}T00:00:00`) : new Date();
+    const due = new Date(base);
+    if (term === "fim") due.setMonth(due.getMonth() + 1, 0);
+    else due.setDate(due.getDate() + term);
+    const iso = `${due.getFullYear()}-${String(due.getMonth() + 1).padStart(2, "0")}-${String(due.getDate()).padStart(2, "0")}`;
+    const br = `${String(due.getDate()).padStart(2, "0")}/${String(due.getMonth() + 1).padStart(2, "0")}/${due.getFullYear()}`;
+    setConditionsPaiement(term === "fim" ? `Vencimento no fim do mês — em ${br}` : term === 0 ? `Pagamento à vista — em ${br}` : `Vencimento em ${term} dias — em ${br}`);
+    if (documentType !== "devis") setDateEcheance(iso);
+    setTermOpen(false);
+    setCustomDays("");
+  }
 
   const regimeTva = profile?.regime_tva ?? "franchise";
   const totals = useMemo(() => calculateDocumentTotals(lines, regimeTva), [lines, regimeTva]);
@@ -652,14 +677,66 @@ export function DocumentEditor({
           <section className="rounded-lg border border-line bg-white p-5 shadow-sm">
             <h2 className="text-lg font-semibold text-ink">Condições</h2>
             <div className="mt-4 grid gap-4">
-              <label className="text-sm font-medium text-ink">
-                Condições de pagamento
+              <div className="text-sm font-medium text-ink">
+                <div className="flex items-center justify-between gap-2">
+                  <span>Condições de pagamento</span>
+                  <div className="relative" ref={termRef}>
+                    <button
+                      aria-expanded={termOpen}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-50"
+                      onClick={() => setTermOpen((value) => !value)}
+                      type="button"
+                    >
+                      Definir prazo
+                      <svg className={`transition-transform ${termOpen ? "rotate-180" : ""}`} fill="none" height="14" stroke="currentColor" strokeLinecap="round" strokeWidth="2" viewBox="0 0 24 24" width="14"><path d="m6 9 6 6 6-6" /></svg>
+                    </button>
+                    {termOpen ? (
+                      <div className="absolute right-0 top-full z-20 mt-1.5 w-56 rounded-xl bg-white p-2 shadow-xl ring-1 ring-black/10">
+                        {([["0 dias", 0], ["7 dias", 7], ["14 dias", 14], ["30 dias", 30], ["60 dias", 60], ["90 dias", 90], ["Fim do mês", "fim"]] as const).map(([label, val]) => (
+                          <button
+                            className="flex w-full items-center rounded-lg px-2.5 py-1.5 text-left text-sm text-slate-700 transition hover:bg-slate-50"
+                            key={label}
+                            onClick={() => applyPaymentTerm(val)}
+                            type="button"
+                          >
+                            {label}
+                          </button>
+                        ))}
+                        <div className="mt-1 flex items-center gap-1.5 border-t border-line px-1 pt-2">
+                          <Input
+                            className="h-9"
+                            min="0"
+                            onChange={(event) => setCustomDays(event.target.value)}
+                            onKeyDown={(event) => {
+                              if (event.key === "Enter" && customDays) {
+                                event.preventDefault();
+                                applyPaymentTerm(Number(customDays));
+                              }
+                            }}
+                            placeholder="Adicione um número..."
+                            type="number"
+                            value={customDays}
+                          />
+                          <span className="text-xs text-muted">dia</span>
+                          <button
+                            className="rounded-lg bg-[#1D4ED8] px-2.5 py-1.5 text-xs font-semibold text-white disabled:opacity-40"
+                            disabled={!customDays}
+                            onClick={() => applyPaymentTerm(Number(customDays))}
+                            type="button"
+                          >
+                            OK
+                          </button>
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
                 <Input
                   className="mt-2"
                   onChange={(event) => setConditionsPaiement(event.target.value)}
                   value={conditionsPaiement}
                 />
-              </label>
+              </div>
               <label className="text-sm font-medium text-ink">
                 Notas de rodapé
                 <Textarea
