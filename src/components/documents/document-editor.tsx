@@ -358,6 +358,18 @@ export function DocumentEditor({
     setIsClientModalOpen(true);
   }
 
+  function startEmit() {
+    if (!clientId) {
+      showToast("Selecione um cliente antes de emitir.", "error");
+      return;
+    }
+    if (!lines.some((line) => line.designation.trim() !== "")) {
+      showToast("Adicione ao menos uma linha com descrição antes de emitir.", "error");
+      return;
+    }
+    setIsEmitModalOpen(true);
+  }
+
   async function emitDocument() {
     setIsEmitting(true);
     const savedDocumentId = await saveDraft();
@@ -417,7 +429,7 @@ export function DocumentEditor({
                     })}`
                   : "Alterações serão salvas automaticamente"}
           </p>
-          <Button onClick={() => setIsEmitModalOpen(true)} type="button">
+          <Button onClick={startEmit} type="button">
             Emitir
           </Button>
         </div>
