@@ -235,8 +235,8 @@ function GroupRow({
                 leaf={child}
                 onNavigate={() => {
                   onNavigate?.();
-                  // Clicar "Faturas" recolhe a sidebar (como o atalho da conta).
-                  if (child.href === "/facturation") onCollapse?.();
+                  // Qualquer navegação da sidebar recolhe para o modo só-ícones.
+                  onCollapse?.();
                 }}
               />
             ))}
@@ -301,7 +301,10 @@ function NavList({ onNavigate, collapsed, onExpand, onCollapse }: { onNavigate?:
             }`}
             href={item.href}
             key={item.href}
-            onClick={onNavigate}
+            onClick={() => {
+              onNavigate?.();
+              onCollapse?.();
+            }}
           >
             <span className={`shrink-0 transition-colors ${item.href === activeHref ? "text-[#AFC6FF]" : "text-[#8FB2FF] group-hover/row:text-[#9FB6FF]"}`}>
               {item.icon}
@@ -366,7 +369,7 @@ function shortcutEmoji(key: string) {
 // localStorage (order-preserving) and live-syncs via the shortcuts CustomEvent.
 // The "Gerenciar atalhos" row opens a lateral drawer to reorder / show-hide / save.
 // Collapsed: emoji badges only + icon-only manager entry.
-function ShortcutsBlock({ collapsed, onNavigate }: { collapsed?: boolean; onNavigate?: () => void }) {
+function ShortcutsBlock({ collapsed, onNavigate, onCollapse }: { collapsed?: boolean; onNavigate?: () => void; onCollapse?: () => void }) {
   const { showToast } = useToast();
   const [keys, setKeys] = useState<string[]>([]);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -445,7 +448,10 @@ function ShortcutsBlock({ collapsed, onNavigate }: { collapsed?: boolean; onNavi
               }
               href={item.href}
               key={item.key}
-              onClick={onNavigate}
+              onClick={() => {
+                onNavigate?.();
+                onCollapse?.();
+              }}
               title={item.label}
             >
               <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-400/15 text-[11px] leading-none ring-1 ring-emerald-400/20 transition group-hover/sc:ring-emerald-400/35">
@@ -717,7 +723,7 @@ function SidebarBody({ email, locale, avatarUrl, name, onNavigate, collapsed, on
       </Link>
       <div className="border-t border-white/10" />
       <NavList collapsed={collapsed} onCollapse={() => onSetCollapsed?.(true)} onExpand={() => onSetCollapsed?.(false)} onNavigate={onNavigate} />
-      <ShortcutsBlock collapsed={collapsed} onNavigate={onNavigate} />
+      <ShortcutsBlock collapsed={collapsed} onCollapse={() => onSetCollapsed?.(true)} onNavigate={onNavigate} />
       <div className={`border-t border-white/10 ${collapsed ? "mx-auto w-8" : ""}`} />
       <UserMenu avatarUrl={avatarUrl} collapsed={collapsed} email={email} locale={locale} name={name} onCollapse={() => onSetCollapsed?.(true)} onNavigate={onNavigate} />
     </div>
