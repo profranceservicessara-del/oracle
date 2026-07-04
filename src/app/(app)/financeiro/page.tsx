@@ -26,7 +26,7 @@ function MetricCard({ tone, label, value, badge }: { tone: Tone; label: string; 
         <span className={`h-1.5 w-1.5 rounded-full ${s.dot}`} />
         {label}
       </p>
-      <p className={`mt-2 text-2xl font-bold tabular-nums ${s.value}`}>{value}</p>
+      <p className={`mt-2 text-xl font-bold tabular-nums ${s.value}`}>{value}</p>
       <div className="mt-2 min-h-[22px]">{badge}</div>
       <div className={`mt-3 h-1 rounded-full ${s.bar}`} />
     </div>
@@ -71,7 +71,7 @@ export default function FinanceiroPage() {
       {/* Header */}
       <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-semibold text-[#0F2E6B]">Financeiro</h1>
+          <h1 className="text-2xl font-semibold text-[#0F2E6B]">Financeiro</h1>
           <p className="mt-1 text-sm text-muted">Acompanhe entradas, saídas, saldo, recebíveis e resultados por produto ou serviço.</p>
         </div>
         <div className="flex gap-2">
@@ -115,7 +115,7 @@ function VisaoGeral() {
             <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-white/60">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Saldo atual
             </p>
-            <p className="mt-1 text-3xl font-bold tabular-nums text-white sm:text-4xl">{eur(saldoTotal)}</p>
+            <p className="mt-1 text-2xl font-bold tabular-nums text-white sm:text-3xl">{eur(saldoTotal)}</p>
             <div className="mt-3 flex flex-wrap gap-2">
               <span className="inline-flex items-center gap-1.5 rounded-lg bg-white/10 px-2.5 py-1 text-xs font-medium text-white/80 ring-1 ring-white/15">📅 2026-06</span>
               <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500/15 px-2.5 py-1 text-xs font-medium text-emerald-300 ring-1 ring-emerald-400/20">● Tudo em dia</span>
@@ -123,7 +123,7 @@ function VisaoGeral() {
           </div>
           <div className="text-right">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-white/60">Lucro real ProFrance</p>
-            <p className="mt-1 text-2xl font-bold tabular-nums text-emerald-300 sm:text-3xl">{eur(0)}</p>
+            <p className="mt-1 text-xl font-bold tabular-nums text-emerald-300 sm:text-2xl">{eur(0)}</p>
             <p className="mt-1 text-xs text-white/50">Receita − Despesas − Comissões</p>
           </div>
         </div>
@@ -171,7 +171,7 @@ function VisaoGeral() {
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-xs text-white">✓</span>
               Lucro real ProFrance
             </span>
-            <span className="text-xl font-bold tabular-nums text-emerald-600">{eur(0)}</span>
+            <span className="text-lg font-bold tabular-nums text-emerald-600">{eur(0)}</span>
           </div>
         </section>
 
@@ -261,7 +261,7 @@ function FluxoDeCaixa({
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Resumo financeiro</p>
-          <h2 className="text-2xl font-semibold text-[#0F2E6B]">Fluxo de Caixa</h2>
+          <h2 className="text-xl font-semibold text-[#0F2E6B]">Fluxo de Caixa</h2>
         </div>
         <button className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-ink shadow-sm transition hover:bg-slate-50" onClick={onExport} type="button">
           ⬇ Exportar CSV
@@ -350,7 +350,7 @@ function FluxoDeCaixa({
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Transações recentes</p>
-            <h3 className="text-lg font-semibold text-[#0F2E6B]">Histórico financeiro</h3>
+            <h3 className="text-base font-semibold text-[#0F2E6B]">Histórico financeiro</h3>
           </div>
           <span className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-emerald-600 ring-1 ring-emerald-200">Fluxo de caixa</span>
         </div>
@@ -402,7 +402,7 @@ function BigStat({ tone, label, value }: { tone: Tone; label: string; value: str
   return (
     <div className={`rounded-2xl bg-gradient-to-br ${s.card} p-5 shadow-sm ring-1`}>
       <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">{label}</p>
-      <p className={`mt-2 text-3xl font-bold tabular-nums ${s.value}`}>{value}</p>
+      <p className={`mt-2 text-2xl font-bold tabular-nums ${s.value}`}>{value}</p>
     </div>
   );
 }
