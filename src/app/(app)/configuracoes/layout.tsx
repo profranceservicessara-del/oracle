@@ -6,7 +6,9 @@ import { usePathname } from "next/navigation";
 
 // Premium settings shell — left rail (grouped) + main content card. The gear in
 // the sidebar lands here. Real routes link; not-yet-built items are muted.
-type Item = { href: string | null; label: string; dot?: boolean; icon?: ReactNode };
+// soon = tem rota mas ainda não está pronto para produção: exibido "Em breve",
+// desabilitado (não navega). href mantido para restaurar facilmente depois.
+type Item = { href: string | null; label: string; dot?: boolean; icon?: ReactNode; soon?: boolean };
 type Group = { key: string; label: string; children: Item[] };
 
 const groups: Group[] = [
@@ -16,8 +18,8 @@ const groups: Group[] = [
     children: [
       { href: "/configuracoes/empresa", label: "Empresa" },
       { href: "/configuracoes/perfil", label: "Perfil" },
-      { href: "/configuracoes/dados", label: "Integrações" },
-      { href: "/configuracoes/pagamentos", label: "Pagamentos / Assinatura" },
+      { href: "/configuracoes/dados", label: "Integrações", soon: true },
+      { href: "/configuracoes/pagamentos", label: "Pagamentos / Assinatura", soon: true },
       { href: "/configuracoes/seguranca", label: "Segurança" },
       { href: "/configuracoes/moedas", label: "Moedas e idiomas" },
       { href: null, label: "Usuários" }
@@ -27,7 +29,7 @@ const groups: Group[] = [
     key: "cobranca",
     label: "Cobrança",
     children: [
-      { href: "/configuracoes/aparencia", label: "Aparência" },
+      { href: "/configuracoes/aparencia", label: "Aparência", soon: true },
       { href: null, label: "Informação" },
       { href: null, label: "Pagamento" },
       { href: null, label: "Lembretes automáticos" },
@@ -56,7 +58,7 @@ const giftIcon = (
 const soloLinks: Item[] = [
   { href: null, label: "Produtividade" },
   { href: "/configuracoes/atalhos", label: "Gerenciar atalhos" },
-  { href: "/configuracoes/recomendar", label: "Recomendar", icon: giftIcon },
+  { href: "/configuracoes/recomendar", label: "Recomendar", icon: giftIcon, soon: true },
   { href: null, label: "Funcionalidades experimentais" }
 ];
 
@@ -67,14 +69,18 @@ function groupOwns(group: Group, pathname: string): boolean {
 function LeafItem({ item, pathname }: { item: Item; pathname: string }) {
   const active = Boolean(item.href) && (pathname === item.href || pathname.startsWith(`${item.href}/`));
 
-  if (!item.href) {
+  if (!item.href || item.soon) {
     return (
       <span
+        aria-disabled="true"
         className="flex cursor-default items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-400"
         title="Em breve"
       >
         {item.label}
         {item.dot ? <span className="h-1.5 w-1.5 rounded-full bg-red-500" /> : null}
+        <span className="ml-auto shrink-0 rounded-full bg-slate-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-slate-400">
+          Em breve
+        </span>
       </span>
     );
   }

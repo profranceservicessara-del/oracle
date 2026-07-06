@@ -73,7 +73,9 @@ const icons = {
   tarefas: (<svg {...s16}><rect height="18" rx="2" width="14" x="5" y="3" /><path d="m9 8 1.5 1.5L13 7" /><path d="m9 14 1.5 1.5L13 13" /><line x1="16" x2="16" y1="8" y2="8" /><line x1="16" x2="16" y1="14" y2="14" /></svg>)
 } as const;
 
-type Leaf = { href: string; label: string; icon: ReactNode };
+// soon = módulo ainda não pronto para produção: exibido "Em breve", desabilitado
+// (não navega). Mantém href para restaurar facilmente depois.
+type Leaf = { href: string; label: string; icon: ReactNode; soon?: boolean };
 type NavItem =
   | { kind: "link"; href: string; label: string; icon: ReactNode }
   | { kind: "group"; key: string; label: string; icon: ReactNode; children: Leaf[] };
@@ -101,11 +103,11 @@ const nav: NavItem[] = [
     label: "Gestão",
     icon: icons.gestao,
     children: [
-      { href: "/financeiro", label: "Fluxo de Caixa", icon: icons.receitasDespesas },
-      { href: "/urssaf", label: "Declaração de Urssaf", icon: icons.urssaf },
-      { href: "#", label: "Declarações auxiliares", icon: icons.declAux },
-      { href: "/modelos-contrato", label: "Modelos de contrato", icon: icons.contrato },
-      { href: "/conselheiro", label: "Meu Conselheiro", icon: icons.conselheiro }
+      { href: "/financeiro", label: "Fluxo de Caixa", icon: icons.receitasDespesas, soon: true },
+      { href: "/urssaf", label: "Declaração de Urssaf", icon: icons.urssaf, soon: true },
+      { href: "#", label: "Declarações auxiliares", icon: icons.declAux, soon: true },
+      { href: "/modelos-contrato", label: "Modelos de contrato", icon: icons.contrato, soon: true },
+      { href: "/conselheiro", label: "Meu Conselheiro", icon: icons.conselheiro, soon: true }
     ]
   },
   {
@@ -114,7 +116,7 @@ const nav: NavItem[] = [
     label: "Produtividade",
     icon: icons.produtividade,
     children: [
-      { href: "/tarefas", label: "Tarefas", icon: icons.tarefas }
+      { href: "/tarefas", label: "Tarefas", icon: icons.tarefas, soon: true }
     ]
   },
   {
@@ -124,9 +126,9 @@ const nav: NavItem[] = [
     icon: icons.contabilidade,
     children: [
       { href: "/documents", label: "Contabilidade", icon: icons.contabilidadeLeaf },
-      { href: "#", label: "Declarações fiscais", icon: icons.declaracoes },
-      { href: "#", label: "Comprovantes", icon: icons.comprovantes },
-      { href: "/facturation/fournisseurs", label: "Faturas recebidas", icon: icons.faturasRecebidas }
+      { href: "#", label: "Declarações fiscais", icon: icons.declaracoes, soon: true },
+      { href: "#", label: "Comprovantes", icon: icons.comprovantes, soon: true },
+      { href: "/facturation/fournisseurs", label: "Faturas recebidas", icon: icons.faturasRecebidas, soon: true }
     ]
   },
   { kind: "link", href: "/documentos", label: "Documentos", icon: icons.documentos }
@@ -162,6 +164,22 @@ function activeHrefFor(pathname: string): string {
 }
 
 function LeafRow({ leaf, active, onNavigate }: { leaf: Leaf; active: boolean; onNavigate?: () => void }) {
+  if (leaf.soon) {
+    return (
+      <div
+        aria-disabled="true"
+        className="relative flex cursor-default items-center gap-2.5 rounded-xl py-2 pl-3 pr-3 text-[13px] font-medium text-white/35"
+        title="Em breve"
+      >
+        <span className="shrink-0 text-white/25">{leaf.icon}</span>
+        <span className="truncate">{leaf.label}</span>
+        <span className="ml-auto shrink-0 rounded-full bg-white/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-white/45">
+          Em breve
+        </span>
+      </div>
+    );
+  }
+
   return (
     <Link
       aria-current={active ? "page" : undefined}
