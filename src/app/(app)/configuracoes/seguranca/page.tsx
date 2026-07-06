@@ -16,9 +16,44 @@ export default function SegurancaPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [isPasswordOpen, setIsPasswordOpen] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   function notImplemented() {
     showToast("Disponível em breve.", "info");
+  }
+
+  function openPasswordModal() {
+    setNewPassword("");
+    setConfirmPassword("");
+    setPasswordError(null);
+    setIsPasswordOpen(true);
+  }
+
+  async function changePassword() {
+    if (newPassword.length < 8) {
+      setPasswordError("A senha deve ter pelo menos 8 caracteres.");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordError("As senhas não coincidem.");
+      return;
+    }
+    setPasswordError(null);
+    setIsChangingPassword(true);
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    setIsChangingPassword(false);
+    if (error) {
+      setPasswordError(error.message);
+      return;
+    }
+    setIsPasswordOpen(false);
+    setNewPassword("");
+    setConfirmPassword("");
+    showToast("Senha alterada com sucesso.", "success");
   }
 
   async function exportData() {
@@ -68,7 +103,7 @@ export default function SegurancaPage() {
           <div className="rounded-xl p-4 ring-1 ring-black/5">
             <h3 className="text-sm font-semibold text-ink">Senha</h3>
             <p className="mt-1 text-sm text-muted">Crie ou altere a senha de acesso à sua conta.</p>
-            <Button className="mt-3" onClick={notImplemented} type="button" variant="secondary">
+            <Button className="mt-3" onClick={openPasswordModal} type="button" variant="secondary">
               Alterar senha
             </Button>
           </div>
@@ -110,6 +145,53 @@ export default function SegurancaPage() {
           </button>
         </div>
       </section>
+
+      <FormModal
+        description="Escolha uma nova senha (mínimo 8 caracteres). Você continuará conectado."
+        isOpen={isPasswordOpen}
+        onClose={() => setIsPasswordOpen(false)}
+        title="Alterar senha"
+      >
+        <form
+          className="grid gap-4"
+          onSubmit={(event) => {
+            event.preventDefault();
+            void changePassword();
+          }}
+        >
+          <label className="text-sm font-medium text-ink">
+            Nova senha
+            <Input
+              autoComplete="new-password"
+              className="mt-2"
+              minLength={8}
+              onChange={(event) => setNewPassword(event.target.value)}
+              type="password"
+              value={newPassword}
+            />
+          </label>
+          <label className="text-sm font-medium text-ink">
+            Confirmar nova senha
+            <Input
+              autoComplete="new-password"
+              className="mt-2"
+              minLength={8}
+              onChange={(event) => setConfirmPassword(event.target.value)}
+              type="password"
+              value={confirmPassword}
+            />
+          </label>
+          {passwordError ? <p className="text-sm text-red-600">{passwordError}</p> : null}
+          <div className="flex justify-end gap-2">
+            <Button onClick={() => setIsPasswordOpen(false)} type="button" variant="secondary">
+              Cancelar
+            </Button>
+            <Button disabled={!newPassword || !confirmPassword || isChangingPassword} type="submit">
+              {isChangingPassword ? "Salvando..." : "Salvar senha"}
+            </Button>
+          </div>
+        </form>
+      </FormModal>
 
       <FormModal
         description='Digite "CONFIRMAR" para solicitar a exclusão. Esta ação encerra suas sessões.'
