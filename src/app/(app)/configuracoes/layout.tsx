@@ -19,7 +19,7 @@ const groups: Group[] = [
       { href: "/configuracoes/empresa", label: "Empresa" },
       { href: "/configuracoes/perfil", label: "Perfil" },
       { href: "/configuracoes/dados", label: "Integrações", soon: true },
-      { href: "/configuracoes/pagamentos", label: "Pagamentos / Assinatura", soon: true },
+      { href: "/configuracoes/pagamentos", label: "Pagamentos / Assinatura" },
       { href: "/configuracoes/seguranca", label: "Segurança" },
       { href: "/configuracoes/moedas", label: "Moedas e idiomas" },
       { href: null, label: "Usuários" }
