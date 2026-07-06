@@ -113,7 +113,7 @@ export function PaymentsSection({ document, payments }: PaymentsSectionProps) {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <Badge tone={isPaid ? "success" : "warning"}>{isPaid ? "Pago" : "Em aberto"}</Badge>
+          <Badge tone={isPaid ? "success" : "warning"}>{isPaid ? "Paga" : "Em aberto"}</Badge>
           {canMarkPaid ? (
             <Button onClick={openModal} type="button">
               Marcar como paga
