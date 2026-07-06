@@ -44,8 +44,20 @@ export function DocumentActions({ client, document }: DocumentActionsProps) {
   const canDownload = document.status !== "draft";
 
   async function openSignedPdf() {
-    const response = await fetch(`/api/documents/${document.id}/pdf`);
-    const payload = (await response.json()) as { error?: string; signedUrl?: string };
+    let response = await fetch(`/api/documents/${document.id}/pdf`);
+    let payload = (await response.json()) as { error?: string; signedUrl?: string };
+
+    // PDF ainda não gerado (ex.: falha na emissão): gera sob demanda e tenta de novo.
+    if (response.status === 404) {
+      const gen = await fetch(`/api/documents/${document.id}/pdf`, { method: "POST" });
+      if (!gen.ok) {
+        const genPayload = (await gen.json().catch(() => ({}))) as { error?: string };
+        showToast(genPayload.error ?? "Não foi possível gerar o PDF.", "error");
+        return;
+      }
+      response = await fetch(`/api/documents/${document.id}/pdf`);
+      payload = (await response.json()) as { error?: string; signedUrl?: string };
+    }
 
     if (!response.ok || !payload.signedUrl) {
       showToast(payload.error ?? "Não foi possível abrir o PDF.", "error");

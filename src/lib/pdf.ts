@@ -218,11 +218,17 @@ function renderDocumentHtml({
 
 export async function renderHtmlToPdf(html: string) {
   const { chromium: playwrightChromium } = await import("playwright-core");
-  const browser = await playwrightChromium.launch({
-    args: chromium.args,
-    executablePath: await chromium.executablePath(),
-    headless: true
-  });
+  // Produção (serverless/Linux): usa o Chromium do @sparticuz. Desenvolvimento
+  // local (Mac/Windows): o binário do @sparticuz não roda, então usa o Chrome do
+  // sistema (ou PDF_CHROMIUM_PATH). O caminho serverless permanece inalterado.
+  const serverless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.AWS_EXECUTION_ENV);
+  const browser = await playwrightChromium.launch(
+    serverless
+      ? { args: chromium.args, executablePath: await chromium.executablePath(), headless: true }
+      : process.env.PDF_CHROMIUM_PATH
+        ? { executablePath: process.env.PDF_CHROMIUM_PATH, headless: true }
+        : { channel: "chrome", headless: true }
+  );
 
   try {
     const page = await browser.newPage();
