@@ -40,6 +40,12 @@ const templates: Template[] = [
   { title: "Ordem de compra", term: "ordem de compra", desc: "Uma ordem de compra é um documento comercial emitido por um comprador a um fornecedor." }
 ];
 
+const faqs = [
+  { q: "Como faço para usar esses modelos?", a: "Cada modelo vem com seu próprio manual de instruções completo. Baixe o modelo, preencha os campos conforme indicado no manual e seu modelo estará pronto!" },
+  { q: "O que devo fazer se precisar de ajuda?", a: "Se você optou pelo suporte incluído, pode entrar em contato com nossos consultores a qualquer momento através da Central de Ajuda em sua ferramenta." },
+  { q: "Como faço para editar os modelos?", a: "Os modelos são fornecidos em formato Microsoft Word e podem ser editados com o Word ou o LibreOffice." }
+];
+
 const eyeIcon = (
   <svg fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24" width="16"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" /><circle cx="12" cy="12" r="3" /></svg>
 );
@@ -111,6 +117,24 @@ export default function ModelosContratoPage() {
           Sugira novos modelos <span aria-hidden>→</span>
         </button>
       </div>
+
+      {/* FAQ */}
+      <section className="mt-10">
+        <h2 className="text-center text-lg font-semibold text-ink">Perguntas frequentes</h2>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {faqs.map((faq) => (
+            <div className="flex flex-col rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5 transition hover:-translate-y-0.5 hover:shadow-md" key={faq.q}>
+              <div className="flex items-start gap-3">
+                <span className="mt-0.5 shrink-0 text-[#5B8DEF]">
+                  <svg fill="none" height="20" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24" width="20"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3" /><line x1="12" x2="12" y1="17" y2="17" /></svg>
+                </span>
+                <h3 className="text-base font-semibold text-ink">{faq.q}</h3>
+              </div>
+              <p className="mt-3 border-l-2 border-[#5B8DEF] pl-3 text-sm text-muted">{faq.a}</p>
+            </div>
+          ))}
+        </div>
+      </section>
 
       <FormModal
         description={selected?.desc}
