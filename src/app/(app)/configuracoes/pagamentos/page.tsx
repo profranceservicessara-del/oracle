@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { createClient } from "@/lib/supabase/client";
 import { currentPlan, planLabels, statusLabels, subscriptionActive, type PlanTier } from "@/lib/plan";
+import type { BillingInvoice } from "@/app/api/stripe/invoices/route";
 
 // Pagamentos / Assinatura — billing real via Stripe. Nenhum dado de cartão é
 // coletado aqui: o checkout e o portal acontecem no ambiente seguro do Stripe.
@@ -59,11 +60,31 @@ function formatDate(value: string | null): string | null {
   return date.toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
 }
 
+// Valor em centavos (Stripe) -> moeda formatada. Fallback seguro se faltar.
+function formatAmount(amount: number | null, currency: string | null): string {
+  if (amount === null) return "—";
+  try {
+    return new Intl.NumberFormat("pt-BR", { style: "currency", currency: currency ?? "EUR" }).format(amount / 100);
+  } catch {
+    return `${(amount / 100).toFixed(2)} ${currency ?? ""}`.trim();
+  }
+}
+
+const invoiceStatusLabels: Record<string, string> = {
+  paid: "Paga",
+  open: "Em aberto",
+  draft: "Rascunho",
+  void: "Anulada",
+  uncollectible: "Não recuperável"
+};
+
 export default function PagamentosPage() {
   const { showToast } = useToast();
   const [loading, setLoading] = useState(true);
   const [billing, setBilling] = useState<Billing | null>(null);
   const [pending, setPending] = useState<string | null>(null);
+  const [invoices, setInvoices] = useState<BillingInvoice[]>([]);
+  const [invoicesState, setInvoicesState] = useState<"loading" | "ok" | "empty" | "no-customer" | "error">("loading");
 
   const load = useCallback(async () => {
     const supabase = createClient();
@@ -86,6 +107,29 @@ export default function PagamentosPage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    async function loadInvoices() {
+      try {
+        const response = await fetch("/api/stripe/invoices");
+        if (!response.ok) {
+          setInvoicesState("error");
+          return;
+        }
+        const data = (await response.json()) as { hasCustomer?: boolean; invoices?: BillingInvoice[] };
+        if (!data.hasCustomer) {
+          setInvoicesState("no-customer");
+          return;
+        }
+        const list = data.invoices ?? [];
+        setInvoices(list);
+        setInvoicesState(list.length > 0 ? "ok" : "empty");
+      } catch {
+        setInvoicesState("error");
+      }
+    }
+    void loadInvoices();
+  }, []);
 
   useEffect(() => {
     // Retorno do checkout: informa e recarrega o estado (o webhook pode levar
@@ -254,6 +298,82 @@ export default function PagamentosPage() {
             );
           })}
         </div>
+      </section>
+
+      {/* Faturas da assinatura */}
+      <section className="mb-6 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
+        <div className="flex items-center justify-between gap-3 border-b border-line bg-slate-50 px-5 py-3">
+          <h2 className="text-base font-semibold text-ink">Faturas da assinatura</h2>
+          {billing?.stripe_customer_id ? (
+            <button
+              className="inline-flex items-center gap-1 text-sm font-medium text-brand hover:underline disabled:opacity-60"
+              disabled={pending === "portal"}
+              onClick={manageSubscription}
+              type="button"
+            >
+              Gerenciar no portal Stripe
+              <svg fill="none" height="15" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" width="15">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><path d="M15 3h6v6" /><path d="M10 14 21 3" />
+              </svg>
+            </button>
+          ) : null}
+        </div>
+
+        {invoicesState === "loading" ? (
+          <div className="px-5 py-10 text-center text-sm text-muted">Carregando faturas…</div>
+        ) : invoicesState === "no-customer" ? (
+          <div className="px-5 py-10 text-center text-sm text-muted">Nenhuma fatura de assinatura disponível.</div>
+        ) : invoicesState === "empty" ? (
+          <div className="px-5 py-10 text-center text-sm text-muted">Você ainda não possui faturas de assinatura.</div>
+        ) : invoicesState === "error" ? (
+          <div className="px-5 py-10 text-center text-sm text-muted">Não foi possível carregar suas faturas agora. Tente novamente mais tarde.</div>
+        ) : (
+          <ul className="divide-y divide-line">
+            {invoices.map((invoice, index) => (
+              <li className="flex flex-wrap items-center justify-between gap-3 px-5 py-4" key={invoice.number ?? index}>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-ink">{invoice.number ?? "Fatura"}</span>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                        invoice.paid || invoice.status === "paid"
+                          ? "bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-200"
+                          : "bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-200"
+                      }`}
+                    >
+                      {invoice.status ? invoiceStatusLabels[invoice.status] ?? invoice.status : "—"}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-sm text-muted">
+                    {formatDate(invoice.date) ?? "—"} · {formatAmount(invoice.amount, invoice.currency)}
+                  </p>
+                </div>
+                <div className="flex shrink-0 items-center gap-2">
+                  {invoice.hostedUrl ? (
+                    <a
+                      className="rounded-lg px-3 py-1.5 text-xs font-semibold text-brand ring-1 ring-inset ring-slate-200 transition hover:bg-slate-50"
+                      href={invoice.hostedUrl}
+                      rel="noopener noreferrer"
+                      target="_blank"
+                    >
+                      Ver fatura
+                    </a>
+                  ) : null}
+                  {invoice.pdfUrl ? (
+                    <a
+                      className="rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-700 ring-1 ring-inset ring-slate-200 transition hover:bg-slate-50"
+                      href={invoice.pdfUrl}
+                      rel="noopener noreferrer"
+                      target="_blank"
+                    >
+                      Baixar recibo
+                    </a>
+                  ) : null}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
       {/* Nota de segurança */}
