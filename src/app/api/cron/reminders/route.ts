@@ -76,7 +76,8 @@ async function sendReminderEmail({
 
   const response = await fetch("https://api.resend.com/emails", {
     body: JSON.stringify({
-      from: "Oracle <onboarding@resend.dev>",
+      // Configure EMAIL_FROM (domínio verificado no Resend). Fallback: sandbox (dev).
+      from: process.env.EMAIL_FROM ?? "Oracle <onboarding@resend.dev>",
       html: body.replaceAll("\n", "<br />"),
       subject,
       text: body,

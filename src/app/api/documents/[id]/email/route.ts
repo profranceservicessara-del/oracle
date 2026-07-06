@@ -65,6 +65,10 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     return NextResponse.json({ error: "RESEND_API_KEY não configurada." }, { status: 500 });
   }
 
+  // Remetente de produção: configure EMAIL_FROM (ex.: "Oracle <faturas@seudominio.fr>")
+  // com um domínio verificado no Resend. Fallback: sandbox (só para desenvolvimento).
+  const emailFrom = process.env.EMAIL_FROM ?? "Oracle <onboarding@resend.dev>";
+
   const emailPayload = {
     attachments: [
       {
@@ -72,7 +76,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         filename: `${document.numero ?? "document"}.pdf`
       }
     ],
-    from: "Oracle <onboarding@resend.dev>",
+    from: emailFrom,
     html: parsed.data.body.replaceAll("\n", "<br />"),
     subject: parsed.data.subject,
     text: parsed.data.body,
