@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { OnboardingCard } from "@/components/onboarding/onboarding-card";
 import { fiscalConfig } from "@/config/fiscal";
 import {
   activityCategories,
@@ -24,20 +25,6 @@ const euroFormatter = new Intl.NumberFormat("pt-BR", {
   style: "currency",
   currency: "EUR"
 });
-
-function isProfileIncomplete(profile: Profile | null) {
-  if (!profile) {
-    return true;
-  }
-
-  return (
-    !profile.nome ||
-    !profile.adresse_rue ||
-    !profile.adresse_cp ||
-    !profile.adresse_ville ||
-    !profile.siret
-  );
-}
 
 function incompleteProfileFields(profile: Profile | null) {
   if (!profile) {
@@ -341,11 +328,7 @@ export default async function DashboardPage() {
         </div>
       </section>
 
-      {isProfileIncomplete(typedProfile) ? (
-        <div className="rounded-2xl bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800 ring-1 ring-amber-200">
-          Complete seu perfil para poder emitir faturas
-        </div>
-      ) : null}
+      <OnboardingCard email={user.email ?? ""} initialProfile={typedProfile} userId={user.id} />
 
       <section className="space-y-4">
         {/* Ação necessária — red accent */}

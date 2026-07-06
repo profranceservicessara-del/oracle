@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ import {
   tvaFranchiseMention,
   type EditorLine
 } from "@/lib/document-calculations";
+import { isProfileIncomplete } from "@/lib/profile-completeness";
 import { clientSchema } from "@/lib/validation";
 import {
   categoryLabels,
@@ -139,6 +141,7 @@ export function DocumentEditor({
   const [saveState, setSaveState] = useState<"idle" | "saving" | "error">("idle");
   const [isClientModalOpen, setIsClientModalOpen] = useState(false);
   const [isEmitModalOpen, setIsEmitModalOpen] = useState(false);
+  const [isProfileBlockOpen, setIsProfileBlockOpen] = useState(false);
   const [isEmitting, setIsEmitting] = useState(false);
   const [clientForm, setClientForm] = useState<ClientFormState>(emptyClientForm);
   const [clientErrors, setClientErrors] = useState<Record<string, string>>({});
@@ -384,6 +387,10 @@ export function DocumentEditor({
   }
 
   function startEmit() {
+    if (isProfileIncomplete(profile)) {
+      setIsProfileBlockOpen(true);
+      return;
+    }
     if (!clientId) {
       showToast("Selecione um cliente antes de emitir.", "error");
       return;
@@ -869,6 +876,36 @@ export function DocumentEditor({
             <Button disabled={isEmitting} onClick={() => void emitDocument()} type="button">
               {isEmitting ? "Emitindo..." : "Confirmar emissão"}
             </Button>
+          </div>
+        </div>
+      </FormModal>
+
+      <FormModal
+        isOpen={isProfileBlockOpen}
+        onClose={() => setIsProfileBlockOpen(false)}
+        title="Perfil incompleto"
+      >
+        <div className="space-y-5">
+          <div className="flex items-start gap-3 rounded-xl bg-[#EAF1FF] p-4 ring-1 ring-[#D7E2FF]">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-[#1D4ED8] ring-1 ring-[#D7E2FF]">
+              <svg fill="none" height="18" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" width="18">
+                <path d="M3 21h18" /><path d="M5 21V7l8-4v18" /><path d="M19 21V11l-6-4" />
+              </svg>
+            </span>
+            <p className="text-sm leading-6 text-slate-700">
+              Complete as informações da sua empresa antes de emitir uma fatura.
+            </p>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button onClick={() => setIsProfileBlockOpen(false)} type="button" variant="secondary">
+              Fechar
+            </Button>
+            <Link
+              className="inline-flex items-center justify-center rounded-xl bg-[#1D4ED8] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#1743B8]"
+              href="/configuracoes/empresa"
+            >
+              Completar perfil
+            </Link>
           </div>
         </div>
       </FormModal>
