@@ -75,21 +75,34 @@ function Section({ children, count, title }: { children: ReactNode; count: numbe
   );
 }
 
-function RowActions({ editLabel, deleteLabel, onEdit, onDelete }: { editLabel: string; deleteLabel: string; onEdit: () => void; onDelete: () => void }) {
+// Spinner sutil (sem texto -> neutro de idioma, sem key nova, largura estável).
+function Spinner({ className }: { className?: string }) {
+  return (
+    <svg aria-hidden="true" className={`animate-spin ${className ?? ""}`} fill="none" height="15" stroke="currentColor" strokeLinecap="round" strokeWidth="2.2" viewBox="0 0 24 24" width="15">
+      <path d="M21 12a9 9 0 1 1-6.2-8.5" />
+    </svg>
+  );
+}
+
+function RowActions({ editLabel, deleteLabel, onEdit, onDelete, busy }: { editLabel: string; deleteLabel: string; onEdit: () => void; onDelete: () => void; busy?: boolean }) {
   return (
     <span className="flex shrink-0 items-center gap-1">
-      <button aria-label={editLabel} className="rounded-lg p-1 text-slate-400 transition hover:bg-slate-100 hover:text-ink" onClick={onEdit} title={editLabel} type="button">
+      <button aria-label={editLabel} className="rounded-lg p-1 text-slate-400 transition hover:bg-slate-100 hover:text-ink disabled:opacity-40" disabled={busy} onClick={onEdit} title={editLabel} type="button">
         <svg fill="none" height="15" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" width="15">
           <path d="M12 20h9" />
           <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
         </svg>
       </button>
-      <button aria-label={deleteLabel} className="rounded-lg p-1 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600" onClick={onDelete} title={deleteLabel} type="button">
-        <svg fill="none" height="15" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" width="15">
-          <path d="M3 6h18" />
-          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-          <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-        </svg>
+      <button aria-label={deleteLabel} className="rounded-lg p-1 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 disabled:opacity-40" disabled={busy} onClick={onDelete} title={deleteLabel} type="button">
+        {busy ? (
+          <Spinner className="text-rose-500" />
+        ) : (
+          <svg fill="none" height="15" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" width="15">
+            <path d="M3 6h18" />
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+            <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+          </svg>
+        )}
       </button>
     </span>
   );
@@ -129,7 +142,26 @@ export function CrmClientDetail({
   const [documents, setDocuments] = useState(initialDocuments);
   const [activity, setActivity] = useState(initialActivity);
   const [uploading, setUploading] = useState(false);
+  const [busy, setBusy] = useState<Set<string>>(new Set());
+  // Guarda síncrona (ref) — evita corrida de double-click, pois setBusy é async
+  // e dois cliques síncronos leriam o mesmo estado stale.
+  const inFlight = useRef<Set<string>>(new Set());
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const isBusy = (key: string) => busy.has(key);
+
+  // In-flight por ação: bloqueia double-submit (ref síncrono) + reflete no UI (state).
+  async function run(key: string, fn: () => Promise<void>) {
+    if (inFlight.current.has(key)) return;
+    inFlight.current.add(key);
+    setBusy(new Set(inFlight.current));
+    try {
+      await fn();
+    } finally {
+      inFlight.current.delete(key);
+      setBusy(new Set(inFlight.current));
+    }
+  }
 
   const invoices = initialInvoices;
   const formatEur = (value: number) =>
@@ -166,30 +198,34 @@ export function CrmClientDetail({
   async function saveClient(event: React.FormEvent) {
     event.preventDefault();
     if (!clientForm.name.trim()) return;
-    const { data, error } = await supabase
-      .from("crm_clients")
-      .update({
-        name: clientForm.name.trim(),
-        type: clientForm.type,
-        email: clientForm.email.trim() || null,
-        phone: clientForm.phone.trim() || null
-      })
-      .eq("id", client.id)
-      .select("*")
-      .single();
-    if (error || !data) return showToast(t(locale, "detail.saveError"), "error");
-    setClientState(data as CrmClient);
-    setIsClientModalOpen(false);
-    showToast(t(locale, "detail.saved"), "success");
-    void record("update", "client", client.id, (data as CrmClient).name);
+    await run("save-client", async () => {
+      const { data, error } = await supabase
+        .from("crm_clients")
+        .update({
+          name: clientForm.name.trim(),
+          type: clientForm.type,
+          email: clientForm.email.trim() || null,
+          phone: clientForm.phone.trim() || null
+        })
+        .eq("id", client.id)
+        .select("*")
+        .single();
+      if (error || !data) return showToast(t(locale, "detail.saveError"), "error");
+      setClientState(data as CrmClient);
+      setIsClientModalOpen(false);
+      showToast(t(locale, "detail.saved"), "success");
+      void record("update", "client", client.id, (data as CrmClient).name);
+    });
   }
 
   async function archiveClient() {
-    const { error } = await supabase.from("crm_clients").update({ archived: true }).eq("id", client.id);
-    if (error) return showToast(t(locale, "detail.archiveError"), "error");
-    showToast(t(locale, "detail.archived"), "success");
-    router.push("/crm");
-    router.refresh();
+    await run("archive-client", async () => {
+      const { error } = await supabase.from("crm_clients").update({ archived: true }).eq("id", client.id);
+      if (error) return showToast(t(locale, "detail.archiveError"), "error");
+      showToast(t(locale, "detail.archived"), "success");
+      router.push("/crm");
+      router.refresh();
+    });
   }
 
   // ---- Add forms ----------------------------------------------------------
@@ -218,164 +254,202 @@ export function CrmClientDetail({
   async function addContact(event: React.FormEvent) {
     event.preventDefault();
     if (!contactForm.name.trim()) return;
-    const { data, error } = await supabase
-      .from("crm_contacts")
-      .insert({ ...base, email: contactForm.email.trim() || null, name: contactForm.name.trim() })
-      .select("*")
-      .single();
-    if (error || !data) return showToast(t(locale, "detail.addError"), "error");
-    const created = data as CrmContact;
-    setContacts((current) => [created, ...current]);
-    setContactForm({ name: "", email: "" });
-    void record("create", "contact", created.id, created.name);
+    await run("add-contact", async () => {
+      const { data, error } = await supabase
+        .from("crm_contacts")
+        .insert({ ...base, email: contactForm.email.trim() || null, name: contactForm.name.trim() })
+        .select("*")
+        .single();
+      if (error || !data) return showToast(t(locale, "detail.addError"), "error");
+      const created = data as CrmContact;
+      setContacts((current) => [created, ...current]);
+      setContactForm({ name: "", email: "" });
+      showToast(t(locale, "detail.saved"), "success");
+      void record("create", "contact", created.id, created.name);
+    });
   }
 
   async function saveContact(id: string) {
     if (!editContact.name.trim()) return;
-    const { data, error } = await supabase
-      .from("crm_contacts")
-      .update({ name: editContact.name.trim(), email: editContact.email.trim() || null })
-      .eq("id", id)
-      .select("*")
-      .single();
-    if (error || !data) return showToast(t(locale, "detail.saveError"), "error");
-    setContacts((current) => current.map((c) => (c.id === id ? (data as CrmContact) : c)));
-    setEditContactId(null);
-    void record("update", "contact", id, (data as CrmContact).name);
+    await run(`save-contact:${id}`, async () => {
+      const { data, error } = await supabase
+        .from("crm_contacts")
+        .update({ name: editContact.name.trim(), email: editContact.email.trim() || null })
+        .eq("id", id)
+        .select("*")
+        .single();
+      if (error || !data) return showToast(t(locale, "detail.saveError"), "error");
+      setContacts((current) => current.map((c) => (c.id === id ? (data as CrmContact) : c)));
+      setEditContactId(null);
+      showToast(t(locale, "detail.saved"), "success");
+      void record("update", "contact", id, (data as CrmContact).name);
+    });
   }
 
   async function deleteContact(contact: CrmContact) {
-    if (!confirmDelete()) return;
-    const { error } = await supabase.from("crm_contacts").delete().eq("id", contact.id);
-    if (error) return showToast(t(locale, "detail.deleteError"), "error");
-    setContacts((current) => current.filter((c) => c.id !== contact.id));
-    void record("delete", "contact", contact.id, contact.name);
+    if (isBusy(`delete-contact:${contact.id}`) || !confirmDelete()) return;
+    await run(`delete-contact:${contact.id}`, async () => {
+      const { error } = await supabase.from("crm_contacts").delete().eq("id", contact.id);
+      if (error) return showToast(t(locale, "detail.deleteError"), "error");
+      setContacts((current) => current.filter((c) => c.id !== contact.id));
+      void record("delete", "contact", contact.id, contact.name);
+    });
   }
 
   // ---- Dossiers -----------------------------------------------------------
   async function addDossier(event: React.FormEvent) {
     event.preventDefault();
     if (!dossierTitle.trim()) return;
-    const { data, error } = await supabase
-      .from("crm_dossiers")
-      .insert({ ...base, title: dossierTitle.trim() })
-      .select("*")
-      .single();
-    if (error || !data) return showToast(t(locale, "detail.addError"), "error");
-    const created = data as CrmDossier;
-    setDossiers((current) => [created, ...current]);
-    setDossierTitle("");
-    void record("create", "dossier", created.id, created.title);
+    await run("add-dossier", async () => {
+      const { data, error } = await supabase
+        .from("crm_dossiers")
+        .insert({ ...base, title: dossierTitle.trim() })
+        .select("*")
+        .single();
+      if (error || !data) return showToast(t(locale, "detail.addError"), "error");
+      const created = data as CrmDossier;
+      setDossiers((current) => [created, ...current]);
+      setDossierTitle("");
+      showToast(t(locale, "detail.saved"), "success");
+      void record("create", "dossier", created.id, created.title);
+    });
   }
 
   async function saveDossier(id: string) {
     if (!editDossierTitle.trim()) return;
-    const { data, error } = await supabase
-      .from("crm_dossiers")
-      .update({ title: editDossierTitle.trim() })
-      .eq("id", id)
-      .select("*")
-      .single();
-    if (error || !data) return showToast(t(locale, "detail.saveError"), "error");
-    setDossiers((current) => current.map((d) => (d.id === id ? (data as CrmDossier) : d)));
-    setEditDossierId(null);
-    void record("update", "dossier", id, (data as CrmDossier).title);
+    await run(`save-dossier:${id}`, async () => {
+      const { data, error } = await supabase
+        .from("crm_dossiers")
+        .update({ title: editDossierTitle.trim() })
+        .eq("id", id)
+        .select("*")
+        .single();
+      if (error || !data) return showToast(t(locale, "detail.saveError"), "error");
+      setDossiers((current) => current.map((d) => (d.id === id ? (data as CrmDossier) : d)));
+      setEditDossierId(null);
+      showToast(t(locale, "detail.saved"), "success");
+      void record("update", "dossier", id, (data as CrmDossier).title);
+    });
   }
 
   async function cycleDossier(dossier: CrmDossier) {
-    const next = dossierNext[dossier.status];
-    const { data, error } = await supabase.from("crm_dossiers").update({ status: next }).eq("id", dossier.id).select("*").single();
-    if (!error && data) setDossiers((current) => current.map((d) => (d.id === dossier.id ? (data as CrmDossier) : d)));
+    await run(`cycle-dossier:${dossier.id}`, async () => {
+      const next = dossierNext[dossier.status];
+      const { data, error } = await supabase.from("crm_dossiers").update({ status: next }).eq("id", dossier.id).select("*").single();
+      if (error || !data) return showToast(t(locale, "detail.saveError"), "error");
+      setDossiers((current) => current.map((d) => (d.id === dossier.id ? (data as CrmDossier) : d)));
+    });
   }
 
   async function deleteDossier(dossier: CrmDossier) {
-    if (!confirmDelete()) return;
-    const { error } = await supabase.from("crm_dossiers").delete().eq("id", dossier.id);
-    if (error) return showToast(t(locale, "detail.deleteError"), "error");
-    setDossiers((current) => current.filter((d) => d.id !== dossier.id));
-    void record("delete", "dossier", dossier.id, dossier.title);
+    if (isBusy(`delete-dossier:${dossier.id}`) || !confirmDelete()) return;
+    await run(`delete-dossier:${dossier.id}`, async () => {
+      const { error } = await supabase.from("crm_dossiers").delete().eq("id", dossier.id);
+      if (error) return showToast(t(locale, "detail.deleteError"), "error");
+      setDossiers((current) => current.filter((d) => d.id !== dossier.id));
+      void record("delete", "dossier", dossier.id, dossier.title);
+    });
   }
 
   // ---- Tasks --------------------------------------------------------------
   async function addTask(event: React.FormEvent) {
     event.preventDefault();
     if (!taskForm.title.trim()) return;
-    const { data, error } = await supabase
-      .from("crm_tasks")
-      .insert({ ...base, due_date: taskForm.due || null, title: taskForm.title.trim() })
-      .select("*")
-      .single();
-    if (error || !data) return showToast(t(locale, "detail.addError"), "error");
-    const created = data as CrmTask;
-    setTasks((current) => [created, ...current]);
-    setTaskForm({ title: "", due: "" });
-    void record("create", "task", created.id, created.title);
+    await run("add-task", async () => {
+      const { data, error } = await supabase
+        .from("crm_tasks")
+        .insert({ ...base, due_date: taskForm.due || null, title: taskForm.title.trim() })
+        .select("*")
+        .single();
+      if (error || !data) return showToast(t(locale, "detail.addError"), "error");
+      const created = data as CrmTask;
+      setTasks((current) => [created, ...current]);
+      setTaskForm({ title: "", due: "" });
+      showToast(t(locale, "detail.saved"), "success");
+      void record("create", "task", created.id, created.title);
+    });
   }
 
   async function saveTask(id: string) {
     if (!editTask.title.trim()) return;
-    const { data, error } = await supabase
-      .from("crm_tasks")
-      .update({ title: editTask.title.trim(), due_date: editTask.due || null })
-      .eq("id", id)
-      .select("*")
-      .single();
-    if (error || !data) return showToast(t(locale, "detail.saveError"), "error");
-    setTasks((current) => current.map((task) => (task.id === id ? (data as CrmTask) : task)));
-    setEditTaskId(null);
-    void record("update", "task", id, (data as CrmTask).title);
+    await run(`save-task:${id}`, async () => {
+      const { data, error } = await supabase
+        .from("crm_tasks")
+        .update({ title: editTask.title.trim(), due_date: editTask.due || null })
+        .eq("id", id)
+        .select("*")
+        .single();
+      if (error || !data) return showToast(t(locale, "detail.saveError"), "error");
+      setTasks((current) => current.map((task) => (task.id === id ? (data as CrmTask) : task)));
+      setEditTaskId(null);
+      showToast(t(locale, "detail.saved"), "success");
+      void record("update", "task", id, (data as CrmTask).title);
+    });
   }
 
   async function cycleTask(task: CrmTask) {
-    const next = taskNext[task.status];
-    const { data, error } = await supabase.from("crm_tasks").update({ status: next }).eq("id", task.id).select("*").single();
-    if (!error && data) setTasks((current) => current.map((item) => (item.id === task.id ? (data as CrmTask) : item)));
+    await run(`cycle-task:${task.id}`, async () => {
+      const next = taskNext[task.status];
+      const { data, error } = await supabase.from("crm_tasks").update({ status: next }).eq("id", task.id).select("*").single();
+      if (error || !data) return showToast(t(locale, "detail.saveError"), "error");
+      setTasks((current) => current.map((item) => (item.id === task.id ? (data as CrmTask) : item)));
+    });
   }
 
   async function deleteTask(task: CrmTask) {
-    if (!confirmDelete()) return;
-    const { error } = await supabase.from("crm_tasks").delete().eq("id", task.id);
-    if (error) return showToast(t(locale, "detail.deleteError"), "error");
-    setTasks((current) => current.filter((item) => item.id !== task.id));
-    void record("delete", "task", task.id, task.title);
+    if (isBusy(`delete-task:${task.id}`) || !confirmDelete()) return;
+    await run(`delete-task:${task.id}`, async () => {
+      const { error } = await supabase.from("crm_tasks").delete().eq("id", task.id);
+      if (error) return showToast(t(locale, "detail.deleteError"), "error");
+      setTasks((current) => current.filter((item) => item.id !== task.id));
+      void record("delete", "task", task.id, task.title);
+    });
   }
 
   // ---- Notes --------------------------------------------------------------
   async function addNote(event: React.FormEvent) {
     event.preventDefault();
     if (!noteBody.trim()) return;
-    const { data, error } = await supabase
-      .from("crm_notes")
-      .insert({ ...base, author_id: userId, body: noteBody.trim() })
-      .select("*")
-      .single();
-    if (error || !data) return showToast(t(locale, "detail.addError"), "error");
-    const created = data as CrmNote;
-    setNotes((current) => [created, ...current]);
-    setNoteBody("");
-    void record("create", "note", created.id, created.body.slice(0, 40));
+    await run("add-note", async () => {
+      const { data, error } = await supabase
+        .from("crm_notes")
+        .insert({ ...base, author_id: userId, body: noteBody.trim() })
+        .select("*")
+        .single();
+      if (error || !data) return showToast(t(locale, "detail.addError"), "error");
+      const created = data as CrmNote;
+      setNotes((current) => [created, ...current]);
+      setNoteBody("");
+      showToast(t(locale, "detail.saved"), "success");
+      void record("create", "note", created.id, created.body.slice(0, 40));
+    });
   }
 
   async function saveNote(id: string) {
     if (!editNoteBody.trim()) return;
-    const { data, error } = await supabase
-      .from("crm_notes")
-      .update({ body: editNoteBody.trim() })
-      .eq("id", id)
-      .select("*")
-      .single();
-    if (error || !data) return showToast(t(locale, "detail.saveError"), "error");
-    setNotes((current) => current.map((note) => (note.id === id ? (data as CrmNote) : note)));
-    setEditNoteId(null);
-    void record("update", "note", id, (data as CrmNote).body.slice(0, 40));
+    await run(`save-note:${id}`, async () => {
+      const { data, error } = await supabase
+        .from("crm_notes")
+        .update({ body: editNoteBody.trim() })
+        .eq("id", id)
+        .select("*")
+        .single();
+      if (error || !data) return showToast(t(locale, "detail.saveError"), "error");
+      setNotes((current) => current.map((note) => (note.id === id ? (data as CrmNote) : note)));
+      setEditNoteId(null);
+      showToast(t(locale, "detail.saved"), "success");
+      void record("update", "note", id, (data as CrmNote).body.slice(0, 40));
+    });
   }
 
   async function deleteNote(note: CrmNote) {
-    if (!confirmDelete()) return;
-    const { error } = await supabase.from("crm_notes").delete().eq("id", note.id);
-    if (error) return showToast(t(locale, "detail.deleteError"), "error");
-    setNotes((current) => current.filter((n) => n.id !== note.id));
-    void record("delete", "note", note.id, note.body.slice(0, 40));
+    if (isBusy(`delete-note:${note.id}`) || !confirmDelete()) return;
+    await run(`delete-note:${note.id}`, async () => {
+      const { error } = await supabase.from("crm_notes").delete().eq("id", note.id);
+      if (error) return showToast(t(locale, "detail.deleteError"), "error");
+      setNotes((current) => current.filter((n) => n.id !== note.id));
+      void record("delete", "note", note.id, note.body.slice(0, 40));
+    });
   }
 
   // ---- Documents (Supabase Storage) --------------------------------------
@@ -420,14 +494,16 @@ export function CrmClientDetail({
   }
 
   async function deleteDocument(doc: CrmDocument) {
-    if (!confirmDelete()) return;
-    if (doc.storage_path) {
-      await supabase.storage.from("crm-documents").remove([doc.storage_path]);
-    }
-    const { error } = await supabase.from("crm_documents").delete().eq("id", doc.id);
-    if (error) return showToast(t(locale, "detail.deleteError"), "error");
-    setDocuments((current) => current.filter((d) => d.id !== doc.id));
-    void record("delete", "document", doc.id, doc.name);
+    if (isBusy(`delete-document:${doc.id}`) || !confirmDelete()) return;
+    await run(`delete-document:${doc.id}`, async () => {
+      if (doc.storage_path) {
+        await supabase.storage.from("crm-documents").remove([doc.storage_path]);
+      }
+      const { error } = await supabase.from("crm_documents").delete().eq("id", doc.id);
+      if (error) return showToast(t(locale, "detail.deleteError"), "error");
+      setDocuments((current) => current.filter((d) => d.id !== doc.id));
+      void record("delete", "document", doc.id, doc.name);
+    });
   }
 
   return (
@@ -454,8 +530,8 @@ export function CrmClientDetail({
           <Button onClick={openClientModal} type="button" variant="secondary">
             {t(locale, "detail.edit")}
           </Button>
-          <Button onClick={() => void archiveClient()} type="button" variant="secondary">
-            {t(locale, "detail.archive")}
+          <Button disabled={isBusy("archive-client")} onClick={() => void archiveClient()} type="button" variant="secondary">
+            {isBusy("archive-client") ? <Spinner /> : t(locale, "detail.archive")}
           </Button>
         </div>
       </div>
@@ -514,7 +590,9 @@ export function CrmClientDetail({
           <form className="mb-3 flex flex-wrap gap-2" onSubmit={(event) => void addContact(event)}>
             <Input aria-label={t(locale, "crm.name")} className="min-w-[8rem] flex-1" onChange={(event) => setContactForm((current) => ({ ...current, name: event.target.value }))} placeholder={t(locale, "crm.name")} value={contactForm.name} />
             <Input aria-label={t(locale, "crm.email")} className="min-w-[8rem] flex-1" onChange={(event) => setContactForm((current) => ({ ...current, email: event.target.value }))} placeholder={t(locale, "crm.email")} type="email" value={contactForm.email} />
-            <Button disabled={!contactForm.name.trim()} type="submit">{t(locale, "detail.add")}</Button>
+            <Button disabled={!contactForm.name.trim() || isBusy("add-contact")} type="submit">
+              {isBusy("add-contact") ? <Spinner /> : t(locale, "detail.add")}
+            </Button>
           </form>
           <ul className="divide-y divide-line text-sm">
             {contacts.length === 0 ? (
@@ -525,7 +603,9 @@ export function CrmClientDetail({
                   <li className="flex flex-wrap items-center gap-2 py-2" key={contact.id}>
                     <Input aria-label={t(locale, "detail.contactName")} className="min-w-[7rem] flex-1" onChange={(event) => setEditContact((c) => ({ ...c, name: event.target.value }))} value={editContact.name} />
                     <Input aria-label="Email" className="min-w-[7rem] flex-1" onChange={(event) => setEditContact((c) => ({ ...c, email: event.target.value }))} type="email" value={editContact.email} />
-                    <Button disabled={!editContact.name.trim()} onClick={() => void saveContact(contact.id)} type="button">{t(locale, "detail.save")}</Button>
+                    <Button disabled={!editContact.name.trim() || isBusy(`save-contact:${contact.id}`)} onClick={() => void saveContact(contact.id)} type="button">
+                      {isBusy(`save-contact:${contact.id}`) ? <Spinner /> : t(locale, "detail.save")}
+                    </Button>
                     <Button onClick={() => setEditContactId(null)} type="button" variant="secondary">{t(locale, "detail.cancel")}</Button>
                   </li>
                 ) : (
@@ -534,7 +614,7 @@ export function CrmClientDetail({
                       <span className="font-medium text-ink">{contact.name}</span>
                       {contact.email || contact.phone ? <span className="ml-2 truncate text-muted">{contact.email || contact.phone}</span> : null}
                     </span>
-                    <RowActions deleteLabel={t(locale, "detail.delete")} editLabel={t(locale, "detail.edit")} onDelete={() => void deleteContact(contact)} onEdit={() => { setEditContactId(contact.id); setEditContact({ name: contact.name, email: contact.email ?? "" }); }} />
+                    <RowActions busy={isBusy(`delete-contact:${contact.id}`)} deleteLabel={t(locale, "detail.delete")} editLabel={t(locale, "detail.edit")} onDelete={() => void deleteContact(contact)} onEdit={() => { setEditContactId(contact.id); setEditContact({ name: contact.name, email: contact.email ?? "" }); }} />
                   </li>
                 )
               )
@@ -545,7 +625,9 @@ export function CrmClientDetail({
         <Section count={dossiers.length} title={t(locale, "detail.dossiers")}>
           <form className="mb-3 flex gap-2" onSubmit={(event) => void addDossier(event)}>
             <Input aria-label="Titre du dossier" className="flex-1" onChange={(event) => setDossierTitle(event.target.value)} placeholder={t(locale, "detail.dossierTitle")} value={dossierTitle} />
-            <Button disabled={!dossierTitle.trim()} type="submit">{t(locale, "detail.add")}</Button>
+            <Button disabled={!dossierTitle.trim() || isBusy("add-dossier")} type="submit">
+              {isBusy("add-dossier") ? <Spinner /> : t(locale, "detail.add")}
+            </Button>
           </form>
           <ul className="divide-y divide-line text-sm">
             {dossiers.length === 0 ? (
@@ -555,17 +637,20 @@ export function CrmClientDetail({
                 editDossierId === dossier.id ? (
                   <li className="flex flex-wrap items-center gap-2 py-2" key={dossier.id}>
                     <Input aria-label={t(locale, "detail.dossierTitle")} className="flex-1" onChange={(event) => setEditDossierTitle(event.target.value)} value={editDossierTitle} />
-                    <Button disabled={!editDossierTitle.trim()} onClick={() => void saveDossier(dossier.id)} type="button">{t(locale, "detail.save")}</Button>
+                    <Button disabled={!editDossierTitle.trim() || isBusy(`save-dossier:${dossier.id}`)} onClick={() => void saveDossier(dossier.id)} type="button">
+                      {isBusy(`save-dossier:${dossier.id}`) ? <Spinner /> : t(locale, "detail.save")}
+                    </Button>
                     <Button onClick={() => setEditDossierId(null)} type="button" variant="secondary">{t(locale, "detail.cancel")}</Button>
                   </li>
                 ) : (
                   <li className="flex items-center justify-between gap-3 py-2" key={dossier.id}>
                     <span className="min-w-0 truncate font-medium text-ink">{dossier.title}</span>
                     <span className="flex shrink-0 items-center gap-2">
-                      <button className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-200" onClick={() => void cycleDossier(dossier)} type="button">
+                      <button className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-200 disabled:opacity-50" disabled={isBusy(`cycle-dossier:${dossier.id}`)} onClick={() => void cycleDossier(dossier)} type="button">
+                        {isBusy(`cycle-dossier:${dossier.id}`) ? <Spinner className="h-3 w-3" /> : null}
                         {t(locale, dossierStatusKey[dossier.status])}
                       </button>
-                      <RowActions deleteLabel={t(locale, "detail.delete")} editLabel={t(locale, "detail.edit")} onDelete={() => void deleteDossier(dossier)} onEdit={() => { setEditDossierId(dossier.id); setEditDossierTitle(dossier.title); }} />
+                      <RowActions busy={isBusy(`delete-dossier:${dossier.id}`)} deleteLabel={t(locale, "detail.delete")} editLabel={t(locale, "detail.edit")} onDelete={() => void deleteDossier(dossier)} onEdit={() => { setEditDossierId(dossier.id); setEditDossierTitle(dossier.title); }} />
                     </span>
                   </li>
                 )
@@ -578,7 +663,9 @@ export function CrmClientDetail({
           <form className="mb-3 flex flex-wrap gap-2" onSubmit={(event) => void addTask(event)}>
             <Input aria-label="Titre de la tâche" className="min-w-[8rem] flex-1" onChange={(event) => setTaskForm((current) => ({ ...current, title: event.target.value }))} placeholder={t(locale, "detail.taskTitle")} value={taskForm.title} />
             <Input aria-label="Échéance" className="w-[10rem]" onChange={(event) => setTaskForm((current) => ({ ...current, due: event.target.value }))} type="date" value={taskForm.due} />
-            <Button disabled={!taskForm.title.trim()} type="submit">{t(locale, "detail.add")}</Button>
+            <Button disabled={!taskForm.title.trim() || isBusy("add-task")} type="submit">
+              {isBusy("add-task") ? <Spinner /> : t(locale, "detail.add")}
+            </Button>
           </form>
           <ul className="divide-y divide-line text-sm">
             {tasks.length === 0 ? (
@@ -589,7 +676,9 @@ export function CrmClientDetail({
                   <li className="flex flex-wrap items-center gap-2 py-2" key={task.id}>
                     <Input aria-label={t(locale, "detail.taskTitle")} className="min-w-[7rem] flex-1" onChange={(event) => setEditTask((tk) => ({ ...tk, title: event.target.value }))} value={editTask.title} />
                     <Input aria-label="Échéance" className="w-[9rem]" onChange={(event) => setEditTask((tk) => ({ ...tk, due: event.target.value }))} type="date" value={editTask.due} />
-                    <Button disabled={!editTask.title.trim()} onClick={() => void saveTask(task.id)} type="button">{t(locale, "detail.save")}</Button>
+                    <Button disabled={!editTask.title.trim() || isBusy(`save-task:${task.id}`)} onClick={() => void saveTask(task.id)} type="button">
+                      {isBusy(`save-task:${task.id}`) ? <Spinner /> : t(locale, "detail.save")}
+                    </Button>
                     <Button onClick={() => setEditTaskId(null)} type="button" variant="secondary">{t(locale, "detail.cancel")}</Button>
                   </li>
                 ) : (
@@ -599,10 +688,11 @@ export function CrmClientDetail({
                       {task.due_date ? <span className="ml-2 text-xs text-muted">· {task.due_date}</span> : null}
                     </span>
                     <span className="flex shrink-0 items-center gap-2">
-                      <button className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-200" onClick={() => void cycleTask(task)} type="button">
+                      <button className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-200 disabled:opacity-50" disabled={isBusy(`cycle-task:${task.id}`)} onClick={() => void cycleTask(task)} type="button">
+                        {isBusy(`cycle-task:${task.id}`) ? <Spinner className="h-3 w-3" /> : null}
                         {t(locale, taskStatusKey[task.status])}
                       </button>
-                      <RowActions deleteLabel={t(locale, "detail.delete")} editLabel={t(locale, "detail.edit")} onDelete={() => void deleteTask(task)} onEdit={() => { setEditTaskId(task.id); setEditTask({ title: task.title, due: task.due_date ?? "" }); }} />
+                      <RowActions busy={isBusy(`delete-task:${task.id}`)} deleteLabel={t(locale, "detail.delete")} editLabel={t(locale, "detail.edit")} onDelete={() => void deleteTask(task)} onEdit={() => { setEditTaskId(task.id); setEditTask({ title: task.title, due: task.due_date ?? "" }); }} />
                     </span>
                   </li>
                 )
@@ -615,7 +705,9 @@ export function CrmClientDetail({
           <form className="mb-3 grid gap-2" onSubmit={(event) => void addNote(event)}>
             <Textarea aria-label="Nouvelle note" className="min-h-16" onChange={(event) => setNoteBody(event.target.value)} placeholder={t(locale, "detail.notePlaceholder")} value={noteBody} />
             <div className="flex justify-end">
-              <Button disabled={!noteBody.trim()} type="submit">{t(locale, "detail.add")}</Button>
+              <Button disabled={!noteBody.trim() || isBusy("add-note")} type="submit">
+                {isBusy("add-note") ? <Spinner /> : t(locale, "detail.add")}
+              </Button>
             </div>
           </form>
           <ul className="space-y-2 text-sm">
@@ -628,13 +720,15 @@ export function CrmClientDetail({
                     <Textarea aria-label={t(locale, "detail.notePlaceholder")} className="min-h-16" onChange={(event) => setEditNoteBody(event.target.value)} value={editNoteBody} />
                     <div className="flex justify-end gap-2">
                       <Button onClick={() => setEditNoteId(null)} type="button" variant="secondary">{t(locale, "detail.cancel")}</Button>
-                      <Button disabled={!editNoteBody.trim()} onClick={() => void saveNote(note.id)} type="button">{t(locale, "detail.save")}</Button>
+                      <Button disabled={!editNoteBody.trim() || isBusy(`save-note:${note.id}`)} onClick={() => void saveNote(note.id)} type="button">
+                        {isBusy(`save-note:${note.id}`) ? <Spinner /> : t(locale, "detail.save")}
+                      </Button>
                     </div>
                   </li>
                 ) : (
                   <li className="flex items-start justify-between gap-2 rounded-xl bg-slate-50 px-3 py-2 text-slate-700 ring-1 ring-black/5" key={note.id}>
                     <span className="min-w-0 whitespace-pre-wrap">{note.body}</span>
-                    <RowActions deleteLabel={t(locale, "detail.delete")} editLabel={t(locale, "detail.edit")} onDelete={() => void deleteNote(note)} onEdit={() => { setEditNoteId(note.id); setEditNoteBody(note.body); }} />
+                    <RowActions busy={isBusy(`delete-note:${note.id}`)} deleteLabel={t(locale, "detail.delete")} editLabel={t(locale, "detail.edit")} onDelete={() => void deleteNote(note)} onEdit={() => { setEditNoteId(note.id); setEditNoteBody(note.body); }} />
                   </li>
                 )
               )
@@ -669,16 +763,21 @@ export function CrmClientDetail({
                   </button>
                   <button
                     aria-label={t(locale, "detail.delete")}
-                    className="shrink-0 rounded-lg p-1 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600"
+                    className="shrink-0 rounded-lg p-1 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 disabled:opacity-40"
+                    disabled={isBusy(`delete-document:${doc.id}`)}
                     onClick={() => void deleteDocument(doc)}
                     title={t(locale, "detail.delete")}
                     type="button"
                   >
-                    <svg fill="none" height="15" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" width="15">
-                      <path d="M3 6h18" />
-                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                      <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                    </svg>
+                    {isBusy(`delete-document:${doc.id}`) ? (
+                      <Spinner className="text-rose-500" />
+                    ) : (
+                      <svg fill="none" height="15" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" width="15">
+                        <path d="M3 6h18" />
+                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                        <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                      </svg>
+                    )}
                   </button>
                 </li>
               ))
@@ -729,7 +828,9 @@ export function CrmClientDetail({
           </div>
           <div className="flex justify-end gap-2">
             <Button onClick={() => setIsClientModalOpen(false)} type="button" variant="secondary">{t(locale, "detail.cancel")}</Button>
-            <Button disabled={!clientForm.name.trim()} type="submit">{t(locale, "detail.save")}</Button>
+            <Button disabled={!clientForm.name.trim() || isBusy("save-client")} type="submit">
+              {isBusy("save-client") ? <Spinner /> : t(locale, "detail.save")}
+            </Button>
           </div>
         </form>
       </FormModal>
