@@ -3,6 +3,10 @@ import Link from "next/link";
 import { AuthCard } from "@/components/ui/auth-card";
 import { LoginForm } from "./login-form";
 
+// Página de auth: renderizada sob demanda. Evita prerender no build
+// (que instanciaria o client Supabase e exigiria env em tempo de build).
+export const dynamic = "force-dynamic";
+
 export default function LoginPage() {
   return (
     <AuthCard
