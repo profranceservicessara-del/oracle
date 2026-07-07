@@ -251,6 +251,19 @@ export function CrmClientDetail({
   const [confirmDialog, setConfirmDialog] = useState<{ name: string; perform: () => Promise<boolean> } | null>(null);
   const [confirmBusy, setConfirmBusy] = useState(false);
 
+  // ---- Abas (uma seção por vez; header fica sempre no topo) ----------------
+  type CrmTab = "overview" | "contacts" | "dossiers" | "tasks" | "notes" | "documents" | "activity";
+  const [activeTab, setActiveTab] = useState<CrmTab>("overview");
+  const tabs: Array<{ key: CrmTab; label: string; count: number | null }> = [
+    { key: "overview", label: locale === "pt" ? "Visão geral" : "Vue d'ensemble", count: null },
+    { key: "contacts", label: t(locale, "detail.contacts"), count: contacts.length },
+    { key: "dossiers", label: t(locale, "detail.dossiers"), count: dossiers.length },
+    { key: "tasks", label: t(locale, "detail.tasks"), count: tasks.length },
+    { key: "notes", label: t(locale, "detail.notes"), count: notes.length },
+    { key: "documents", label: t(locale, "detail.documents"), count: documents.length },
+    { key: "activity", label: t(locale, "detail.activity"), count: activity.length }
+  ];
+
   function askDelete(name: string, perform: () => Promise<boolean>) {
     setConfirmDialog({ name, perform });
   }
@@ -583,6 +596,34 @@ export function CrmClientDetail({
         </div>
       </div>
 
+      {/* Tab bar — scroll horizontal no mobile, sublinhado azul no ativo */}
+      <div className="mb-4 -mx-4 overflow-x-auto px-4">
+        <div className="flex min-w-max gap-1 border-b border-line">
+          {tabs.map((tab) => {
+            const active = activeTab === tab.key;
+            return (
+              <button
+                aria-current={active ? "page" : undefined}
+                className={`relative flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-3 py-2.5 text-sm font-medium transition ${
+                  active ? "border-[#1D4ED8] text-[#1D4ED8]" : "border-transparent text-slate-500 hover:text-ink"
+                }`}
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                type="button"
+              >
+                {tab.label}
+                {tab.count !== null ? (
+                  <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold tabular-nums ${active ? "bg-[#EAF1FF] text-[#1D4ED8]" : "bg-slate-100 text-slate-500"}`}>
+                    {tab.count}
+                  </span>
+                ) : null}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {activeTab === "overview" ? (
       <section className="mb-4 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
@@ -631,8 +672,9 @@ export function CrmClientDetail({
           <p className="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-800 ring-1 ring-amber-200">{t(locale, "detail.fiscalHint")}</p>
         ) : null}
       </section>
+      ) : null}
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      {activeTab === "contacts" ? (
         <Section count={contacts.length} title={t(locale, "detail.contacts")}>
           <form className="mb-3 flex flex-wrap gap-2" onSubmit={(event) => void addContact(event)}>
             <Input aria-label={t(locale, "crm.name")} className="min-w-[8rem] flex-1" onChange={(event) => setContactForm((current) => ({ ...current, name: event.target.value }))} placeholder={t(locale, "crm.name")} value={contactForm.name} />
@@ -668,7 +710,9 @@ export function CrmClientDetail({
             )}
           </ul>
         </Section>
+      ) : null}
 
+      {activeTab === "dossiers" ? (
         <Section count={dossiers.length} title={t(locale, "detail.dossiers")}>
           <form className="mb-3 flex gap-2" onSubmit={(event) => void addDossier(event)}>
             <Input aria-label="Titre du dossier" className="flex-1" onChange={(event) => setDossierTitle(event.target.value)} placeholder={t(locale, "detail.dossierTitle")} value={dossierTitle} />
@@ -705,7 +749,9 @@ export function CrmClientDetail({
             )}
           </ul>
         </Section>
+      ) : null}
 
+      {activeTab === "tasks" ? (
         <Section count={tasks.length} title={t(locale, "detail.tasks")}>
           <form className="mb-3 flex flex-wrap gap-2" onSubmit={(event) => void addTask(event)}>
             <Input aria-label="Titre de la tâche" className="min-w-[8rem] flex-1" onChange={(event) => setTaskForm((current) => ({ ...current, title: event.target.value }))} placeholder={t(locale, "detail.taskTitle")} value={taskForm.title} />
@@ -747,7 +793,9 @@ export function CrmClientDetail({
             )}
           </ul>
         </Section>
+      ) : null}
 
+      {activeTab === "notes" ? (
         <Section count={notes.length} title={t(locale, "detail.notes")}>
           <form className="mb-3 grid gap-2" onSubmit={(event) => void addNote(event)}>
             <Textarea aria-label="Nouvelle note" className="min-h-16" onChange={(event) => setNoteBody(event.target.value)} placeholder={t(locale, "detail.notePlaceholder")} value={noteBody} />
@@ -782,7 +830,9 @@ export function CrmClientDetail({
             )}
           </ul>
         </Section>
+      ) : null}
 
+      {activeTab === "documents" ? (
         <Section count={documents.length} title={t(locale, "detail.documents")}>
           <div className="mb-3">
             <input accept="application/pdf,image/png,image/jpeg,image/webp,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" className="hidden" onChange={(event) => void uploadDocument(event)} ref={fileRef} type="file" />
@@ -831,22 +881,26 @@ export function CrmClientDetail({
             )}
           </ul>
         </Section>
-      </div>
+      ) : null}
 
-      {activity.length > 0 ? (
-        <section className="mt-4 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
+      {activeTab === "activity" ? (
+        <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
           <h2 className="mb-3 text-sm font-semibold text-ink">{t(locale, "detail.activity")}</h2>
-          <ul className="space-y-2 text-sm">
-            {activity.map((item) => (
-              <li className="flex items-center justify-between gap-3" key={item.id}>
-                <span className="truncate text-slate-700">
-                  {actionSymbol[item.action] ?? "•"} {item.entity && entityKey[item.entity] ? t(locale, entityKey[item.entity]) : item.entity} ·{" "}
-                  {String((item.payload as { label?: string }).label ?? "")}
-                </span>
-                <span className="shrink-0 text-xs text-muted">{new Date(item.created_at).toLocaleDateString("fr-FR")}</span>
-              </li>
-            ))}
-          </ul>
+          {activity.length > 0 ? (
+            <ul className="space-y-2 text-sm">
+              {activity.map((item) => (
+                <li className="flex items-center justify-between gap-3" key={item.id}>
+                  <span className="truncate text-slate-700">
+                    {actionSymbol[item.action] ?? "•"} {item.entity && entityKey[item.entity] ? t(locale, entityKey[item.entity]) : item.entity} ·{" "}
+                    {String((item.payload as { label?: string }).label ?? "")}
+                  </span>
+                  <span className="shrink-0 text-xs text-muted">{new Date(item.created_at).toLocaleDateString("fr-FR")}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="py-2 text-sm text-muted">—</p>
+          )}
         </section>
       ) : null}
 
