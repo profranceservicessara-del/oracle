@@ -513,10 +513,7 @@ export default async function DashboardPage() {
                   })}
                   {tone ? (
                     <div className={`rounded-xl border px-3 py-2 text-sm ${tone}`}>
-                      Acompanhamento informativo: o faturamento dessa categoria aproxima-se do limite de TVA. Esta indicação não constitui aconselhamento fiscal.{" "}
-                      <a className="font-medium underline" href="#">
-                        Saiba mais
-                      </a>
+                      Acompanhamento informativo: o faturamento dessa categoria aproxima-se do limite de TVA. Esta indicação não constitui aconselhamento fiscal.
                     </div>
                   ) : null}
                 </div>
