@@ -16,6 +16,7 @@ import {
   type Profile,
   type VatRegime
 } from "@/lib/types";
+import { validateUpload } from "@/lib/upload-validation";
 import { formatSiret, profileSchema } from "@/lib/validation";
 
 type ProfileFormState = {
@@ -358,7 +359,24 @@ export function EmpresaClient({ initialProfile, userId }: { initialProfile: Prof
           <section className="grid gap-4 sm:grid-cols-[1fr_220px]">
             <label className="text-sm font-medium text-ink">
               Logo
-              <Input accept="image/png,image/jpeg,image/webp" className="mt-2" onChange={(event) => setLogoFile(event.target.files?.[0] ?? null)} type="file" />
+              <Input
+                accept="image/png,image/jpeg,image/webp"
+                className="mt-2"
+                onChange={(event) => {
+                  const file = event.target.files?.[0] ?? null;
+                  if (file) {
+                    const validationError = validateUpload(file, "logo");
+                    if (validationError) {
+                      showToast(validationError, "error");
+                      event.target.value = "";
+                      setLogoFile(null);
+                      return;
+                    }
+                  }
+                  setLogoFile(file);
+                }}
+                type="file"
+              />
             </label>
             <label className="text-sm font-medium text-ink">
               Cor principal

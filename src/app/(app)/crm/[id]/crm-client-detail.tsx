@@ -12,6 +12,7 @@ import { useToast } from "@/components/ui/toast";
 import { logActivity } from "@/lib/crm/activity";
 import { t, type Locale, type TranslationKey } from "@/lib/i18n/dictionaries";
 import { createClient } from "@/lib/supabase/client";
+import { validateUpload } from "@/lib/upload-validation";
 import { documentStatusLabels, documentTypeLabels, type Document, type DocumentStatus } from "@/lib/types";
 import type {
   CrmActivityLog,
@@ -382,6 +383,10 @@ export function CrmClientDetail({
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
+    const validationError = validateUpload(file, "document");
+    if (validationError) {
+      return showToast(validationError, "error");
+    }
     setUploading(true);
     const safe = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
     const path = `${client.company_id}/${client.id}/${crypto.randomUUID()}-${safe}`;
@@ -639,7 +644,7 @@ export function CrmClientDetail({
 
         <Section count={documents.length} title={t(locale, "detail.documents")}>
           <div className="mb-3">
-            <input className="hidden" onChange={(event) => void uploadDocument(event)} ref={fileRef} type="file" />
+            <input accept="application/pdf,image/png,image/jpeg,image/webp,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" className="hidden" onChange={(event) => void uploadDocument(event)} ref={fileRef} type="file" />
             <Button disabled={uploading} onClick={() => fileRef.current?.click()} type="button">
               {uploading ? t(locale, "detail.uploading") : t(locale, "detail.upload")}
             </Button>

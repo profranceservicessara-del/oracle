@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
 import { createClient } from "@/lib/supabase/client";
+import { validateUpload } from "@/lib/upload-validation";
 import type { Profile } from "@/lib/types";
 
 export function PerfilClient({ initialProfile, userId }: { initialProfile: Profile | null; userId: string }) {
@@ -29,6 +30,11 @@ export function PerfilClient({ initialProfile, userId }: { initialProfile: Profi
   }, [profile?.avatar_url, supabase]);
 
   async function handleAvatarChange(file: File) {
+    const validationError = validateUpload(file, "avatar");
+    if (validationError) {
+      showToast(validationError, "error");
+      return;
+    }
     setAvatarPreview(URL.createObjectURL(file));
     setAvatarUploading(true);
     try {
@@ -93,7 +99,7 @@ export function PerfilClient({ initialProfile, userId }: { initialProfile: Profi
               )}
             </button>
             <input
-              accept="image/*"
+              accept="image/png,image/jpeg,image/webp"
               className="hidden"
               onChange={(event) => {
                 const file = event.target.files?.[0];
