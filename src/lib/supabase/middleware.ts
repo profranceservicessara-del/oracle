@@ -6,9 +6,19 @@ export async function updateSession(request: NextRequest) {
     request
   });
 
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  // Sem env do Supabase: não dá pra validar sessão. Em vez de estourar
+  // (MIDDLEWARE_INVOCATION_FAILED / 500 em toda rota), segue sem gate de auth.
+  // As páginas server-side ainda fazem o próprio getUser e redirecionam.
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return response;
+  }
+
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl,
+    supabaseAnonKey,
     {
       cookies: {
         getAll() {
