@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -151,12 +151,12 @@ export function CrmClientDetail({
   const isBusy = (key: string) => busy.has(key);
 
   // In-flight por ação: bloqueia double-submit (ref síncrono) + reflete no UI (state).
-  async function run(key: string, fn: () => Promise<void>) {
-    if (inFlight.current.has(key)) return;
+  async function run<T>(key: string, fn: () => Promise<T>): Promise<T | undefined> {
+    if (inFlight.current.has(key)) return undefined;
     inFlight.current.add(key);
     setBusy(new Set(inFlight.current));
     try {
-      await fn();
+      return await fn();
     } finally {
       inFlight.current.delete(key);
       setBusy(new Set(inFlight.current));
@@ -246,9 +246,31 @@ export function CrmClientDetail({
 
   const base = { client_id: client.id, company_id: client.company_id };
 
-  function confirmDelete() {
-    return typeof window === "undefined" ? true : window.confirm(t(locale, "detail.deleteConfirm"));
+  // ---- Confirmação de exclusão (modal premium, substitui window.confirm) ----
+  // `perform` retorna true se a exclusão deu certo (fecha modal); false mantém aberto.
+  const [confirmDialog, setConfirmDialog] = useState<{ name: string; perform: () => Promise<boolean> } | null>(null);
+  const [confirmBusy, setConfirmBusy] = useState(false);
+
+  function askDelete(name: string, perform: () => Promise<boolean>) {
+    setConfirmDialog({ name, perform });
   }
+
+  async function confirmDeleteRun() {
+    if (!confirmDialog || confirmBusy) return;
+    setConfirmBusy(true);
+    const ok = await confirmDialog.perform();
+    setConfirmBusy(false);
+    if (ok) setConfirmDialog(null);
+  }
+
+  useEffect(() => {
+    if (!confirmDialog) return;
+    function onKey(event: KeyboardEvent) {
+      if (event.key === "Escape" && !confirmBusy) setConfirmDialog(null);
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [confirmDialog, confirmBusy]);
 
   // ---- Contacts -----------------------------------------------------------
   async function addContact(event: React.FormEvent) {
@@ -286,14 +308,19 @@ export function CrmClientDetail({
     });
   }
 
-  async function deleteContact(contact: CrmContact) {
-    if (isBusy(`delete-contact:${contact.id}`) || !confirmDelete()) return;
-    await run(`delete-contact:${contact.id}`, async () => {
-      const { error } = await supabase.from("crm_contacts").delete().eq("id", contact.id);
-      if (error) return showToast(t(locale, "detail.deleteError"), "error");
-      setContacts((current) => current.filter((c) => c.id !== contact.id));
-      void record("delete", "contact", contact.id, contact.name);
-    });
+  async function deleteContact(contact: CrmContact): Promise<boolean> {
+    return (
+      (await run(`delete-contact:${contact.id}`, async () => {
+        const { error } = await supabase.from("crm_contacts").delete().eq("id", contact.id);
+        if (error) {
+          showToast(t(locale, "detail.deleteError"), "error");
+          return false;
+        }
+        setContacts((current) => current.filter((c) => c.id !== contact.id));
+        void record("delete", "contact", contact.id, contact.name);
+        return true;
+      })) ?? false
+    );
   }
 
   // ---- Dossiers -----------------------------------------------------------
@@ -341,14 +368,19 @@ export function CrmClientDetail({
     });
   }
 
-  async function deleteDossier(dossier: CrmDossier) {
-    if (isBusy(`delete-dossier:${dossier.id}`) || !confirmDelete()) return;
-    await run(`delete-dossier:${dossier.id}`, async () => {
-      const { error } = await supabase.from("crm_dossiers").delete().eq("id", dossier.id);
-      if (error) return showToast(t(locale, "detail.deleteError"), "error");
-      setDossiers((current) => current.filter((d) => d.id !== dossier.id));
-      void record("delete", "dossier", dossier.id, dossier.title);
-    });
+  async function deleteDossier(dossier: CrmDossier): Promise<boolean> {
+    return (
+      (await run(`delete-dossier:${dossier.id}`, async () => {
+        const { error } = await supabase.from("crm_dossiers").delete().eq("id", dossier.id);
+        if (error) {
+          showToast(t(locale, "detail.deleteError"), "error");
+          return false;
+        }
+        setDossiers((current) => current.filter((d) => d.id !== dossier.id));
+        void record("delete", "dossier", dossier.id, dossier.title);
+        return true;
+      })) ?? false
+    );
   }
 
   // ---- Tasks --------------------------------------------------------------
@@ -396,14 +428,19 @@ export function CrmClientDetail({
     });
   }
 
-  async function deleteTask(task: CrmTask) {
-    if (isBusy(`delete-task:${task.id}`) || !confirmDelete()) return;
-    await run(`delete-task:${task.id}`, async () => {
-      const { error } = await supabase.from("crm_tasks").delete().eq("id", task.id);
-      if (error) return showToast(t(locale, "detail.deleteError"), "error");
-      setTasks((current) => current.filter((item) => item.id !== task.id));
-      void record("delete", "task", task.id, task.title);
-    });
+  async function deleteTask(task: CrmTask): Promise<boolean> {
+    return (
+      (await run(`delete-task:${task.id}`, async () => {
+        const { error } = await supabase.from("crm_tasks").delete().eq("id", task.id);
+        if (error) {
+          showToast(t(locale, "detail.deleteError"), "error");
+          return false;
+        }
+        setTasks((current) => current.filter((item) => item.id !== task.id));
+        void record("delete", "task", task.id, task.title);
+        return true;
+      })) ?? false
+    );
   }
 
   // ---- Notes --------------------------------------------------------------
@@ -442,14 +479,19 @@ export function CrmClientDetail({
     });
   }
 
-  async function deleteNote(note: CrmNote) {
-    if (isBusy(`delete-note:${note.id}`) || !confirmDelete()) return;
-    await run(`delete-note:${note.id}`, async () => {
-      const { error } = await supabase.from("crm_notes").delete().eq("id", note.id);
-      if (error) return showToast(t(locale, "detail.deleteError"), "error");
-      setNotes((current) => current.filter((n) => n.id !== note.id));
-      void record("delete", "note", note.id, note.body.slice(0, 40));
-    });
+  async function deleteNote(note: CrmNote): Promise<boolean> {
+    return (
+      (await run(`delete-note:${note.id}`, async () => {
+        const { error } = await supabase.from("crm_notes").delete().eq("id", note.id);
+        if (error) {
+          showToast(t(locale, "detail.deleteError"), "error");
+          return false;
+        }
+        setNotes((current) => current.filter((n) => n.id !== note.id));
+        void record("delete", "note", note.id, note.body.slice(0, 40));
+        return true;
+      })) ?? false
+    );
   }
 
   // ---- Documents (Supabase Storage) --------------------------------------
@@ -493,17 +535,22 @@ export function CrmClientDetail({
     window.open(data.signedUrl, "_blank", "noopener,noreferrer");
   }
 
-  async function deleteDocument(doc: CrmDocument) {
-    if (isBusy(`delete-document:${doc.id}`) || !confirmDelete()) return;
-    await run(`delete-document:${doc.id}`, async () => {
-      if (doc.storage_path) {
-        await supabase.storage.from("crm-documents").remove([doc.storage_path]);
-      }
-      const { error } = await supabase.from("crm_documents").delete().eq("id", doc.id);
-      if (error) return showToast(t(locale, "detail.deleteError"), "error");
-      setDocuments((current) => current.filter((d) => d.id !== doc.id));
-      void record("delete", "document", doc.id, doc.name);
-    });
+  async function deleteDocument(doc: CrmDocument): Promise<boolean> {
+    return (
+      (await run(`delete-document:${doc.id}`, async () => {
+        if (doc.storage_path) {
+          await supabase.storage.from("crm-documents").remove([doc.storage_path]);
+        }
+        const { error } = await supabase.from("crm_documents").delete().eq("id", doc.id);
+        if (error) {
+          showToast(t(locale, "detail.deleteError"), "error");
+          return false;
+        }
+        setDocuments((current) => current.filter((d) => d.id !== doc.id));
+        void record("delete", "document", doc.id, doc.name);
+        return true;
+      })) ?? false
+    );
   }
 
   return (
@@ -614,7 +661,7 @@ export function CrmClientDetail({
                       <span className="font-medium text-ink">{contact.name}</span>
                       {contact.email || contact.phone ? <span className="ml-2 truncate text-muted">{contact.email || contact.phone}</span> : null}
                     </span>
-                    <RowActions busy={isBusy(`delete-contact:${contact.id}`)} deleteLabel={t(locale, "detail.delete")} editLabel={t(locale, "detail.edit")} onDelete={() => void deleteContact(contact)} onEdit={() => { setEditContactId(contact.id); setEditContact({ name: contact.name, email: contact.email ?? "" }); }} />
+                    <RowActions busy={isBusy(`delete-contact:${contact.id}`)} deleteLabel={t(locale, "detail.delete")} editLabel={t(locale, "detail.edit")} onDelete={() => askDelete(contact.name, () => deleteContact(contact))} onEdit={() => { setEditContactId(contact.id); setEditContact({ name: contact.name, email: contact.email ?? "" }); }} />
                   </li>
                 )
               )
@@ -650,7 +697,7 @@ export function CrmClientDetail({
                         {isBusy(`cycle-dossier:${dossier.id}`) ? <Spinner className="h-3 w-3" /> : null}
                         {t(locale, dossierStatusKey[dossier.status])}
                       </button>
-                      <RowActions busy={isBusy(`delete-dossier:${dossier.id}`)} deleteLabel={t(locale, "detail.delete")} editLabel={t(locale, "detail.edit")} onDelete={() => void deleteDossier(dossier)} onEdit={() => { setEditDossierId(dossier.id); setEditDossierTitle(dossier.title); }} />
+                      <RowActions busy={isBusy(`delete-dossier:${dossier.id}`)} deleteLabel={t(locale, "detail.delete")} editLabel={t(locale, "detail.edit")} onDelete={() => askDelete(dossier.title, () => deleteDossier(dossier))} onEdit={() => { setEditDossierId(dossier.id); setEditDossierTitle(dossier.title); }} />
                     </span>
                   </li>
                 )
@@ -692,7 +739,7 @@ export function CrmClientDetail({
                         {isBusy(`cycle-task:${task.id}`) ? <Spinner className="h-3 w-3" /> : null}
                         {t(locale, taskStatusKey[task.status])}
                       </button>
-                      <RowActions busy={isBusy(`delete-task:${task.id}`)} deleteLabel={t(locale, "detail.delete")} editLabel={t(locale, "detail.edit")} onDelete={() => void deleteTask(task)} onEdit={() => { setEditTaskId(task.id); setEditTask({ title: task.title, due: task.due_date ?? "" }); }} />
+                      <RowActions busy={isBusy(`delete-task:${task.id}`)} deleteLabel={t(locale, "detail.delete")} editLabel={t(locale, "detail.edit")} onDelete={() => askDelete(task.title, () => deleteTask(task))} onEdit={() => { setEditTaskId(task.id); setEditTask({ title: task.title, due: task.due_date ?? "" }); }} />
                     </span>
                   </li>
                 )
@@ -728,7 +775,7 @@ export function CrmClientDetail({
                 ) : (
                   <li className="flex items-start justify-between gap-2 rounded-xl bg-slate-50 px-3 py-2 text-slate-700 ring-1 ring-black/5" key={note.id}>
                     <span className="min-w-0 whitespace-pre-wrap">{note.body}</span>
-                    <RowActions busy={isBusy(`delete-note:${note.id}`)} deleteLabel={t(locale, "detail.delete")} editLabel={t(locale, "detail.edit")} onDelete={() => void deleteNote(note)} onEdit={() => { setEditNoteId(note.id); setEditNoteBody(note.body); }} />
+                    <RowActions busy={isBusy(`delete-note:${note.id}`)} deleteLabel={t(locale, "detail.delete")} editLabel={t(locale, "detail.edit")} onDelete={() => askDelete(note.body.slice(0, 60), () => deleteNote(note))} onEdit={() => { setEditNoteId(note.id); setEditNoteBody(note.body); }} />
                   </li>
                 )
               )
@@ -765,7 +812,7 @@ export function CrmClientDetail({
                     aria-label={t(locale, "detail.delete")}
                     className="shrink-0 rounded-lg p-1 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 disabled:opacity-40"
                     disabled={isBusy(`delete-document:${doc.id}`)}
-                    onClick={() => void deleteDocument(doc)}
+                    onClick={() => askDelete(doc.name, () => deleteDocument(doc))}
                     title={t(locale, "detail.delete")}
                     type="button"
                   >
@@ -801,6 +848,44 @@ export function CrmClientDetail({
             ))}
           </ul>
         </section>
+      ) : null}
+
+      {confirmDialog ? (
+        <div aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 px-4 py-8 backdrop-blur-sm" role="dialog">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl ring-1 ring-black/5">
+            <div className="flex items-start gap-3">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-rose-50 text-rose-600 ring-1 ring-rose-100">
+                <svg fill="none" height="18" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" width="18">
+                  <path d="M3 6h18" />
+                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                  <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                </svg>
+              </span>
+              <div className="min-w-0">
+                <h2 className="text-base font-semibold text-ink">{t(locale, "detail.delete")}</h2>
+                <p className="mt-1 text-sm text-muted">{t(locale, "detail.deleteConfirm")}</p>
+                {confirmDialog.name.trim() ? (
+                  <p className="mt-2 truncate rounded-lg bg-slate-50 px-3 py-1.5 text-sm font-medium text-ink ring-1 ring-black/5">
+                    {confirmDialog.name}
+                  </p>
+                ) : null}
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end gap-2">
+              <Button disabled={confirmBusy} onClick={() => setConfirmDialog(null)} type="button" variant="secondary">
+                {t(locale, "detail.cancel")}
+              </Button>
+              <button
+                className="inline-flex min-w-[6rem] items-center justify-center gap-1.5 rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={confirmBusy}
+                onClick={() => void confirmDeleteRun()}
+                type="button"
+              >
+                {confirmBusy ? <Spinner /> : t(locale, "detail.delete")}
+              </button>
+            </div>
+          </div>
+        </div>
       ) : null}
 
       <FormModal description={t(locale, "crm.modalDesc")} isOpen={isClientModalOpen} onClose={() => setIsClientModalOpen(false)} title={t(locale, "detail.editClient")}>
