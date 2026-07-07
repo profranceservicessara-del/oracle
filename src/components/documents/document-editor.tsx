@@ -75,7 +75,14 @@ const emptyClientForm: ClientFormState = {
   notes: ""
 };
 
-function newLine(): EditorLine {
+// Unidade da linha (coluna document_lines.unite, default "unité").
+const lineUnits = ["unité", "h", "kg", "m", "cm", "km", "pièce", "service", "forfait"] as const;
+const DEFAULT_UNIT = "unité";
+
+// EditorLine não carrega `unite`; estende localmente sem alterar o tipo compartilhado.
+type EditorLineWithUnit = EditorLine & { unite: string };
+
+function newLine(): EditorLineWithUnit {
   return {
     id: crypto.randomUUID(),
     designation: "",
@@ -83,11 +90,12 @@ function newLine(): EditorLine {
     quantite: 1,
     prix_unitaire_ht: 0,
     taux_tva: fiscalConfig.legalDocumentValues.defaultVatRate,
-    categorie: "service_bic"
+    categorie: "service_bic",
+    unite: DEFAULT_UNIT
   };
 }
 
-function fromDbLine(line: DocumentLine): EditorLine {
+function fromDbLine(line: DocumentLine): EditorLineWithUnit {
   return {
     id: line.id,
     designation: line.designation,
@@ -95,7 +103,9 @@ function fromDbLine(line: DocumentLine): EditorLine {
     quantite: line.quantite,
     prix_unitaire_ht: line.prix_unitaire_ht,
     taux_tva: line.taux_tva,
-    categorie: line.categorie
+    categorie: line.categorie,
+    // Coluna existe no DB mas não no tipo DocumentLine — fallback seguro.
+    unite: (line as { unite?: string | null }).unite ?? DEFAULT_UNIT
   };
 }
 
@@ -134,7 +144,7 @@ export function DocumentEditor({
     initialDocument?.conditions_paiement ?? "Paiement à réception de facture."
   );
   const [notesBasPage, setNotesBasPage] = useState(initialDocument?.notes_bas_page ?? "");
-  const [lines, setLines] = useState<EditorLine[]>(
+  const [lines, setLines] = useState<EditorLineWithUnit[]>(
     initialLines.length > 0 ? initialLines.map(fromDbLine) : [newLine()]
   );
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
@@ -219,7 +229,7 @@ export function DocumentEditor({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [snapshot]);
 
-  function updateLine(id: string, patch: Partial<EditorLine>) {
+  function updateLine(id: string, patch: Partial<EditorLineWithUnit>) {
     setLines((current) =>
       current.map((line) => (line.id === id ? { ...line, ...patch } : line))
     );
@@ -241,7 +251,8 @@ export function DocumentEditor({
         quantite: 1,
         prix_unitaire_ht: item.prix_unitaire_ht,
         taux_tva: fiscalConfig.legalDocumentValues.defaultVatRate,
-        categorie: item.categorie
+        categorie: item.categorie,
+        unite: item.unite || DEFAULT_UNIT
       }
     ]);
   }
@@ -332,6 +343,7 @@ export function DocumentEditor({
           prix_unitaire_ht: line.prix_unitaire_ht,
           taux_tva: regimeTva === "franchise" ? 0 : line.taux_tva,
           categorie: line.categorie,
+          unite: line.unite || DEFAULT_UNIT,
           total_ligne_ht: Number((line.quantite * line.prix_unitaire_ht).toFixed(2))
         }))
       );
@@ -573,7 +585,7 @@ export function DocumentEditor({
             <div className="space-y-4">
               {lines.map((line, index) => (
                 <div className="rounded-md border border-line p-4" key={line.id}>
-                  <div className="grid gap-3 md:grid-cols-[1fr_140px_140px]">
+                  <div className="grid gap-3 md:grid-cols-[1fr_110px_120px_140px]">
                     <label className="text-sm font-medium text-ink">
                       Designação
                       <Input
@@ -594,6 +606,20 @@ export function DocumentEditor({
                         type="number"
                         value={line.quantite}
                       />
+                    </label>
+                    <label className="text-sm font-medium text-ink">
+                      Unidade
+                      <Select
+                        className="mt-2"
+                        onChange={(event) => updateLine(line.id, { unite: event.target.value })}
+                        value={line.unite || DEFAULT_UNIT}
+                      >
+                        {lineUnits.map((unit) => (
+                          <option key={unit} value={unit}>
+                            {unit}
+                          </option>
+                        ))}
+                      </Select>
                     </label>
                     <label className="text-sm font-medium text-ink">
                       Preço HT
