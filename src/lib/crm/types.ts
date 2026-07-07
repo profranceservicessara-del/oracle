@@ -5,6 +5,8 @@ export type CrmMemberRole = "owner" | "admin" | "member";
 export type CrmClientType = "particulier" | "professionnel";
 export type CrmDossierStatus = "open" | "in_progress" | "closed";
 export type CrmTaskStatus = "todo" | "doing" | "done";
+export type CrmDealStage = "lead" | "qualified" | "proposal" | "won" | "lost";
+export type CrmDealStatus = "open" | "won" | "lost";
 export type AppLocale = "fr" | "pt";
 
 export type CrmCompany = {
@@ -92,6 +94,21 @@ export type CrmDocument = {
   storage_path: string | null;
   mime_type: string | null;
   created_at: string;
+};
+
+export type CrmDeal = {
+  id: string;
+  company_id: string;
+  client_id: string | null;
+  title: string;
+  description: string | null;
+  value_cents: number;
+  currency: string;
+  stage: CrmDealStage;
+  status: CrmDealStatus;
+  expected_close_date: string | null;
+  created_at: string;
+  updated_at: string;
 };
 
 export type CrmActivityLog = {

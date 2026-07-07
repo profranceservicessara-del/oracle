@@ -53,6 +53,7 @@ const icons = {
   recorrentes: (<svg {...s16}><path d="M17 2l4 4-4 4" /><path d="M3 11v-1a4 4 0 0 1 4-4h14" /><path d="M7 22l-4-4 4-4" /><path d="M21 13v1a4 4 0 0 1-4 4H3" /></svg>),
   fornecedores: (<svg {...s16}><path d="M10 17h4V5H2v12h3" /><path d="M20 17h2v-3.3a4 4 0 0 0-1.2-2.9L19 9h-5v8h1" /><circle cx="7.5" cy="17.5" r="1.8" /><circle cx="17.5" cy="17.5" r="1.8" /></svg>),
   crm: (<svg {...s16}><rect height="7" rx="1" width="7" x="3" y="3" /><rect height="7" rx="1" width="7" x="14" y="3" /><rect height="7" rx="1" width="7" x="14" y="14" /><rect height="7" rx="1" width="7" x="3" y="14" /></svg>),
+  pipeline: (<svg {...s16}><path d="M3 3v18h18" /><rect height="6" rx="1" width="4" x="7" y="11" /><rect height="10" rx="1" width="4" x="13" y="7" /></svg>),
   agenda: (<svg {...s16}><rect height="18" rx="2" width="18" x="3" y="4" /><line x1="16" x2="16" y1="2" y2="6" /><line x1="8" x2="8" y1="2" y2="6" /><line x1="3" x2="21" y1="10" y2="10" /></svg>),
   clientesLeaf: (<svg {...s16}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /></svg>),
   perfil: (<svg {...s16}><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></svg>),
@@ -93,6 +94,7 @@ const nav: NavItem[] = [
       { href: "/facturation/produits", label: "Produtos e serviços", icon: icons.produtos },
       { href: "/catalogo", label: "Catálogo", icon: icons.catalogoLeaf },
       { href: "/crm", label: "CRM", icon: icons.crm },
+      { href: "/crm/pipeline", label: "Pipeline", icon: icons.pipeline },
       { href: "/crm/agenda", label: "Agenda", icon: icons.agenda },
       { href: "/clientes", label: "Clientes", icon: icons.clientesLeaf }
     ]

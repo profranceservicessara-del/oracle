@@ -6,6 +6,7 @@ import type {
   CrmClientType,
   CrmCompany,
   CrmContact,
+  CrmDeal,
   CrmDocument,
   CrmDossier,
   CrmNote,
@@ -111,6 +112,20 @@ export async function listCompanyTasks(companyId: string): Promise<CompanyTask[]
     .order("created_at", { ascending: false });
 
   return (data ?? []) as CompanyTask[];
+}
+
+// Deal com nome do cliente embutido, para o board do pipeline.
+export type DealWithClient = CrmDeal & { crm_clients: { name: string } | null };
+
+export async function listDeals(companyId: string): Promise<DealWithClient[]> {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("crm_deals")
+    .select("*, crm_clients(name)")
+    .eq("company_id", companyId)
+    .order("created_at", { ascending: false });
+
+  return (data ?? []) as DealWithClient[];
 }
 
 export async function getCrmClient(clientId: string): Promise<CrmClient | null> {
