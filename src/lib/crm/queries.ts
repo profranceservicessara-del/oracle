@@ -3,6 +3,7 @@ import type { Document } from "@/lib/types";
 import type {
   CrmActivityLog,
   CrmClient,
+  CrmClientType,
   CrmCompany,
   CrmContact,
   CrmDocument,
@@ -57,13 +58,42 @@ export async function getOrCreateCompany(): Promise<CrmCompany | null> {
   return company;
 }
 
-export async function listCrmClients(companyId: string, includeArchived = false): Promise<CrmClient[]> {
+// Tamanho de página do CRM (SSR inicial + "Carregar mais" no client).
+export const CRM_PAGE_SIZE = 20;
+
+export type ListCrmClientsOptions = {
+  limit?: number;
+  offset?: number;
+  search?: string;
+  type?: CrmClientType | "all";
+  includeArchived?: boolean;
+};
+
+// Sanitiza termo p/ o filtro .or() do PostgREST (remove chars que quebram a
+// sintaxe: vírgula, parênteses, %). Substring case-insensitive via ilike.
+function sanitizeSearch(term: string): string {
+  return term.replace(/[%,()*]/g, " ").trim();
+}
+
+export async function listCrmClients(companyId: string, options: ListCrmClientsOptions = {}): Promise<CrmClient[]> {
+  const { limit = CRM_PAGE_SIZE, offset = 0, search = "", type = "all", includeArchived = false } = options;
   const supabase = createClient();
+
   let query = supabase.from("crm_clients").select("*").eq("company_id", companyId);
   if (!includeArchived) {
     query = query.eq("archived", false);
   }
-  const { data } = await query.order("created_at", { ascending: false });
+  if (type !== "all") {
+    query = query.eq("type", type);
+  }
+  const term = sanitizeSearch(search);
+  if (term) {
+    query = query.or(`name.ilike.%${term}%,email.ilike.%${term}%,phone.ilike.%${term}%`);
+  }
+
+  const { data } = await query
+    .order("created_at", { ascending: false })
+    .range(offset, offset + limit - 1);
 
   return (data ?? []) as CrmClient[];
 }
