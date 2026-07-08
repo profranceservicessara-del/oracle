@@ -109,7 +109,7 @@ const nav: NavItem[] = [
       { href: "/urssaf", label: "Declaração de Urssaf", icon: icons.urssaf, soon: true },
       { href: "#", label: "Declarações auxiliares", icon: icons.declAux, soon: true },
       { href: "/modelos-contrato", label: "Modelos de contrato", icon: icons.contrato },
-      { href: "/conselheiro", label: "Meu Conselheiro", icon: icons.conselheiro, soon: true }
+      { href: "/conselheiro", label: "Meu Conselheiro", icon: icons.conselheiro }
     ]
   },
   {
