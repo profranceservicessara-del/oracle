@@ -163,39 +163,80 @@ export function PipelineClient({
     showToast(t(locale, "detail.saved"), "success");
   }
 
+  // ---- Undo (usa a ação do toast; não destrutivo) --------------------------
+  const undoLabel = locale === "pt" ? "Desfazer" : "Annuler";
+
+  async function applyStage(dealId: string, stage: CrmDealStage): Promise<boolean> {
+    const { data, error } = await supabase
+      .from("crm_deals")
+      .update({ stage, status: stageStatus(stage) })
+      .eq("id", dealId)
+      .select("*, crm_clients(name)")
+      .single();
+    if (error || !data) {
+      showToast(t(locale, "detail.saveError"), "error");
+      return false;
+    }
+    setDeals((current) => current.map((d) => (d.id === dealId ? (data as DealWithClient) : d)));
+    return true;
+  }
+
   async function moveStage(deal: DealWithClient, direction: -1 | 1) {
     const key = `move:${deal.id}`;
     if (inFlight.current.has(key)) return;
     const index = STAGES.findIndex((s) => s.key === deal.stage);
     const next = STAGES[index + direction];
     if (!next) return;
+    const prevStage = deal.stage;
     inFlight.current.add(key);
-    const nextStage = next.key;
+    const ok = await applyStage(deal.id, next.key);
+    inFlight.current.delete(key);
+    if (ok) {
+      showToast(locale === "pt" ? "Etapa alterada." : "Étape modifiée.", "success", {
+        action: { label: undoLabel, onClick: () => void applyStage(deal.id, prevStage) }
+      });
+    }
+  }
+
+  // Reinsere o negócio excluído (restaura dados; novo id). Sem alterar schema.
+  async function restoreDeal(deal: DealWithClient) {
     const { data, error } = await supabase
       .from("crm_deals")
-      .update({ stage: nextStage, status: stageStatus(nextStage) })
-      .eq("id", deal.id)
+      .insert({
+        company_id: deal.company_id,
+        client_id: deal.client_id,
+        title: deal.title,
+        description: deal.description,
+        value_cents: deal.value_cents,
+        currency: deal.currency,
+        stage: deal.stage,
+        status: deal.status,
+        expected_close_date: deal.expected_close_date
+      })
       .select("*, crm_clients(name)")
       .single();
-    inFlight.current.delete(key);
     if (error || !data) {
       showToast(t(locale, "detail.saveError"), "error");
       return;
     }
-    setDeals((current) => current.map((d) => (d.id === deal.id ? (data as DealWithClient) : d)));
+    setDeals((current) => [data as DealWithClient, ...current]);
   }
 
   async function confirmDeleteDeal() {
     if (!confirmDeal || confirmBusy) return;
+    const removed = confirmDeal;
     setConfirmBusy(true);
-    const { error } = await supabase.from("crm_deals").delete().eq("id", confirmDeal.id);
+    const { error } = await supabase.from("crm_deals").delete().eq("id", removed.id);
     setConfirmBusy(false);
     if (error) {
       showToast(t(locale, "detail.deleteError"), "error");
       return;
     }
-    setDeals((current) => current.filter((d) => d.id !== confirmDeal.id));
+    setDeals((current) => current.filter((d) => d.id !== removed.id));
     setConfirmDeal(null);
+    showToast(locale === "pt" ? "Negócio excluído." : "Affaire supprimée.", "success", {
+      action: { label: undoLabel, onClick: () => void restoreDeal(removed) }
+    });
   }
 
   if (!company) {
