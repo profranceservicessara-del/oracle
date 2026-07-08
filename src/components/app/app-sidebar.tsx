@@ -130,7 +130,7 @@ const nav: NavItem[] = [
       { href: "/documents", label: "Contabilidade", icon: icons.contabilidadeLeaf },
       { href: "#", label: "Declarações fiscais", icon: icons.declaracoes, soon: true },
       { href: "#", label: "Comprovantes", icon: icons.comprovantes, soon: true },
-      { href: "/facturation/fournisseurs", label: "Faturas recebidas", icon: icons.faturasRecebidas, soon: true }
+      { href: "/facturation/fournisseurs", label: "Faturas recebidas", icon: icons.faturasRecebidas }
     ]
   },
   { kind: "link", href: "/documentos", label: "Documentos", icon: icons.documentos }
