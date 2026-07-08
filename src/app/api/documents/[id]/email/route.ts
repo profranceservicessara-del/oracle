@@ -62,7 +62,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
-    return NextResponse.json({ error: "RESEND_API_KEY não configurada." }, { status: 500 });
+    return NextResponse.json({ error: "Envio de e-mail indisponível no momento." }, { status: 500 });
   }
 
   // Remetente de produção: configure EMAIL_FROM (ex.: "Oracle <faturas@seudominio.fr>")
