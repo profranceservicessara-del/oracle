@@ -3,14 +3,17 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
 
 type ToastTone = "success" | "error" | "info";
+type ToastAction = { label: string; onClick: () => void };
+type ToastOptions = { action?: ToastAction; durationMs?: number };
 type ToastMessage = {
   id: number;
   message: string;
   tone: ToastTone;
+  action?: ToastAction;
 };
 
 type ToastContextValue = {
-  showToast: (message: string, tone?: ToastTone) => void;
+  showToast: (message: string, tone?: ToastTone, options?: ToastOptions) => void;
 };
 
 const ToastContext = createContext<ToastContextValue | null>(null);
@@ -18,13 +21,20 @@ const ToastContext = createContext<ToastContextValue | null>(null);
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [messages, setMessages] = useState<ToastMessage[]>([]);
 
-  const showToast = useCallback((message: string, tone: ToastTone = "info") => {
-    const id = Date.now();
-    setMessages((current) => [...current, { id, message, tone }]);
-    window.setTimeout(() => {
-      setMessages((current) => current.filter((item) => item.id !== id));
-    }, 3500);
+  const dismiss = useCallback((id: number) => {
+    setMessages((current) => current.filter((item) => item.id !== id));
   }, []);
+
+  const showToast = useCallback(
+    (message: string, tone: ToastTone = "info", options?: ToastOptions) => {
+      const id = Date.now() + Math.floor(Math.random() * 1000);
+      setMessages((current) => [...current, { id, message, tone, action: options?.action }]);
+      window.setTimeout(() => {
+        setMessages((current) => current.filter((item) => item.id !== id));
+      }, options?.durationMs ?? (options?.action ? 6000 : 3500));
+    },
+    []
+  );
 
   const value = useMemo(() => ({ showToast }), [showToast]);
 
@@ -44,10 +54,22 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       >
         {messages.map((item) => (
           <div
-            className={`rounded-2xl border border-l-4 border-black/5 bg-white px-4 py-3 text-sm text-ink shadow-lg ${toneClasses[item.tone]}`}
+            className={`flex items-center justify-between gap-3 rounded-2xl border border-l-4 border-black/5 bg-white px-4 py-3 text-sm text-ink shadow-lg ${toneClasses[item.tone]}`}
             key={item.id}
           >
-            {item.message}
+            <span className="min-w-0">{item.message}</span>
+            {item.action ? (
+              <button
+                className="shrink-0 rounded-lg px-2 py-1 text-xs font-semibold text-brand transition hover:bg-slate-100"
+                onClick={() => {
+                  item.action?.onClick();
+                  dismiss(item.id);
+                }}
+                type="button"
+              >
+                {item.action.label}
+              </button>
+            ) : null}
           </div>
         ))}
       </div>

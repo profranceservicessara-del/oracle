@@ -246,6 +246,58 @@ export function CrmClientDetail({
 
   const base = { client_id: client.id, company_id: client.company_id };
 
+  // ---- Undo: reinsere a entidade excluída (restaura os dados; novo id) ------
+  const undoLabel = locale === "pt" ? "Desfazer" : "Annuler";
+  const deletedMsg = locale === "pt" ? "Excluído." : "Supprimé.";
+
+  function toastUndo(restore: () => Promise<void>) {
+    showToast(deletedMsg, "success", { action: { label: undoLabel, onClick: () => void restore() } });
+  }
+
+  async function restoreContact(contact: CrmContact) {
+    const { data, error } = await supabase
+      .from("crm_contacts")
+      .insert({ ...base, name: contact.name, email: contact.email ?? null })
+      .select("*")
+      .single();
+    if (error || !data) return showToast(t(locale, "detail.saveError"), "error");
+    setContacts((current) => [data as CrmContact, ...current]);
+    void record("create", "contact", (data as CrmContact).id, (data as CrmContact).name);
+  }
+
+  async function restoreDossier(dossier: CrmDossier) {
+    const { data, error } = await supabase
+      .from("crm_dossiers")
+      .insert({ ...base, title: dossier.title, status: dossier.status })
+      .select("*")
+      .single();
+    if (error || !data) return showToast(t(locale, "detail.saveError"), "error");
+    setDossiers((current) => [data as CrmDossier, ...current]);
+    void record("create", "dossier", (data as CrmDossier).id, (data as CrmDossier).title);
+  }
+
+  async function restoreTask(task: CrmTask) {
+    const { data, error } = await supabase
+      .from("crm_tasks")
+      .insert({ ...base, title: task.title, due_date: task.due_date, status: task.status })
+      .select("*")
+      .single();
+    if (error || !data) return showToast(t(locale, "detail.saveError"), "error");
+    setTasks((current) => [data as CrmTask, ...current]);
+    void record("create", "task", (data as CrmTask).id, (data as CrmTask).title);
+  }
+
+  async function restoreNote(note: CrmNote) {
+    const { data, error } = await supabase
+      .from("crm_notes")
+      .insert({ ...base, author_id: userId, body: note.body })
+      .select("*")
+      .single();
+    if (error || !data) return showToast(t(locale, "detail.saveError"), "error");
+    setNotes((current) => [data as CrmNote, ...current]);
+    void record("create", "note", (data as CrmNote).id, (data as CrmNote).body.slice(0, 40));
+  }
+
   // ---- Confirmação de exclusão (modal premium, substitui window.confirm) ----
   // `perform` retorna true se a exclusão deu certo (fecha modal); false mantém aberto.
   const [confirmDialog, setConfirmDialog] = useState<{ name: string; perform: () => Promise<boolean> } | null>(null);
@@ -331,6 +383,7 @@ export function CrmClientDetail({
         }
         setContacts((current) => current.filter((c) => c.id !== contact.id));
         void record("delete", "contact", contact.id, contact.name);
+        toastUndo(() => restoreContact(contact));
         return true;
       })) ?? false
     );
@@ -391,6 +444,7 @@ export function CrmClientDetail({
         }
         setDossiers((current) => current.filter((d) => d.id !== dossier.id));
         void record("delete", "dossier", dossier.id, dossier.title);
+        toastUndo(() => restoreDossier(dossier));
         return true;
       })) ?? false
     );
@@ -451,6 +505,7 @@ export function CrmClientDetail({
         }
         setTasks((current) => current.filter((item) => item.id !== task.id));
         void record("delete", "task", task.id, task.title);
+        toastUndo(() => restoreTask(task));
         return true;
       })) ?? false
     );
@@ -502,6 +557,7 @@ export function CrmClientDetail({
         }
         setNotes((current) => current.filter((n) => n.id !== note.id));
         void record("delete", "note", note.id, note.body.slice(0, 40));
+        toastUndo(() => restoreNote(note));
         return true;
       })) ?? false
     );
@@ -691,7 +747,7 @@ export function CrmClientDetail({
                 editContactId === contact.id ? (
                   <li className="flex flex-wrap items-center gap-2 py-2" key={contact.id}>
                     <Input aria-label={t(locale, "detail.contactName")} className="min-w-[7rem] flex-1" onChange={(event) => setEditContact((c) => ({ ...c, name: event.target.value }))} value={editContact.name} />
-                    <Input aria-label="Email" className="min-w-[7rem] flex-1" onChange={(event) => setEditContact((c) => ({ ...c, email: event.target.value }))} type="email" value={editContact.email} />
+                    <Input aria-label={t(locale, "crm.email")} className="min-w-[7rem] flex-1" onChange={(event) => setEditContact((c) => ({ ...c, email: event.target.value }))} type="email" value={editContact.email} />
                     <Button disabled={!editContact.name.trim() || isBusy(`save-contact:${contact.id}`)} onClick={() => void saveContact(contact.id)} type="button">
                       {isBusy(`save-contact:${contact.id}`) ? <Spinner /> : t(locale, "detail.save")}
                     </Button>
@@ -715,7 +771,7 @@ export function CrmClientDetail({
       {activeTab === "dossiers" ? (
         <Section count={dossiers.length} title={t(locale, "detail.dossiers")}>
           <form className="mb-3 flex gap-2" onSubmit={(event) => void addDossier(event)}>
-            <Input aria-label="Titre du dossier" className="flex-1" onChange={(event) => setDossierTitle(event.target.value)} placeholder={t(locale, "detail.dossierTitle")} value={dossierTitle} />
+            <Input aria-label={t(locale, "detail.dossierTitle")} className="flex-1" onChange={(event) => setDossierTitle(event.target.value)} placeholder={t(locale, "detail.dossierTitle")} value={dossierTitle} />
             <Button disabled={!dossierTitle.trim() || isBusy("add-dossier")} type="submit">
               {isBusy("add-dossier") ? <Spinner /> : t(locale, "detail.add")}
             </Button>
@@ -754,8 +810,8 @@ export function CrmClientDetail({
       {activeTab === "tasks" ? (
         <Section count={tasks.length} title={t(locale, "detail.tasks")}>
           <form className="mb-3 flex flex-wrap gap-2" onSubmit={(event) => void addTask(event)}>
-            <Input aria-label="Titre de la tâche" className="min-w-[8rem] flex-1" onChange={(event) => setTaskForm((current) => ({ ...current, title: event.target.value }))} placeholder={t(locale, "detail.taskTitle")} value={taskForm.title} />
-            <Input aria-label="Échéance" className="w-[10rem]" onChange={(event) => setTaskForm((current) => ({ ...current, due: event.target.value }))} type="date" value={taskForm.due} />
+            <Input aria-label={t(locale, "detail.taskTitle")} className="min-w-[8rem] flex-1" onChange={(event) => setTaskForm((current) => ({ ...current, title: event.target.value }))} placeholder={t(locale, "detail.taskTitle")} value={taskForm.title} />
+            <Input aria-label={locale === "pt" ? "Vencimento" : "Échéance"} className="w-[10rem]" onChange={(event) => setTaskForm((current) => ({ ...current, due: event.target.value }))} type="date" value={taskForm.due} />
             <Button disabled={!taskForm.title.trim() || isBusy("add-task")} type="submit">
               {isBusy("add-task") ? <Spinner /> : t(locale, "detail.add")}
             </Button>
@@ -768,7 +824,7 @@ export function CrmClientDetail({
                 editTaskId === task.id ? (
                   <li className="flex flex-wrap items-center gap-2 py-2" key={task.id}>
                     <Input aria-label={t(locale, "detail.taskTitle")} className="min-w-[7rem] flex-1" onChange={(event) => setEditTask((tk) => ({ ...tk, title: event.target.value }))} value={editTask.title} />
-                    <Input aria-label="Échéance" className="w-[9rem]" onChange={(event) => setEditTask((tk) => ({ ...tk, due: event.target.value }))} type="date" value={editTask.due} />
+                    <Input aria-label={locale === "pt" ? "Vencimento" : "Échéance"} className="w-[9rem]" onChange={(event) => setEditTask((tk) => ({ ...tk, due: event.target.value }))} type="date" value={editTask.due} />
                     <Button disabled={!editTask.title.trim() || isBusy(`save-task:${task.id}`)} onClick={() => void saveTask(task.id)} type="button">
                       {isBusy(`save-task:${task.id}`) ? <Spinner /> : t(locale, "detail.save")}
                     </Button>
@@ -798,7 +854,7 @@ export function CrmClientDetail({
       {activeTab === "notes" ? (
         <Section count={notes.length} title={t(locale, "detail.notes")}>
           <form className="mb-3 grid gap-2" onSubmit={(event) => void addNote(event)}>
-            <Textarea aria-label="Nouvelle note" className="min-h-16" onChange={(event) => setNoteBody(event.target.value)} placeholder={t(locale, "detail.notePlaceholder")} value={noteBody} />
+            <Textarea aria-label={t(locale, "detail.notePlaceholder")} className="min-h-16" onChange={(event) => setNoteBody(event.target.value)} placeholder={t(locale, "detail.notePlaceholder")} value={noteBody} />
             <div className="flex justify-end">
               <Button disabled={!noteBody.trim() || isBusy("add-note")} type="submit">
                 {isBusy("add-note") ? <Spinner /> : t(locale, "detail.add")}
