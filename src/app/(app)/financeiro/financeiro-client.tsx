@@ -18,6 +18,15 @@ export type CashMovement = {
   amount: number;
 };
 
+export type Receivable = {
+  id: string;
+  numero: string | null;
+  client: string | null;
+  dueDate: string | null;
+  amount: number;
+  overdue: boolean;
+};
+
 const euro = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "EUR" });
 const methodLabels: Record<string, string> = {
   virement: "Transferência",
@@ -40,7 +49,15 @@ function yearsOf(movs: CashMovement[]): number[] {
   return [...set].sort((a, b) => b - a);
 }
 
-export function FinanceiroClient({ initialMovements, userId }: { initialMovements: CashMovement[]; userId: string }) {
+export function FinanceiroClient({
+  initialMovements,
+  initialReceivables,
+  userId
+}: {
+  initialMovements: CashMovement[];
+  initialReceivables: Receivable[];
+  userId: string;
+}) {
   const supabase = useMemo(() => createClient(), []);
   const { showToast } = useToast();
   const [movements, setMovements] = useState(initialMovements);
@@ -61,7 +78,11 @@ export function FinanceiroClient({ initialMovements, userId }: { initialMovement
 
   const totalIn = visible.filter((m) => m.kind === "in").reduce((s, m) => s + m.amount, 0);
   const totalOut = visible.filter((m) => m.kind === "out").reduce((s, m) => s + m.amount, 0);
-  const saldo = totalIn - totalOut;
+  const saldo = totalIn - totalOut; // saldo realizado (ano)
+
+  // A receber = faturas emitidas não pagas (snapshot atual, não filtra por ano).
+  const totalReceber = initialReceivables.reduce((s, r) => s + r.amount, 0);
+  const saldoEstimado = saldo + totalReceber; // realizado + previsto
 
   function set<K extends keyof typeof emptyForm>(key: K, value: string) {
     setForm((c) => ({ ...c, [key]: value }));
@@ -151,20 +172,53 @@ export function FinanceiroClient({ initialMovements, userId }: { initialMovement
         </div>
       </div>
 
-      <div className="mb-6 grid gap-4 sm:grid-cols-3">
+      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Entradas</p>
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Recebidas ({year})</p>
           <p className="mt-1 text-xl font-semibold tabular-nums text-emerald-600">{euro.format(totalIn)}</p>
         </div>
         <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Saídas</p>
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">A receber</p>
+          <p className="mt-1 text-xl font-semibold tabular-nums text-sky-600">{euro.format(totalReceber)}</p>
+        </div>
+        <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Saídas ({year})</p>
           <p className="mt-1 text-xl font-semibold tabular-nums text-rose-600">{euro.format(totalOut)}</p>
         </div>
         <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Saldo</p>
-          <p className={`mt-1 text-xl font-semibold tabular-nums ${saldo >= 0 ? "text-ink" : "text-rose-600"}`}>{euro.format(saldo)}</p>
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Saldo estimado</p>
+          <p className={`mt-1 text-xl font-semibold tabular-nums ${saldoEstimado >= 0 ? "text-ink" : "text-rose-600"}`}>{euro.format(saldoEstimado)}</p>
+          <p className="mt-0.5 text-[11px] text-muted">Realizado {euro.format(saldo)} + a receber</p>
         </div>
       </div>
+
+      {initialReceivables.length > 0 ? (
+        <section className="mb-6 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
+          <div className="flex items-center justify-between gap-3 border-b border-line bg-slate-50 px-5 py-3">
+            <h2 className="text-sm font-semibold text-ink">Contas a receber</h2>
+            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold tabular-nums text-slate-600">{initialReceivables.length}</span>
+          </div>
+          <ul className="divide-y divide-line">
+            {initialReceivables.map((r) => (
+              <li className="flex items-center justify-between gap-3 px-5 py-3 text-sm" key={r.id}>
+                <div className="min-w-0">
+                  <p className="truncate font-medium text-ink">
+                    {r.numero ?? "Fatura"}
+                    {r.client ? ` · ${r.client}` : ""}
+                  </p>
+                  <p className="text-xs text-muted">
+                    {r.dueDate ? `Vence ${r.dueDate}` : "Sem vencimento"}
+                    {r.overdue ? (
+                      <span className="ml-2 rounded-full bg-rose-50 px-1.5 py-0.5 text-[10px] font-semibold text-rose-600 ring-1 ring-inset ring-rose-200">Atrasada</span>
+                    ) : null}
+                  </p>
+                </div>
+                <span className="shrink-0 font-semibold tabular-nums text-sky-600">{euro.format(r.amount)}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       {visible.length === 0 ? (
         <div className="rounded-2xl bg-white px-6 py-16 text-center shadow-sm ring-1 ring-black/5">
