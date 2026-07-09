@@ -11,7 +11,10 @@ import { Select } from "@/components/ui/select";
 import { useToast } from "@/components/ui/toast";
 import { createClient } from "@/lib/supabase/client";
 import type { Purchase, SupplierInvoice, SupplierInvoiceStatus } from "@/lib/types";
+import { validateUpload } from "@/lib/upload-validation";
 import { supplierInvoiceSchema } from "@/lib/validation";
+
+const INVOICE_BUCKET = "supplier-invoices";
 
 const euro = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "EUR" });
 const methodLabels: Record<string, string> = {
@@ -108,11 +111,13 @@ function InvoiceFormModal({
   const [form, setForm] = useState<InvoiceForm>(emptyInvoiceForm);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
 
   useEffect(() => {
     if (isOpen) {
       setForm(editing ? invoiceToForm(editing) : emptyInvoiceForm);
       setErrors({});
+      setFile(null);
     }
   }, [isOpen, editing]);
 
@@ -128,19 +133,51 @@ function InvoiceFormModal({
     }
 
     setSaving(true);
+
+    // Upload opcional do anexo (bucket privado, pasta = userId p/ RLS).
+    let uploadedPath: string | null = null;
+    if (file) {
+      const fileError = validateUpload(file, "document");
+      if (fileError) {
+        setSaving(false);
+        showToast(fileError, "error");
+        return;
+      }
+      const safe = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+      const path = `${userId}/${crypto.randomUUID()}-${safe}`;
+      const { error: uploadError } = await supabase.storage
+        .from(INVOICE_BUCKET)
+        .upload(path, file, { contentType: file.type || undefined, upsert: false });
+      if (uploadError) {
+        setSaving(false);
+        showToast("Não foi possível enviar o anexo.", "error");
+        return;
+      }
+      uploadedPath = path;
+    }
+
     // Payload só com colunas reais de supplier_invoices (+ user_id p/ RLS).
-    const payload = { ...parsed.data, user_id: userId };
+    // fichier_path só entra quando há novo anexo (edição sem novo arquivo
+    // preserva o anexo atual).
+    const payload = { ...parsed.data, user_id: userId, ...(uploadedPath ? { fichier_path: uploadedPath } : {}) };
     const request = editing
       ? supabase.from("supplier_invoices").update(payload).eq("id", editing.id)
       : supabase.from("supplier_invoices").insert(payload);
     const { error } = await request;
-    setSaving(false);
 
     if (error) {
+      if (uploadedPath) await supabase.storage.from(INVOICE_BUCKET).remove([uploadedPath]);
+      setSaving(false);
       showToast("Não foi possível salvar a fatura.", "error");
       return;
     }
 
+    // Anexo substituído: remove o antigo após sucesso.
+    if (uploadedPath && editing?.fichier_path && editing.fichier_path !== uploadedPath) {
+      await supabase.storage.from(INVOICE_BUCKET).remove([editing.fichier_path]);
+    }
+
+    setSaving(false);
     showToast(editing ? "Fatura atualizada." : "Fatura criada.", "success");
     onClose();
     onSaved();
@@ -203,6 +240,18 @@ function InvoiceFormModal({
             <option value="payee">Paga</option>
             <option value="a_verifier">A verificar</option>
           </Select>
+        </label>
+        <label className="text-sm font-medium text-ink">
+          Anexo (PDF ou imagem, opcional)
+          <input
+            accept="application/pdf,image/png,image/jpeg,image/webp"
+            className="mt-2 block w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-slate-700 hover:file:bg-slate-200"
+            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            type="file"
+          />
+          {editing?.fichier_path && !file ? (
+            <span className="mt-1 block text-xs text-muted">Já existe um anexo. Enviar um novo substitui o atual.</span>
+          ) : null}
         </label>
         <div className="flex justify-end gap-2">
           <Button onClick={onClose} type="button" variant="secondary">
@@ -429,6 +478,16 @@ function InvoicesView({ invoices, userId }: { invoices: SupplierInvoice[]; userI
     setModalOpen(true);
   }
 
+  async function openAttachment(inv: SupplierInvoice) {
+    if (!inv.fichier_path) return;
+    const { data, error } = await supabase.storage.from(INVOICE_BUCKET).createSignedUrl(inv.fichier_path, 120);
+    if (error || !data) {
+      showToast("Não foi possível abrir o anexo.", "error");
+      return;
+    }
+    window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+  }
+
   async function remove(inv: SupplierInvoice) {
     const { error } = await supabase.from("supplier_invoices").delete().eq("id", inv.id);
     if (error) {
@@ -628,6 +687,11 @@ function InvoicesView({ invoices, userId }: { invoices: SupplierInvoice[]; userI
                               {inv.status === "payee" && !inv.purchase_id ? (
                                 <button className="rounded-lg px-2 py-1 text-xs font-semibold text-sky-700 ring-1 ring-inset ring-sky-200 transition hover:bg-sky-50" onClick={() => void linkToCash(inv, false)} type="button">
                                   Lançar no caixa
+                                </button>
+                              ) : null}
+                              {inv.fichier_path ? (
+                                <button className="rounded-lg px-2 py-1 text-xs font-semibold text-indigo-700 ring-1 ring-inset ring-indigo-200 transition hover:bg-indigo-50" onClick={() => void openAttachment(inv)} type="button">
+                                  Anexo
                                 </button>
                               ) : null}
                               <button className="rounded-lg px-2 py-1 text-xs font-semibold text-slate-600 ring-1 ring-inset ring-slate-200 transition hover:bg-slate-50" onClick={() => openEdit(inv)} type="button">
