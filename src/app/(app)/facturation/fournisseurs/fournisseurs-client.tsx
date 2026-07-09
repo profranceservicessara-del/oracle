@@ -1,11 +1,17 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { BillingNav } from "@/components/app/billing-nav";
 import { Button } from "@/components/ui/button";
+import { FormModal } from "@/components/ui/form-modal";
+import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { useToast } from "@/components/ui/toast";
+import { createClient } from "@/lib/supabase/client";
 import type { Purchase, SupplierInvoice, SupplierInvoiceStatus } from "@/lib/types";
+import { supplierInvoiceSchema } from "@/lib/validation";
 
 const euro = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "EUR" });
 const methodLabels: Record<string, string> = {
@@ -31,22 +37,191 @@ function periodBounds(key: PeriodKey): { start: string; end: string } | null {
 
 export function FournisseursClient({
   initialPurchases,
-  initialInvoices = []
+  initialInvoices = [],
+  userId
 }: {
   initialPurchases: Purchase[];
   initialInvoices?: SupplierInvoice[];
+  userId: string;
 }) {
-  // V2: se houver faturas dedicadas, usa a visão rica (status/vencimento).
-  // Senão, fallback pro modo V1 derivado de purchases (inalterado).
+  // V2: se houver faturas dedicadas, usa a visão rica com CRUD.
+  // Senão, fallback pro modo V1 derivado de purchases (com atalho p/ criar
+  // a primeira fatura).
   return initialInvoices.length > 0 ? (
-    <InvoicesView invoices={initialInvoices} />
+    <InvoicesView invoices={initialInvoices} userId={userId} />
   ) : (
-    <PurchasesView initialPurchases={initialPurchases} />
+    <PurchasesView initialPurchases={initialPurchases} userId={userId} />
   );
 }
 
-function PurchasesView({ initialPurchases }: { initialPurchases: Purchase[] }) {
+// ---- Formulário compartilhado (create/edit) ------------------------------
+type InvoiceForm = {
+  fournisseur: string;
+  reference: string;
+  designation: string;
+  date_reception: string;
+  date_echeance: string;
+  montant_ttc: string;
+  montant_tva: string;
+  status: SupplierInvoiceStatus;
+};
+
+const emptyInvoiceForm: InvoiceForm = {
+  fournisseur: "",
+  reference: "",
+  designation: "",
+  date_reception: new Date().toISOString().slice(0, 10),
+  date_echeance: "",
+  montant_ttc: "",
+  montant_tva: "",
+  status: "a_payer"
+};
+
+function invoiceToForm(inv: SupplierInvoice): InvoiceForm {
+  return {
+    fournisseur: inv.fournisseur,
+    reference: inv.reference ?? "",
+    designation: inv.designation ?? "",
+    date_reception: inv.date_reception,
+    date_echeance: inv.date_echeance ?? "",
+    montant_ttc: String(inv.montant_ttc),
+    montant_tva: inv.montant_tva == null ? "" : String(inv.montant_tva),
+    status: inv.status
+  };
+}
+
+function InvoiceFormModal({
+  isOpen,
+  editing,
+  userId,
+  onClose,
+  onSaved
+}: {
+  isOpen: boolean;
+  editing: SupplierInvoice | null;
+  userId: string;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const supabase = useMemo(() => createClient(), []);
+  const { showToast } = useToast();
+  const [form, setForm] = useState<InvoiceForm>(emptyInvoiceForm);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setForm(editing ? invoiceToForm(editing) : emptyInvoiceForm);
+      setErrors({});
+    }
+  }, [isOpen, editing]);
+
+  async function save() {
+    const parsed = supplierInvoiceSchema.safeParse(form);
+    if (!parsed.success) {
+      const next: Record<string, string> = {};
+      parsed.error.issues.forEach((issue) => {
+        next[issue.path[0]?.toString() ?? "form"] = issue.message;
+      });
+      setErrors(next);
+      return;
+    }
+
+    setSaving(true);
+    // Payload só com colunas reais de supplier_invoices (+ user_id p/ RLS).
+    const payload = { ...parsed.data, user_id: userId };
+    const request = editing
+      ? supabase.from("supplier_invoices").update(payload).eq("id", editing.id)
+      : supabase.from("supplier_invoices").insert(payload);
+    const { error } = await request;
+    setSaving(false);
+
+    if (error) {
+      showToast("Não foi possível salvar a fatura.", "error");
+      return;
+    }
+
+    showToast(editing ? "Fatura atualizada." : "Fatura criada.", "success");
+    onClose();
+    onSaved();
+  }
+
+  return (
+    <FormModal
+      description="Dados da fatura de fornecedor."
+      isOpen={isOpen}
+      onClose={onClose}
+      title={editing ? "Editar fatura" : "Nova fatura recebida"}
+    >
+      <form
+        className="grid gap-4"
+        onSubmit={(event) => {
+          event.preventDefault();
+          void save();
+        }}
+      >
+        <label className="text-sm font-medium text-ink">
+          Fornecedor
+          <Input className="mt-2" onChange={(e) => setForm({ ...form, fournisseur: e.target.value })} value={form.fournisseur} />
+          {errors.fournisseur ? <span className="text-xs text-red-600">{errors.fournisseur}</span> : null}
+        </label>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="text-sm font-medium text-ink">
+            Data de recepção
+            <Input className="mt-2" onChange={(e) => setForm({ ...form, date_reception: e.target.value })} type="date" value={form.date_reception} />
+            {errors.date_reception ? <span className="text-xs text-red-600">{errors.date_reception}</span> : null}
+          </label>
+          <label className="text-sm font-medium text-ink">
+            Vencimento (opcional)
+            <Input className="mt-2" onChange={(e) => setForm({ ...form, date_echeance: e.target.value })} type="date" value={form.date_echeance} />
+          </label>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="text-sm font-medium text-ink">
+            Montante TTC
+            <Input className="mt-2" min="0" onChange={(e) => setForm({ ...form, montant_ttc: e.target.value })} step="0.01" type="number" value={form.montant_ttc} />
+            {errors.montant_ttc ? <span className="text-xs text-red-600">{errors.montant_ttc}</span> : null}
+          </label>
+          <label className="text-sm font-medium text-ink">
+            TVA (opcional)
+            <Input className="mt-2" min="0" onChange={(e) => setForm({ ...form, montant_tva: e.target.value })} step="0.01" type="number" value={form.montant_tva} />
+            {errors.montant_tva ? <span className="text-xs text-red-600">{errors.montant_tva}</span> : null}
+          </label>
+        </div>
+        <label className="text-sm font-medium text-ink">
+          Referência (opcional)
+          <Input className="mt-2" onChange={(e) => setForm({ ...form, reference: e.target.value })} value={form.reference} />
+        </label>
+        <label className="text-sm font-medium text-ink">
+          Descrição (opcional)
+          <Input className="mt-2" onChange={(e) => setForm({ ...form, designation: e.target.value })} value={form.designation} />
+        </label>
+        <label className="text-sm font-medium text-ink">
+          Status
+          <Select className="mt-2" onChange={(e) => setForm({ ...form, status: e.target.value as SupplierInvoiceStatus })} value={form.status}>
+            <option value="a_payer">A pagar</option>
+            <option value="payee">Paga</option>
+            <option value="a_verifier">A verificar</option>
+          </Select>
+        </label>
+        <div className="flex justify-end gap-2">
+          <Button onClick={onClose} type="button" variant="secondary">
+            Cancelar
+          </Button>
+          <Button disabled={saving} type="submit">
+            {saving ? "Salvando..." : "Salvar"}
+          </Button>
+        </div>
+      </form>
+    </FormModal>
+  );
+}
+
+// ---- V1: visão derivada de purchases (fallback quando não há faturas) -----
+function PurchasesView({ initialPurchases, userId }: { initialPurchases: Purchase[]; userId: string }) {
+  const router = useRouter();
   const [period, setPeriod] = useState<PeriodKey>("annee");
+  const [invoiceModalOpen, setInvoiceModalOpen] = useState(false);
 
   const bounds = useMemo(() => periodBounds(period), [period]);
 
@@ -113,12 +288,9 @@ function PurchasesView({ initialPurchases }: { initialPurchases: Purchase[] }) {
               <Button disabled={rows.length === 0} onClick={exportCsv} type="button" variant="secondary">
                 Exportar CSV
               </Button>
-              <Link
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-brand px-4 text-sm font-semibold text-white shadow-sm ring-1 ring-[#002D72]/20 transition hover:bg-[#003a94]"
-                href="/registre-des-achats"
-              >
-                + Nova despesa
-              </Link>
+              <Button onClick={() => setInvoiceModalOpen(true)} type="button">
+                + Nova fatura
+              </Button>
             </div>
           </div>
 
@@ -137,19 +309,16 @@ function PurchasesView({ initialPurchases }: { initialPurchases: Purchase[] }) {
             <div className="mt-6 flex flex-col items-center rounded-2xl bg-white px-6 py-14 text-center shadow-sm ring-1 ring-black/5">
               <p className="text-lg font-semibold text-ink">Nenhuma fatura recebida neste período.</p>
               <p className="mt-2 max-w-md text-sm text-muted">
-                Registre as faturas dos seus fornecedores como despesas para acompanhá-las aqui e no fluxo de caixa.
+                Cadastre a fatura de um fornecedor para acompanhar status e vencimentos aqui.
               </p>
-              <Link
-                className="mt-6 inline-flex items-center justify-center rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#003a94]"
-                href="/registre-des-achats"
-              >
-                Registrar uma despesa
-              </Link>
+              <Button className="mt-6" onClick={() => setInvoiceModalOpen(true)} type="button">
+                Registrar primeira fatura
+              </Button>
             </div>
           ) : (
             <section className="mt-6 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
               <div className="flex items-center justify-between gap-3 border-b border-line bg-slate-50 px-5 py-3">
-                <h2 className="text-sm font-semibold text-ink">Faturas de fornecedores</h2>
+                <h2 className="text-sm font-semibold text-ink">Despesas registradas</h2>
                 <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold tabular-nums text-slate-600">{rows.length}</span>
               </div>
               <div className="overflow-x-auto">
@@ -190,11 +359,19 @@ function PurchasesView({ initialPurchases }: { initialPurchases: Purchase[] }) {
           </p>
         </div>
       </div>
+
+      <InvoiceFormModal
+        editing={null}
+        isOpen={invoiceModalOpen}
+        onClose={() => setInvoiceModalOpen(false)}
+        onSaved={() => router.refresh()}
+        userId={userId}
+      />
     </main>
   );
 }
 
-// ---- V2: visão de faturas dedicadas (supplier_invoices) ------------------
+// ---- V2: visão de faturas dedicadas (supplier_invoices) + CRUD -----------
 type StatusFilter = "toutes" | SupplierInvoiceStatus | "en_retard";
 
 const statusMeta: Record<SupplierInvoiceStatus, { label: string; badge: string }> = {
@@ -209,8 +386,13 @@ function isOverdue(inv: SupplierInvoice, today: string): boolean {
   return inv.status === "a_payer" && Boolean(inv.date_echeance && inv.date_echeance < today);
 }
 
-function InvoicesView({ invoices }: { invoices: SupplierInvoice[] }) {
+function InvoicesView({ invoices, userId }: { invoices: SupplierInvoice[]; userId: string }) {
+  const router = useRouter();
+  const supabase = useMemo(() => createClient(), []);
+  const { showToast } = useToast();
   const [filter, setFilter] = useState<StatusFilter>("toutes");
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editing, setEditing] = useState<SupplierInvoice | null>(null);
   const today = new Date().toISOString().slice(0, 10);
 
   const rows = useMemo(() => {
@@ -238,6 +420,76 @@ function InvoicesView({ invoices }: { invoices: SupplierInvoice[] }) {
     { key: "en_retard", label: "Em atraso" }
   ];
 
+  function openCreate() {
+    setEditing(null);
+    setModalOpen(true);
+  }
+  function openEdit(inv: SupplierInvoice) {
+    setEditing(inv);
+    setModalOpen(true);
+  }
+
+  async function remove(inv: SupplierInvoice) {
+    const { error } = await supabase.from("supplier_invoices").delete().eq("id", inv.id);
+    if (error) {
+      showToast("Não foi possível remover a fatura.", "error");
+      return;
+    }
+    showToast("Fatura removida.", "success", { action: { label: "Desfazer", onClick: () => void restore(inv) } });
+    router.refresh();
+  }
+
+  // Undo: revalida os campos editáveis contra o schema e reinsere só colunas
+  // reais (id/user_id/created_at incluídos p/ restaurar a row idêntica).
+  async function restore(inv: SupplierInvoice) {
+    const check = supplierInvoiceSchema.safeParse({
+      fournisseur: inv.fournisseur,
+      reference: inv.reference ?? "",
+      designation: inv.designation ?? "",
+      date_reception: inv.date_reception,
+      date_echeance: inv.date_echeance ?? "",
+      montant_ttc: String(inv.montant_ttc),
+      montant_tva: inv.montant_tva == null ? "" : String(inv.montant_tva),
+      status: inv.status
+    });
+    if (!check.success) {
+      showToast("Não foi possível desfazer.", "error");
+      return;
+    }
+    const payload = {
+      id: inv.id,
+      user_id: inv.user_id,
+      fournisseur: inv.fournisseur,
+      reference: inv.reference,
+      designation: inv.designation,
+      date_reception: inv.date_reception,
+      date_echeance: inv.date_echeance,
+      montant_ttc: inv.montant_ttc,
+      montant_tva: inv.montant_tva,
+      status: inv.status,
+      purchase_id: inv.purchase_id,
+      fichier_path: inv.fichier_path,
+      created_at: inv.created_at
+    };
+    const { error } = await supabase.from("supplier_invoices").insert(payload);
+    if (error) {
+      showToast("Não foi possível desfazer.", "error");
+      return;
+    }
+    showToast("Fatura restaurada.", "success");
+    router.refresh();
+  }
+
+  async function markPaid(inv: SupplierInvoice) {
+    const { error } = await supabase.from("supplier_invoices").update({ status: "payee" }).eq("id", inv.id);
+    if (error) {
+      showToast("Não foi possível atualizar.", "error");
+      return;
+    }
+    showToast("Fatura marcada como paga.", "success");
+    router.refresh();
+  }
+
   return (
     <main className="mx-auto max-w-6xl px-4 py-8">
       <div className="flex flex-col gap-6 lg:flex-row">
@@ -249,12 +501,9 @@ function InvoicesView({ invoices }: { invoices: SupplierInvoice[] }) {
               <h1 className="text-2xl font-semibold text-ink">Faturas recebidas</h1>
               <p className="mt-1 text-sm text-muted">Acompanhe as faturas de fornecedores, vencimentos e pagamentos.</p>
             </div>
-            <Link
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-brand px-4 text-sm font-semibold text-white shadow-sm ring-1 ring-[#002D72]/20 transition hover:bg-[#003a94]"
-              href="/registre-des-achats"
-            >
-              + Nova despesa
-            </Link>
+            <Button onClick={openCreate} type="button">
+              + Nova fatura
+            </Button>
           </div>
 
           {/* KPIs */}
@@ -296,7 +545,7 @@ function InvoicesView({ invoices }: { invoices: SupplierInvoice[] }) {
                 <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold tabular-nums text-slate-600">{rows.length}</span>
               </div>
               <div className="overflow-x-auto">
-                <table className="w-full min-w-[760px] text-left text-sm">
+                <table className="w-full min-w-[860px] text-left text-sm">
                   <thead>
                     <tr className="border-b border-line text-[11px] font-semibold uppercase tracking-wide text-slate-500">
                       <th className="px-5 py-2.5">Recepção</th>
@@ -305,6 +554,7 @@ function InvoicesView({ invoices }: { invoices: SupplierInvoice[] }) {
                       <th className="px-5 py-2.5">Vencimento</th>
                       <th className="px-5 py-2.5">Status</th>
                       <th className="px-5 py-2.5 text-right">Montante TTC</th>
+                      <th className="px-5 py-2.5 text-right">Ações</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -323,6 +573,21 @@ function InvoicesView({ invoices }: { invoices: SupplierInvoice[] }) {
                             </span>
                           </td>
                           <td className="px-5 py-2.5 text-right font-medium tabular-nums text-ink">{euro.format(Number(inv.montant_ttc) || 0)}</td>
+                          <td className="px-5 py-2.5">
+                            <div className="flex flex-wrap justify-end gap-1.5">
+                              {inv.status !== "payee" ? (
+                                <button className="rounded-lg px-2 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-200 transition hover:bg-emerald-50" onClick={() => void markPaid(inv)} type="button">
+                                  Marcar paga
+                                </button>
+                              ) : null}
+                              <button className="rounded-lg px-2 py-1 text-xs font-semibold text-slate-600 ring-1 ring-inset ring-slate-200 transition hover:bg-slate-50" onClick={() => openEdit(inv)} type="button">
+                                Editar
+                              </button>
+                              <button className="rounded-lg px-2 py-1 text-xs font-semibold text-rose-600 ring-1 ring-inset ring-rose-200 transition hover:bg-rose-50" onClick={() => void remove(inv)} type="button">
+                                Remover
+                              </button>
+                            </div>
+                          </td>
                         </tr>
                       );
                     })}
@@ -337,6 +602,14 @@ function InvoicesView({ invoices }: { invoices: SupplierInvoice[] }) {
           </p>
         </div>
       </div>
+
+      <InvoiceFormModal
+        editing={editing}
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onSaved={() => router.refresh()}
+        userId={userId}
+      />
     </main>
   );
 }

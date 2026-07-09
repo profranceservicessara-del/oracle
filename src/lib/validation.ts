@@ -136,6 +136,36 @@ export const purchaseSchema = z.object({
   reference_piece: optionalText
 });
 
+// Decimal opcional (>= 0). "" ou null viram null; vírgula normalizada p/ ponto.
+const optionalNonNegDecimal = (message: string) =>
+  z.preprocess(
+    (value) => {
+      if (value === "" || value == null) return null;
+      return typeof value === "string" ? value.replace(",", ".") : value;
+    },
+    z.coerce.number({ message }).nonnegative(message).nullable()
+  );
+
+const requiredPositiveDecimal = (message: string) =>
+  z.preprocess(
+    (value) => (typeof value === "string" ? value.replace(",", ".") : value),
+    z.coerce.number({ message }).positive("O valor deve ser maior que zero.")
+  );
+
+// Factures reçues (V2). Só campos editáveis — id/user_id/created_at/updated_at
+// e purchase_id/fichier_path NÃO passam por aqui. "en_retard" é derivado, não
+// é status.
+export const supplierInvoiceSchema = z.object({
+  fournisseur: requiredText("Informe o fornecedor."),
+  reference: optionalText,
+  designation: optionalText,
+  date_reception: requiredText("Informe a data de recepção."),
+  date_echeance: optionalText,
+  montant_ttc: requiredPositiveDecimal("Informe um valor válido."),
+  montant_tva: optionalNonNegDecimal("Informe uma TVA válida."),
+  status: z.enum(["a_payer", "payee", "a_verifier"], { message: "Escolha o status." })
+});
+
 export function formatSiret(value: string) {
   const digits = value.replace(/\D/g, "").slice(0, 14);
   return digits.replace(/(\d{3})(?=\d)/g, "$1 ").trim();

@@ -31,6 +31,7 @@ export default async function FournisseursPage() {
     <FournisseursClient
       initialInvoices={invoices}
       initialPurchases={(purchases ?? []) as Purchase[]}
+      userId={user.id}
     />
   );
 }
