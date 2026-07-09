@@ -118,7 +118,7 @@ const nav: NavItem[] = [
     label: "Produtividade",
     icon: icons.produtividade,
     children: [
-      { href: "/tarefas", label: "Tarefas", icon: icons.tarefas, soon: true }
+      { href: "/tarefas", label: "Tarefas", icon: icons.tarefas }
     ]
   },
   {
