@@ -480,13 +480,53 @@ function InvoicesView({ invoices, userId }: { invoices: SupplierInvoice[]; userI
     router.refresh();
   }
 
-  async function markPaid(inv: SupplierInvoice) {
-    const { error } = await supabase.from("supplier_invoices").update({ status: "payee" }).eq("id", inv.id);
-    if (error) {
-      showToast("Não foi possível atualizar.", "error");
+  // Fase 2 (Opção A): pagar/lançar gera a saída REAL no caixa via `purchases`
+  // (fonte única do /financeiro). A fatura nunca é somada no caixa → sem
+  // double-count. Não altera /financeiro. Guard: só cria purchase se ainda não
+  // houver vínculo (purchase_id).
+  async function linkToCash(inv: SupplierInvoice, markPaid: boolean) {
+    if (inv.purchase_id) {
+      if (markPaid && inv.status !== "payee") {
+        const { error } = await supabase.from("supplier_invoices").update({ status: "payee" }).eq("id", inv.id);
+        if (error) {
+          showToast("Não foi possível atualizar.", "error");
+          return;
+        }
+      }
+      showToast("Fatura já lançada no caixa.", "success");
+      router.refresh();
       return;
     }
-    showToast("Fatura marcada como paga.", "success");
+
+    const designation = inv.designation || inv.reference || `Fatura ${inv.fournisseur}`;
+    const purchasePayload = {
+      user_id: userId,
+      date_achat: new Date().toISOString().slice(0, 10),
+      fournisseur: inv.fournisseur,
+      designation,
+      montant: inv.montant_ttc,
+      moyen: null as string | null,
+      reference_piece: inv.reference
+    };
+    const { data: created, error: purchaseError } = await supabase
+      .from("purchases")
+      .insert(purchasePayload)
+      .select("id")
+      .single();
+    if (purchaseError || !created) {
+      showToast("Não foi possível lançar no caixa.", "error");
+      return;
+    }
+
+    const update: { purchase_id: string; status?: SupplierInvoiceStatus } = { purchase_id: created.id };
+    if (markPaid) update.status = "payee";
+    const { error: linkError } = await supabase.from("supplier_invoices").update(update).eq("id", inv.id);
+    if (linkError) {
+      showToast("Lançado no caixa, mas o vínculo com a fatura falhou.", "error");
+      router.refresh();
+      return;
+    }
+    showToast(markPaid ? "Fatura paga e lançada no caixa." : "Fatura lançada no caixa.", "success");
     router.refresh();
   }
 
@@ -568,16 +608,26 @@ function InvoicesView({ invoices, userId }: { invoices: SupplierInvoice[]; userI
                           <td className="px-5 py-2.5 text-slate-500">{inv.reference || inv.designation || "—"}</td>
                           <td className="px-5 py-2.5 tabular-nums text-slate-600">{inv.date_echeance || "—"}</td>
                           <td className="px-5 py-2.5">
-                            <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1 ring-inset ${overdue ? overdueBadge : meta.badge}`}>
-                              {overdue ? "Em atraso" : meta.label}
-                            </span>
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1 ring-inset ${overdue ? overdueBadge : meta.badge}`}>
+                                {overdue ? "Em atraso" : meta.label}
+                              </span>
+                              {inv.purchase_id ? (
+                                <span className="rounded-full bg-sky-50 px-2 py-0.5 text-[10px] font-semibold text-sky-700 ring-1 ring-inset ring-sky-200">Em caixa</span>
+                              ) : null}
+                            </div>
                           </td>
                           <td className="px-5 py-2.5 text-right font-medium tabular-nums text-ink">{euro.format(Number(inv.montant_ttc) || 0)}</td>
                           <td className="px-5 py-2.5">
                             <div className="flex flex-wrap justify-end gap-1.5">
                               {inv.status !== "payee" ? (
-                                <button className="rounded-lg px-2 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-200 transition hover:bg-emerald-50" onClick={() => void markPaid(inv)} type="button">
+                                <button className="rounded-lg px-2 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-200 transition hover:bg-emerald-50" onClick={() => void linkToCash(inv, true)} type="button">
                                   Marcar paga
+                                </button>
+                              ) : null}
+                              {inv.status === "payee" && !inv.purchase_id ? (
+                                <button className="rounded-lg px-2 py-1 text-xs font-semibold text-sky-700 ring-1 ring-inset ring-sky-200 transition hover:bg-sky-50" onClick={() => void linkToCash(inv, false)} type="button">
+                                  Lançar no caixa
                                 </button>
                               ) : null}
                               <button className="rounded-lg px-2 py-1 text-xs font-semibold text-slate-600 ring-1 ring-inset ring-slate-200 transition hover:bg-slate-50" onClick={() => openEdit(inv)} type="button">
@@ -598,7 +648,7 @@ function InvoicesView({ invoices, userId }: { invoices: SupplierInvoice[]; userI
           )}
 
           <p className="mt-4 text-xs text-muted">
-            &ldquo;Em atraso&rdquo; é calculado (vencimento passado e ainda a pagar), não é um status salvo.
+            &ldquo;Em atraso&rdquo; é calculado (vencimento passado e ainda a pagar), não é um status salvo. Marcar como paga lança a saída no <Link className="font-medium text-brand hover:underline" href="/financeiro">fluxo de caixa</Link> (badge &ldquo;Em caixa&rdquo;).
           </p>
         </div>
       </div>
