@@ -137,6 +137,27 @@ export type Purchase = {
   created_at: string;
 };
 
+// Factures reçues (V2). "en_retard" NÃO é persistido: derivado em query/UI
+// via status = 'a_payer' && date_echeance < hoje.
+export type SupplierInvoiceStatus = "a_payer" | "payee" | "a_verifier";
+
+export type SupplierInvoice = {
+  id: string;
+  user_id: string;
+  fournisseur: string;
+  reference: string | null;
+  designation: string | null;
+  date_reception: string;
+  date_echeance: string | null;
+  montant_ttc: number;
+  montant_tva: number | null;
+  status: SupplierInvoiceStatus;
+  purchase_id: string | null;
+  fichier_path: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type ContractTemplate = {
   id: string;
   user_id: string;

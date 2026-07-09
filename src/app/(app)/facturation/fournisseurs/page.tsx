@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import type { Purchase } from "@/lib/types";
+import type { Purchase, SupplierInvoice } from "@/lib/types";
 import { FournisseursClient } from "./fournisseurs-client";
 
 // Cobrança > Faturas recebidas — faturas de fornecedores / despesas.
@@ -18,10 +18,19 @@ export default async function FournisseursPage() {
     redirect("/login");
   }
 
-  const { data: purchases } = await supabase
-    .from("purchases")
-    .select("*")
-    .order("date_achat", { ascending: false });
+  const [{ data: purchases }, invoicesRes] = await Promise.all([
+    supabase.from("purchases").select("*").order("date_achat", { ascending: false }),
+    // V2: faturas dedicadas. Fallback graceful — se a query falhar (ex.: tabela
+    // ausente em algum ambiente) ou vier vazia, a página usa o modo V1 (purchases).
+    supabase.from("supplier_invoices").select("*").order("date_reception", { ascending: false })
+  ]);
 
-  return <FournisseursClient initialPurchases={(purchases ?? []) as Purchase[]} />;
+  const invoices = (invoicesRes.error ? [] : invoicesRes.data ?? []) as SupplierInvoice[];
+
+  return (
+    <FournisseursClient
+      initialInvoices={invoices}
+      initialPurchases={(purchases ?? []) as Purchase[]}
+    />
+  );
 }
