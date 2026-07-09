@@ -137,6 +137,21 @@ export type Purchase = {
   created_at: string;
 };
 
+// Meu Conselheiro — solicitações de suporte/orientação.
+export type AdvisorRequestStatus = "received" | "in_review" | "answered" | "closed";
+
+export type AdvisorRequest = {
+  id: string;
+  user_id: string;
+  subject: string | null;
+  message: string;
+  status: AdvisorRequestStatus;
+  admin_response: string | null;
+  responded_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 // Factures reçues (V2). "en_retard" NÃO é persistido: derivado em query/UI
 // via status = 'a_payer' && date_echeance < hoje.
 export type SupplierInvoiceStatus = "a_payer" | "payee" | "a_verifier";
