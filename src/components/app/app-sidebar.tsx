@@ -129,7 +129,7 @@ const nav: NavItem[] = [
     children: [
       { href: "/documents", label: "Contabilidade", icon: icons.contabilidadeLeaf },
       { href: "#", label: "Declarações fiscais", icon: icons.declaracoes, soon: true },
-      { href: "#", label: "Comprovantes", icon: icons.comprovantes, soon: true },
+      { href: "/comprovantes", label: "Comprovantes", icon: icons.comprovantes },
       { href: "/facturation/fournisseurs", label: "Faturas recebidas", icon: icons.faturasRecebidas }
     ]
   },
