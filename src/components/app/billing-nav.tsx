@@ -3,7 +3,7 @@ import Link from "next/link";
 const items = [
   { key: "factures", label: "Faturas", href: "/facturation" },
   { key: "recurrentes", label: "Faturas recorrentes", href: "/facturation/recurrentes" },
-  { key: "fournisseurs", label: "Faturas de fornecedores", href: "/facturation/fournisseurs" },
+  { key: "fournisseurs", label: "Faturas recebidas", href: "/facturation/fournisseurs" },
   { key: "aparencia", label: "Aparência", href: "/configuracoes/aparencia" }
 ];
 
