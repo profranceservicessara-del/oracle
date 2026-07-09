@@ -51,7 +51,7 @@ export function FournisseursClient({
   // Senão, fallback pro modo V1 derivado de purchases (com atalho p/ criar
   // a primeira fatura).
   return initialInvoices.length > 0 ? (
-    <InvoicesView invoices={initialInvoices} userId={userId} />
+    <InvoicesView invoices={initialInvoices} purchases={initialPurchases} userId={userId} />
   ) : (
     <PurchasesView initialPurchases={initialPurchases} userId={userId} />
   );
@@ -67,6 +67,7 @@ type InvoiceForm = {
   montant_ttc: string;
   montant_tva: string;
   status: SupplierInvoiceStatus;
+  purchase_id: string;
 };
 
 const emptyInvoiceForm: InvoiceForm = {
@@ -77,7 +78,8 @@ const emptyInvoiceForm: InvoiceForm = {
   date_echeance: "",
   montant_ttc: "",
   montant_tva: "",
-  status: "a_payer"
+  status: "a_payer",
+  purchase_id: ""
 };
 
 function invoiceToForm(inv: SupplierInvoice): InvoiceForm {
@@ -89,20 +91,28 @@ function invoiceToForm(inv: SupplierInvoice): InvoiceForm {
     date_echeance: inv.date_echeance ?? "",
     montant_ttc: String(inv.montant_ttc),
     montant_tva: inv.montant_tva == null ? "" : String(inv.montant_tva),
-    status: inv.status
+    status: inv.status,
+    purchase_id: inv.purchase_id ?? ""
   };
+}
+
+function purchaseLabel(p: Purchase): string {
+  const val = euro.format(Number(p.montant) || 0);
+  return `${p.date_achat} · ${p.fournisseur} · ${val}`;
 }
 
 function InvoiceFormModal({
   isOpen,
   editing,
   userId,
+  purchases,
   onClose,
   onSaved
 }: {
   isOpen: boolean;
   editing: SupplierInvoice | null;
   userId: string;
+  purchases: Purchase[];
   onClose: () => void;
   onSaved: () => void;
 }) {
@@ -159,7 +169,12 @@ function InvoiceFormModal({
     // Payload só com colunas reais de supplier_invoices (+ user_id p/ RLS).
     // fichier_path só entra quando há novo anexo (edição sem novo arquivo
     // preserva o anexo atual).
-    const payload = { ...parsed.data, user_id: userId, ...(uploadedPath ? { fichier_path: uploadedPath } : {}) };
+    const payload = {
+      ...parsed.data,
+      user_id: userId,
+      purchase_id: form.purchase_id || null,
+      ...(uploadedPath ? { fichier_path: uploadedPath } : {})
+    };
     const request = editing
       ? supabase.from("supplier_invoices").update(payload).eq("id", editing.id)
       : supabase.from("supplier_invoices").insert(payload);
@@ -240,6 +255,18 @@ function InvoiceFormModal({
             <option value="payee">Paga</option>
             <option value="a_verifier">A verificar</option>
           </Select>
+        </label>
+        <label className="text-sm font-medium text-ink">
+          Vincular a uma despesa (opcional)
+          <Select className="mt-2" onChange={(e) => setForm({ ...form, purchase_id: e.target.value })} value={form.purchase_id}>
+            <option value="">Sem despesa vinculada</option>
+            {purchases.map((p) => (
+              <option key={p.id} value={p.id}>
+                {purchaseLabel(p)}
+              </option>
+            ))}
+          </Select>
+          <span className="mt-1 block text-xs text-muted">Vincular a uma despesa já lançada não cria nova saída no caixa (evita duplicidade).</span>
         </label>
         <label className="text-sm font-medium text-ink">
           Anexo (PDF ou imagem, opcional)
@@ -414,6 +441,7 @@ function PurchasesView({ initialPurchases, userId }: { initialPurchases: Purchas
         isOpen={invoiceModalOpen}
         onClose={() => setInvoiceModalOpen(false)}
         onSaved={() => router.refresh()}
+        purchases={initialPurchases}
         userId={userId}
       />
     </main>
@@ -435,7 +463,7 @@ function isOverdue(inv: SupplierInvoice, today: string): boolean {
   return inv.status === "a_payer" && Boolean(inv.date_echeance && inv.date_echeance < today);
 }
 
-function InvoicesView({ invoices, userId }: { invoices: SupplierInvoice[]; userId: string }) {
+function InvoicesView({ invoices, purchases, userId }: { invoices: SupplierInvoice[]; purchases: Purchase[]; userId: string }) {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
   const { showToast } = useToast();
@@ -539,20 +567,26 @@ function InvoicesView({ invoices, userId }: { invoices: SupplierInvoice[]; userI
     router.refresh();
   }
 
-  // Fase 2 (Opção A): pagar/lançar gera a saída REAL no caixa via `purchases`
-  // (fonte única do /financeiro). A fatura nunca é somada no caixa → sem
-  // double-count. Não altera /financeiro. Guard: só cria purchase se ainda não
-  // houver vínculo (purchase_id).
-  async function linkToCash(inv: SupplierInvoice, markPaid: boolean) {
+  // Marca como paga SEM criar despesa (só status). Fatura sem purchase_id fica
+  // "Paga sem despesa vinculada" (visível na lista).
+  async function markPaidOnly(inv: SupplierInvoice) {
+    if (inv.status === "payee") return;
+    const { error } = await supabase.from("supplier_invoices").update({ status: "payee" }).eq("id", inv.id);
+    if (error) {
+      showToast("Não foi possível atualizar.", "error");
+      return;
+    }
+    showToast("Fatura marcada como paga.", "success");
+    router.refresh();
+  }
+
+  // Opção A: cria a saída REAL no caixa via `purchases` (fonte única do
+  // /financeiro) e vincula (purchase_id). Fatura nunca é somada no caixa → sem
+  // double-count. Guard: só cria se ainda não houver vínculo. Se a criação do
+  // purchase falhar, NÃO marca como paga (erro explícito).
+  async function createExpense(inv: SupplierInvoice, markPaid: boolean) {
     if (inv.purchase_id) {
-      if (markPaid && inv.status !== "payee") {
-        const { error } = await supabase.from("supplier_invoices").update({ status: "payee" }).eq("id", inv.id);
-        if (error) {
-          showToast("Não foi possível atualizar.", "error");
-          return;
-        }
-      }
-      showToast("Fatura já lançada no caixa.", "success");
+      showToast("Fatura já tem despesa vinculada.", "success");
       router.refresh();
       return;
     }
@@ -573,7 +607,7 @@ function InvoicesView({ invoices, userId }: { invoices: SupplierInvoice[]; userI
       .select("id")
       .single();
     if (purchaseError || !created) {
-      showToast("Não foi possível lançar no caixa.", "error");
+      showToast("Não foi possível criar a despesa. Fatura não alterada.", "error");
       return;
     }
 
@@ -581,11 +615,11 @@ function InvoicesView({ invoices, userId }: { invoices: SupplierInvoice[]; userI
     if (markPaid) update.status = "payee";
     const { error: linkError } = await supabase.from("supplier_invoices").update(update).eq("id", inv.id);
     if (linkError) {
-      showToast("Lançado no caixa, mas o vínculo com a fatura falhou.", "error");
+      showToast("Despesa criada, mas o vínculo com a fatura falhou.", "error");
       router.refresh();
       return;
     }
-    showToast(markPaid ? "Fatura paga e lançada no caixa." : "Fatura lançada no caixa.", "success");
+    showToast(markPaid ? "Fatura paga e despesa criada." : "Despesa criada e vinculada.", "success");
     router.refresh();
   }
 
@@ -672,7 +706,9 @@ function InvoicesView({ invoices, userId }: { invoices: SupplierInvoice[]; userI
                                 {overdue ? "Em atraso" : meta.label}
                               </span>
                               {inv.purchase_id ? (
-                                <span className="rounded-full bg-sky-50 px-2 py-0.5 text-[10px] font-semibold text-sky-700 ring-1 ring-inset ring-sky-200">Em caixa</span>
+                                <span className="rounded-full bg-sky-50 px-2 py-0.5 text-[10px] font-semibold text-sky-700 ring-1 ring-inset ring-sky-200">Despesa vinculada</span>
+                              ) : inv.status === "payee" ? (
+                                <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700 ring-1 ring-inset ring-amber-200">Paga sem despesa vinculada</span>
                               ) : null}
                             </div>
                           </td>
@@ -680,13 +716,18 @@ function InvoicesView({ invoices, userId }: { invoices: SupplierInvoice[]; userI
                           <td className="px-5 py-2.5">
                             <div className="flex flex-wrap justify-end gap-1.5">
                               {inv.status !== "payee" ? (
-                                <button className="rounded-lg px-2 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-200 transition hover:bg-emerald-50" onClick={() => void linkToCash(inv, true)} type="button">
+                                <button className="rounded-lg px-2 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-200 transition hover:bg-emerald-50" onClick={() => void markPaidOnly(inv)} type="button">
                                   Marcar paga
                                 </button>
                               ) : null}
+                              {inv.status !== "payee" && !inv.purchase_id ? (
+                                <button className="rounded-lg px-2 py-1 text-xs font-semibold text-sky-700 ring-1 ring-inset ring-sky-200 transition hover:bg-sky-50" onClick={() => void createExpense(inv, true)} type="button">
+                                  Marcar paga e criar despesa
+                                </button>
+                              ) : null}
                               {inv.status === "payee" && !inv.purchase_id ? (
-                                <button className="rounded-lg px-2 py-1 text-xs font-semibold text-sky-700 ring-1 ring-inset ring-sky-200 transition hover:bg-sky-50" onClick={() => void linkToCash(inv, false)} type="button">
-                                  Lançar no caixa
+                                <button className="rounded-lg px-2 py-1 text-xs font-semibold text-sky-700 ring-1 ring-inset ring-sky-200 transition hover:bg-sky-50" onClick={() => void createExpense(inv, false)} type="button">
+                                  Criar despesa
                                 </button>
                               ) : null}
                               {inv.fichier_path ? (
@@ -712,7 +753,7 @@ function InvoicesView({ invoices, userId }: { invoices: SupplierInvoice[]; userI
           )}
 
           <p className="mt-4 text-xs text-muted">
-            &ldquo;Em atraso&rdquo; é calculado (vencimento passado e ainda a pagar), não é um status salvo. Marcar como paga lança a saída no <Link className="font-medium text-brand hover:underline" href="/financeiro">fluxo de caixa</Link> (badge &ldquo;Em caixa&rdquo;).
+            &ldquo;Em atraso&rdquo; é calculado (vencimento passado e ainda a pagar), não é um status salvo. &ldquo;Criar despesa&rdquo; lança a saída no <Link className="font-medium text-brand hover:underline" href="/financeiro">fluxo de caixa</Link>; vincular a uma despesa já existente não duplica.
           </p>
         </div>
       </div>
@@ -722,6 +763,7 @@ function InvoicesView({ invoices, userId }: { invoices: SupplierInvoice[]; userI
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         onSaved={() => router.refresh()}
+        purchases={purchases}
         userId={userId}
       />
     </main>
