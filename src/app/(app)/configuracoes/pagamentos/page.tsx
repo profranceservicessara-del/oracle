@@ -28,25 +28,17 @@ const plans: Array<{
   recommended: boolean;
 }> = [
   {
-    key: "essentiel",
-    name: "Essentiel",
-    price: "9 €",
-    tagline: "Para começar",
-    features: ["Faturas e orçamentos ilimitados", "1 usuário", "Suporte por email"],
-    recommended: false
-  },
-  {
     key: "pro",
     name: "Pro",
-    price: "19 €",
+    price: "9 €",
     tagline: "Mais popular",
-    features: ["Tudo do Essentiel", "CRM + agenda", "Lembretes automáticos", "Multi-moeda"],
+    features: ["Faturas e orçamentos ilimitados", "CRM + agenda", "Lembretes automáticos", "Multi-moeda"],
     recommended: true
   },
   {
     key: "premium",
     name: "Premium",
-    price: "39 €",
+    price: "19 €",
     tagline: "Para escalar",
     features: ["Tudo do Pro", "Usuários ilimitados", "Integrações", "Suporte prioritário"],
     recommended: false

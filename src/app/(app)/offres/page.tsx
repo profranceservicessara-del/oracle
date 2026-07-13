@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { PlanCta } from "./plan-cta";
 
 type Plan = {
   name: string;
@@ -9,6 +10,7 @@ type Plan = {
   description: string;
   cta: string;
   ctaDisabled?: boolean;
+  checkoutPlan?: "pro" | "premium";
   highlighted?: boolean;
   features: string[];
 };
@@ -23,11 +25,11 @@ const plans: Plan[] = [
     features: ["Contabilidade automatizada", "Suporte limitado", "Orçamentos e faturamento", "Documentos essenciais"]
   },
   {
-    name: "Plus",
+    name: "Pro",
     price: "9 €",
-    oldPrice: "12 €",
     description: "Todos os recursos avançados para ganhar tempo e gerenciar seu negócio.",
-    cta: "Escolher Plus",
+    cta: "Escolher Pro",
+    checkoutPlan: "pro",
     features: [
       "Acompanhamento personalizado",
       "Assinatura eletrônica de orçamentos",
@@ -38,10 +40,10 @@ const plans: Plan[] = [
   },
   {
     name: "Premium",
-    price: "15 €",
-    oldPrice: "19 €",
+    price: "19 €",
     description: "Todas as suas declarações e acompanhamento administrativo com suporte prioritário.",
     cta: "Escolher Premium",
+    checkoutPlan: "premium",
     highlighted: true,
     features: [
       "Acompanhamento prioritário",
@@ -115,20 +117,25 @@ export default async function OffresPage() {
               <span className="text-sm text-muted">/mês sem imposto</span>
             </p>
             <p className="mt-2 text-sm leading-6 text-muted">{plan.description}</p>
-            {/* TODO: Connect plan selection to subscription/payment flow. */}
-            <button
-              className={`mt-5 inline-flex h-11 items-center justify-center rounded-2xl px-4 text-sm font-semibold transition ${
-                plan.ctaDisabled
-                  ? "cursor-not-allowed bg-slate-100 text-slate-400"
-                  : plan.highlighted
+            {plan.checkoutPlan ? (
+              <PlanCta
+                className={`mt-5 inline-flex h-11 items-center justify-center rounded-2xl px-4 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
+                  plan.highlighted
                     ? "bg-brand text-white shadow-sm ring-1 ring-[#002D72]/20 hover:bg-[#003a94] active:bg-[#001F4D]"
                     : "bg-white text-ink shadow-sm ring-1 ring-black/5 hover:bg-slate-50"
-              }`}
-              disabled={plan.ctaDisabled}
-              type="button"
-            >
-              {plan.cta}
-            </button>
+                }`}
+                label={plan.cta}
+                plan={plan.checkoutPlan}
+              />
+            ) : (
+              <button
+                className="mt-5 inline-flex h-11 cursor-not-allowed items-center justify-center rounded-2xl bg-slate-100 px-4 text-sm font-semibold text-slate-400"
+                disabled
+                type="button"
+              >
+                {plan.cta}
+              </button>
+            )}
             <ul className="mt-5 flex-1 space-y-2.5">
               {plan.features.map((feature) => (
                 <li className="flex gap-2 text-sm text-slate-700" key={feature}>
