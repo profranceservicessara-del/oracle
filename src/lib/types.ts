@@ -137,6 +137,40 @@ export type Purchase = {
   created_at: string;
 };
 
+// URSSAF — base de declaração (preparação; nunca envio oficial).
+export type DeclarationDraftStatus = "ready" | "confirmed";
+export type DeclarationLineStatus = "confirmed" | "needs_review" | "excluded";
+
+export type DeclarationDraft = {
+  id: string;
+  user_id: string;
+  period_start: string;
+  period_end: string;
+  periodicite: DeclarationPeriodicite;
+  status: DeclarationDraftStatus;
+  total_confirmed: number;
+  confirmed_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type DeclarationLine = {
+  id: string;
+  draft_id: string;
+  user_id: string;
+  payment_id: string | null;
+  document_id: string | null;
+  date_encaissement: string;
+  montant: number;
+  client_name: string | null;
+  numero: string | null;
+  categorie: ActivityCategory | null;
+  moyen: string | null;
+  status: DeclarationLineStatus;
+  reason: string | null;
+  created_at: string;
+};
+
 // Meu Conselheiro — solicitações de suporte/orientação.
 export type AdvisorRequestStatus = "received" | "in_review" | "answered" | "closed";
 
