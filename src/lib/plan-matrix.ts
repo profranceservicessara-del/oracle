@@ -28,3 +28,14 @@ export function isFeatureGated(
 ): boolean {
   return isGated(profile, FEATURE_PLAN[feature]);
 }
+
+// Gate ESTRITO (sem grandfather): bloqueia todos que não tenham o tier pago
+// ativo — inclui free, inativo e planos abaixo. Usar SÓ em features Premium
+// novas (Assistente, banco, serviço humano). NÃO altera isGated/grandfather
+// dos módulos existentes.
+export function requiresPaidPlan(
+  profile: Pick<Profile, "plan" | "subscription_status"> | null | undefined,
+  required: PlanTier
+): boolean {
+  return !hasPlan(profile, required);
+}

@@ -76,7 +76,7 @@ const icons = {
 
 // soon = módulo ainda não pronto para produção: exibido "Em breve", desabilitado
 // (não navega). Mantém href para restaurar facilmente depois.
-type Leaf = { href: string; label: string; icon: ReactNode; soon?: boolean };
+type Leaf = { href: string; label: string; icon: ReactNode; soon?: boolean; premium?: boolean };
 type NavItem =
   | { kind: "link"; href: string; label: string; icon: ReactNode }
   | { kind: "group"; key: string; label: string; icon: ReactNode; children: Leaf[] };
@@ -107,6 +107,7 @@ const nav: NavItem[] = [
     children: [
       { href: "/financeiro", label: "Fluxo de Caixa", icon: icons.receitasDespesas },
       { href: "/urssaf", label: "Declaração de Urssaf", icon: icons.urssaf },
+      { href: "/assistente", label: "Assistente de Declarações", icon: icons.conselheiro, premium: true },
       { href: "/declaracoes/auxiliares", label: "Declarações auxiliares", icon: icons.declAux },
       { href: "/modelos-contrato", label: "Modelos de contrato", icon: icons.contrato },
       { href: "/conselheiro", label: "Meu Conselheiro", icon: icons.conselheiro }
@@ -195,6 +196,11 @@ function LeafRow({ leaf, active, onNavigate }: { leaf: Leaf; active: boolean; on
         {leaf.icon}
       </span>
       <span className="truncate">{leaf.label}</span>
+      {leaf.premium ? (
+        <span className="ml-auto shrink-0 rounded-full bg-[#4F46E5]/20 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-[#C7CCFF]">
+          Premium
+        </span>
+      ) : null}
     </Link>
   );
 }
