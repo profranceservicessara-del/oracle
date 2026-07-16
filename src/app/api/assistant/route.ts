@@ -5,9 +5,13 @@ import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 
-// POST /api/assistant — Assistente de Declarações (Fase 2). Gate Premium
-// ESTRITO re-verificado no servidor (não confia só na page). Rate-limit
-// best-effort. Streaming de texto. Sem persistência, sem tools de dados.
+// POST /api/assistant — Assistente de Declarações. Gate Premium ESTRITO
+// re-verificado no servidor (não confia só na page). Rate-limit best-effort.
+// Sem persistência.
+//
+// Fase 3: tools read-only executam com ESTE client Supabase (sessão do
+// usuário) -> RLS aplica no banco. O modelo nunca recebe user_id nem acessa
+// o Supabase; nenhuma tool escreve.
 export async function POST(request: NextRequest) {
   const supabase = createClient();
   const {
@@ -41,7 +45,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const stream = await streamAssistantReply(history);
+    const stream = await streamAssistantReply(history, supabase);
     if (!stream) {
       return NextResponse.json({ error: "Assistente indisponível no momento." }, { status: 503 });
     }
