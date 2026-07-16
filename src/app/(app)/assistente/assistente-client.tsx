@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { ASSISTANT_INTRO, DECLARATION_FAQ, type FaqEntry } from "@/lib/assistant/declaration-faq";
 
@@ -14,10 +14,16 @@ const QUICK_ACTIONS = [
   { label: "Falar com o Conselheiro", href: "/conselheiro" }
 ];
 
+const FALLBACK_MSG =
+  "O assistente está indisponível no momento. Você pode usar as perguntas frequentes acima ou falar com o Conselheiro.";
+
 export function AssistenteClient() {
   const faqOk = Array.isArray(DECLARATION_FAQ) && DECLARATION_FAQ.length > 0;
   const [messages, setMessages] = useState<ChatMsg[]>([{ role: "assistant", text: ASSISTANT_INTRO }]);
   const [asked, setAsked] = useState<Set<string>>(new Set());
+  const [input, setInput] = useState("");
+  const [streaming, setStreaming] = useState(false);
+  const inFlight = useRef(false);
 
   function ask(entry: FaqEntry) {
     setMessages((cur) => [
@@ -26,6 +32,63 @@ export function AssistenteClient() {
       { role: "assistant", text: entry.answer, link: entry.link }
     ]);
     setAsked((cur) => new Set(cur).add(entry.id));
+  }
+
+  async function send() {
+    const text = input.trim();
+    if (!text || inFlight.current) return;
+    inFlight.current = true;
+    setStreaming(true);
+    setInput("");
+
+    // Histórico enviado ao servidor (só role+content textual).
+    const history = [...messages, { role: "user" as const, text }].map((m) => ({ role: m.role, content: m.text }));
+    setMessages((cur) => [...cur, { role: "user", text }, { role: "assistant", text: "" }]);
+
+    try {
+      const res = await fetch("/api/assistant", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: history })
+      });
+      if (!res.ok || !res.body) {
+        setMessages((cur) => {
+          const next = [...cur];
+          next[next.length - 1] = { role: "assistant", text: FALLBACK_MSG };
+          return next;
+        });
+        return;
+      }
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let acc = "";
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        acc += decoder.decode(value, { stream: true });
+        setMessages((cur) => {
+          const next = [...cur];
+          next[next.length - 1] = { role: "assistant", text: acc };
+          return next;
+        });
+      }
+      if (!acc.trim()) {
+        setMessages((cur) => {
+          const next = [...cur];
+          next[next.length - 1] = { role: "assistant", text: FALLBACK_MSG };
+          return next;
+        });
+      }
+    } catch {
+      setMessages((cur) => {
+        const next = [...cur];
+        next[next.length - 1] = { role: "assistant", text: FALLBACK_MSG };
+        return next;
+      });
+    } finally {
+      inFlight.current = false;
+      setStreaming(false);
+    }
   }
 
   const remaining = DECLARATION_FAQ.filter((e) => !asked.has(e.id));
@@ -105,16 +168,41 @@ export function AssistenteClient() {
           )}
         </div>
 
-        {/* Pergunta personalizada -> Conselheiro */}
-        <div className="border-t border-line bg-slate-50 px-4 py-4 sm:px-5">
-          <p className="text-xs text-muted">Envie sua solicitação ao Conselheiro. A resposta é feita em até 48 horas.</p>
-          <Link
-            className="mt-2 inline-flex items-center justify-center rounded-xl bg-[#1D4ED8] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#1743B8]"
-            href="/conselheiro"
-          >
-            Fazer uma pergunta personalizada
-          </Link>
-        </div>
+        {/* Pergunta livre (Assistente) */}
+        <form
+          className="border-t border-line bg-slate-50 px-4 py-4 sm:px-5"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void send();
+          }}
+        >
+          <div className="flex items-end gap-2">
+            <textarea
+              className="min-h-[44px] w-full resize-none rounded-xl border border-line bg-white px-3 py-2.5 text-sm text-ink shadow-sm outline-none transition placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20"
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  void send();
+                }
+              }}
+              placeholder="Faça uma pergunta sobre sua declaração…"
+              rows={1}
+              value={input}
+            />
+            <button
+              className="inline-flex h-11 shrink-0 items-center justify-center rounded-xl bg-[#1D4ED8] px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-[#1743B8] disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={streaming || input.trim().length === 0}
+              type="submit"
+            >
+              {streaming ? "…" : "Enviar"}
+            </button>
+          </div>
+          <p className="mt-2 text-[11px] text-muted">
+            Respostas geradas por IA sobre o funcionamento do Oracle. Para revisão da sua declaração, {""}
+            <Link className="font-medium text-brand hover:underline" href="/conselheiro">fale com o Conselheiro</Link> (resposta em até 48h).
+          </p>
+        </form>
       </section>
 
       {/* Ações rápidas */}
