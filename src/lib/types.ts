@@ -171,6 +171,45 @@ export type DeclarationLine = {
   created_at: string;
 };
 
+// Banco (Fase 5) — transações cruas NUNCA entram no caixa/URSSAF.
+export type BankReconcileStatus = "pending" | "suggested" | "confirmed" | "ignored" | "non_business";
+
+export type BankConnection = {
+  id: string;
+  user_id: string;
+  provider: "manual" | "bridge";
+  provider_item_id: string | null;
+  label: string | null;
+  status: "active" | "needs_reconnect" | "revoked";
+  last_sync_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type BankAccount = {
+  id: string;
+  connection_id: string;
+  user_id: string;
+  provider_account_id: string | null;
+  name: string;
+  iban_last4: string | null;
+  currency: string;
+  created_at: string;
+};
+
+export type BankTransaction = {
+  id: string;
+  account_id: string;
+  user_id: string;
+  provider_tx_id: string;
+  date: string;
+  amount: number;
+  label: string;
+  direction: "credit" | "debit";
+  reconcile_status: BankReconcileStatus;
+  created_at: string;
+};
+
 // Meu Conselheiro — solicitações de suporte/orientação.
 export type AdvisorRequestStatus = "received" | "in_review" | "answered" | "closed";
 
