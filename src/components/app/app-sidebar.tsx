@@ -105,6 +105,7 @@ const nav: NavItem[] = [
     label: "Gestão",
     icon: icons.gestao,
     children: [
+      { href: "/analise", label: "Análise", icon: icons.painel },
       { href: "/financeiro", label: "Fluxo de Caixa", icon: icons.receitasDespesas },
       { href: "/banco", label: "Contas bancárias", icon: icons.receitasDespesas, premium: true },
       { href: "/urssaf", label: "Declaração de Urssaf", icon: icons.urssaf },
