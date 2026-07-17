@@ -15,7 +15,12 @@ import {
   type Profile
 } from "@/lib/types";
 import { formatSiret } from "@/lib/validation";
-import { confirmDeclarationDraftAction, prepareDeclarationAction, setDeclarationLineStatusAction } from "./actions";
+import {
+  confirmDeclarationDraftAction,
+  prepareDeclarationAction,
+  requestDeclarationReviewAction,
+  setDeclarationLineStatusAction
+} from "./actions";
 
 const euro = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "EUR" });
 
@@ -54,12 +59,14 @@ export function UrssafClient({
   initialRows,
   drafts,
   lines,
-  profile
+  profile,
+  isPremium
 }: {
   initialRows: RevenueBookRow[];
   drafts: DeclarationDraft[];
   lines: DeclarationLine[];
   profile: ProfileSummary | null;
+  isPremium: boolean;
 }) {
   const router = useRouter();
   const { showToast } = useToast();
@@ -156,6 +163,11 @@ export function UrssafClient({
 
   function setLine(lineId: string, status: DeclarationLine["status"]) {
     run(() => setDeclarationLineStatusAction(lineId, status), "Linha atualizada.");
+  }
+
+  function requestReview() {
+    if (!draft) return;
+    run(() => requestDeclarationReviewAction(draft.id), "Solicitação enviada ao Conselheiro. Resposta em até 48h.");
   }
 
   function exportCsv() {
@@ -295,6 +307,11 @@ export function UrssafClient({
           {draft ? (
             <Button disabled={draftLines.length === 0} onClick={exportCsv} type="button" variant="secondary">
               Exportar resumo
+            </Button>
+          ) : null}
+          {draft && isPremium ? (
+            <Button disabled={isPending} onClick={requestReview} type="button" variant="secondary">
+              Solicitar revisão ao Conselheiro
             </Button>
           ) : null}
         </div>

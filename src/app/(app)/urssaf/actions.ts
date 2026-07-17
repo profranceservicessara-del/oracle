@@ -2,8 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { fetchRevenueBookRows } from "@/lib/accounting-data";
+import { requiresPaidPlan } from "@/lib/plan-matrix";
 import { createClient } from "@/lib/supabase/server";
-import type { DeclarationLineStatus, Payment } from "@/lib/types";
+import type { AdvisorRequestContext, DeclarationLineStatus, Payment } from "@/lib/types";
 
 // Preparação de base de declaração URSSAF. NUNCA envia nada à URSSAF e não
 // calcula contribuições — só agrega recebimentos reais do período.
@@ -233,5 +234,79 @@ export async function confirmDeclarationDraftAction(draftId: string): Promise<Ac
   if (error) return { error: "Não foi possível confirmar a base." };
 
   revalidatePath("/urssaf");
+  return { draftId };
+}
+
+// Fase 4: escala a base preparada ao Conselheiro humano. Premium-only. O
+// modelo NÃO cria isto — é o usuário via botão. O contexto é lido do banco
+// (nunca do LLM). Não envia nada à URSSAF; só cria uma solicitação de revisão.
+export async function requestDeclarationReviewAction(draftId: string): Promise<ActionResult> {
+  const supabase = createClient();
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Não autenticado." };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("plan, subscription_status, activite_principale, declaration_periodicite, regime_tva")
+    .eq("id", user.id)
+    .maybeSingle();
+  if (requiresPaidPlan(profile as { plan: string | null; subscription_status: string | null } | null, "premium")) {
+    return { error: "A revisão pelo Conselheiro é um recurso Premium." };
+  }
+
+  const { data: draft } = await supabase
+    .from("urssaf_declaration_drafts")
+    .select("id, period_start, period_end, status, total_confirmed")
+    .eq("id", draftId)
+    .maybeSingle();
+  if (!draft) return { error: "Rascunho não encontrado." };
+
+  // Evita escalação duplicada aberta para o mesmo período.
+  const { data: openReq } = await supabase
+    .from("advisor_requests")
+    .select("id")
+    .eq("draft_id", draftId)
+    .in("status", ["received", "in_review"])
+    .maybeSingle();
+  if (openReq) return { error: "Já existe uma solicitação de revisão aberta para este período." };
+
+  // Contexto = snapshot do banco (não do modelo, sem dado bancário).
+  const { data: lines } = await supabase
+    .from("urssaf_declaration_lines")
+    .select("status")
+    .eq("draft_id", draftId);
+  const all = (lines ?? []) as Array<{ status: string }>;
+  const confirmadas = all.filter((l) => l.status === "confirmed").length;
+  const pendencias = all.filter((l) => l.status === "needs_review").length;
+  const base = confirmadas + pendencias;
+  const prof = profile as { activite_principale: string | null; declaration_periodicite: string | null; regime_tva: string | null } | null;
+
+  const context: AdvisorRequestContext = {
+    periodo: `${draft.period_start} a ${draft.period_end}`,
+    total_confirmado: `${(Math.round((Number(draft.total_confirmed) || 0) * 100) / 100).toFixed(2)} €`,
+    confianca: base === 0 ? 100 : Math.round((confirmadas / base) * 100),
+    pendencias,
+    categoria: prof?.activite_principale ?? null,
+    periodicidade: prof?.declaration_periodicite ?? null,
+    regime_tva: prof?.regime_tva ?? null,
+    draft_status: draft.status
+  };
+
+  const message = `Solicito revisão da minha base de declaração do período ${context.periodo}. Total confirmado: ${context.total_confirmado}. Pendências: ${pendencias}. Confiança: ${context.confianca}%.`;
+
+  const { error } = await supabase.from("advisor_requests").insert({
+    user_id: user.id,
+    message,
+    status: "received",
+    kind: "declaration_review",
+    draft_id: draftId,
+    context
+  });
+  if (error) return { error: "Não foi possível enviar a solicitação." };
+
+  revalidatePath("/urssaf");
+  revalidatePath("/conselheiro");
   return { draftId };
 }

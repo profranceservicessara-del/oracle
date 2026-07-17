@@ -112,10 +112,23 @@ export function ConselheiroClient({ initialRequests }: { initialRequests: Adviso
               return (
                 <li className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5" key={r.id}>
                   <div className="flex items-start justify-between gap-3">
-                    <p className="text-xs text-muted">{formatDate(r.created_at)}</p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-xs text-muted">{formatDate(r.created_at)}</p>
+                      {r.kind === "declaration_review" ? (
+                        <span className="rounded-full bg-[#EEF2FF] px-2 py-0.5 text-[10px] font-semibold text-[#4F46E5] ring-1 ring-inset ring-[#E0E7FF]">Revisão de declaração</span>
+                      ) : null}
+                    </div>
                     <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1 ring-inset ${meta.badge}`}>{meta.label}</span>
                   </div>
                   <p className="mt-2 whitespace-pre-wrap text-sm text-ink">{r.message}</p>
+                  {r.kind === "declaration_review" && r.context ? (
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {r.context.periodo ? <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600">Período: {r.context.periodo}</span> : null}
+                      {r.context.total_confirmado ? <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600">Total: {r.context.total_confirmado}</span> : null}
+                      {typeof r.context.confianca === "number" ? <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600">Confiança: {r.context.confianca}%</span> : null}
+                      {typeof r.context.pendencias === "number" ? <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600">Pendências: {r.context.pendencias}</span> : null}
+                    </div>
+                  ) : null}
                   {r.admin_response ? (
                     <div className="mt-3 rounded-xl bg-slate-50 p-3 ring-1 ring-black/5">
                       <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Resposta da equipe</p>

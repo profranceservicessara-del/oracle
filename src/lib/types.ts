@@ -174,6 +174,20 @@ export type DeclarationLine = {
 // Meu Conselheiro — solicitações de suporte/orientação.
 export type AdvisorRequestStatus = "received" | "in_review" | "answered" | "closed";
 
+export type AdvisorRequestKind = "support" | "declaration_review";
+
+// Snapshot server-computed anexado na escalação de revisão de declaração.
+export type AdvisorRequestContext = {
+  periodo?: string;
+  total_confirmado?: string;
+  confianca?: number;
+  pendencias?: number;
+  categoria?: string | null;
+  periodicidade?: string | null;
+  regime_tva?: string | null;
+  draft_status?: string;
+};
+
 export type AdvisorRequest = {
   id: string;
   user_id: string;
@@ -182,6 +196,9 @@ export type AdvisorRequest = {
   status: AdvisorRequestStatus;
   admin_response: string | null;
   responded_at: string | null;
+  kind: AdvisorRequestKind;
+  draft_id: string | null;
+  context: AdvisorRequestContext | null;
   created_at: string;
   updated_at: string;
 };
