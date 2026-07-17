@@ -5,8 +5,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
+import type { Suggestion } from "@/lib/bank/reconcile";
 import { createClient } from "@/lib/supabase/client";
 import type { BankAccount, BankConnection, BankReconcileStatus, BankTransaction } from "@/lib/types";
+import { confirmReconciliationAction } from "./actions";
 
 const euro = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "EUR" });
 
@@ -48,11 +50,13 @@ export function BancoClient({
   connections,
   accounts,
   transactions,
+  suggestions,
   userId
 }: {
   connections: BankConnection[];
   accounts: BankAccount[];
   transactions: BankTransaction[];
+  suggestions: Suggestion[];
   userId: string;
 }) {
   const router = useRouter();
@@ -62,7 +66,23 @@ export function BancoClient({
   const [busy, setBusy] = useState(false);
 
   const accountName = useMemo(() => new Map(accounts.map((a) => [a.id, a.name])), [accounts]);
+  const suggestionByTx = useMemo(() => new Map(suggestions.map((s) => [s.transactionId, s])), [suggestions]);
   const pending = transactions.filter((t) => t.reconcile_status === "pending").length;
+
+  async function confirmReconcile(transactionId: string, documentId: string) {
+    setBusy(true);
+    try {
+      const r = await confirmReconciliationAction(transactionId, documentId);
+      if (r.error) {
+        showToast(r.error, "error");
+        return;
+      }
+      showToast("Recebimento conciliado e registrado no caixa.", "success");
+      router.refresh();
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function connectBank() {
     setBusy(true);
@@ -257,7 +277,18 @@ export function BancoClient({
                         {t.direction === "credit" ? "+" : "−"}{euro.format(Number(t.amount) || 0)}
                       </td>
                       <td className="px-4 py-2.5">
-                        <div className="flex flex-wrap justify-end gap-1.5">
+                        <div className="flex flex-wrap items-center justify-end gap-1.5">
+                          {t.reconcile_status === "pending" && suggestionByTx.get(t.id) ? (
+                            <button
+                              className="rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
+                              disabled={busy}
+                              onClick={() => { const s = suggestionByTx.get(t.id)!; void confirmReconcile(t.id, s.documentId); }}
+                              type="button"
+                              title={`Fatura ${suggestionByTx.get(t.id)!.numero ?? ""}`}
+                            >
+                              Conciliar com {suggestionByTx.get(t.id)!.numero ?? "fatura"}
+                            </button>
+                          ) : null}
                           {t.reconcile_status === "pending" ? (
                             <>
                               <button className="rounded-lg px-2 py-1 text-xs font-semibold text-slate-600 ring-1 ring-inset ring-slate-200 transition hover:bg-slate-50" onClick={() => void setTxStatus(t, "non_business")} type="button">
