@@ -166,6 +166,18 @@ export const supplierInvoiceSchema = z.object({
   status: z.enum(["a_payer", "payee", "a_verifier"], { message: "Escolha o status." })
 });
 
+// Livro de receitas — entrada manual (recibo sem fatura).
+export const manualReceiptSchema = z.object({
+  client_name: optionalText,
+  reference: optionalText,
+  date_encaissement: requiredText("Informe a data de pagamento."),
+  categorie: z.enum(["vente", "service_bic", "service_bnc"], { message: "Escolha o tipo de venda." }),
+  moyen: z.enum(["virement", "cheque", "especes", "cb", "stripe", "autre"], {
+    message: "Escolha o método de pagamento."
+  }),
+  montant: requiredPositiveDecimal("Informe um valor válido.")
+});
+
 export function formatSiret(value: string) {
   const digits = value.replace(/\D/g, "").slice(0, 14);
   return digits.replace(/(\d{3})(?=\d)/g, "$1 ").trim();

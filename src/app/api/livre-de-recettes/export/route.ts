@@ -37,10 +37,35 @@ export async function GET(request: NextRequest) {
     periodOptions(year, periodicite).find((option) => option.value === period) ??
     periodOptions(year, periodicite)[0];
 
-  const rows = await fetchRevenueBookRows(supabase, {
-    end: selectedPeriod.end,
-    start: selectedPeriod.start
-  });
+  // Livro = derivadas de faturas + entradas MANUAIS (registro precisa bater
+  // com o que a tela mostra).
+  const [derived, manualRes] = await Promise.all([
+    fetchRevenueBookRows(supabase, { end: selectedPeriod.end, start: selectedPeriod.start }),
+    supabase
+      .from("manual_receipts")
+      .select("id, client_name, reference, date_encaissement, categorie, moyen, montant")
+      .gte("date_encaissement", selectedPeriod.start)
+      .lte("date_encaissement", selectedPeriod.end)
+  ]);
+  const manualRows = ((manualRes.data ?? []) as Array<{
+    id: string;
+    client_name: string | null;
+    reference: string | null;
+    date_encaissement: string;
+    categorie: "vente" | "service_bic" | "service_bnc";
+    moyen: string;
+    montant: number;
+  }>).map((m) => ({
+    id: `manual-${m.id}`,
+    date: m.date_encaissement,
+    documentId: "",
+    numero: m.reference ?? "Manuel",
+    clientName: m.client_name ?? "—",
+    category: m.categorie,
+    montant: Number(m.montant) || 0,
+    moyen: m.moyen
+  }));
+  const rows = [...derived, ...manualRows].sort((a, b) => a.date.localeCompare(b.date));
   const totals = sumCategoryTotals(rows);
   const format = searchParams.get("format") ?? "csv";
 

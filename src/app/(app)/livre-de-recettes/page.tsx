@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { LivreDeRecettesClient } from "@/app/(app)/livre-de-recettes/recettes-client";
 import { fetchRevenueBookRows } from "@/lib/accounting-data";
 import { createClient } from "@/lib/supabase/server";
-import type { Profile } from "@/lib/types";
+import type { ManualReceipt, Profile } from "@/lib/types";
 
 export default async function LivreDeRecettesPage() {
   const supabase = createClient();
@@ -14,10 +14,18 @@ export default async function LivreDeRecettesPage() {
     redirect("/login");
   }
 
-  const [{ data: profile }, rows] = await Promise.all([
+  const [{ data: profile }, rows, manualRes] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", user.id).single(),
-    fetchRevenueBookRows(supabase)
+    fetchRevenueBookRows(supabase),
+    supabase.from("manual_receipts").select("*").order("date_encaissement", { ascending: false })
   ]);
 
-  return <LivreDeRecettesClient profile={profile as Profile | null} rows={rows} />;
+  return (
+    <LivreDeRecettesClient
+      manualReceipts={(manualRes.data ?? []) as ManualReceipt[]}
+      profile={profile as Profile | null}
+      rows={rows}
+      userId={user.id}
+    />
+  );
 }

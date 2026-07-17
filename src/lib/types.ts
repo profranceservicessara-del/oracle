@@ -171,6 +171,20 @@ export type DeclarationLine = {
   created_at: string;
 };
 
+// Livro de receitas — entrada manual (recibo sem fatura, registro contábil).
+export type ManualReceipt = {
+  id: string;
+  user_id: string;
+  client_name: string | null;
+  reference: string | null;
+  date_encaissement: string;
+  categorie: ActivityCategory;
+  moyen: PaymentMethod;
+  montant: number;
+  fichier_path: string | null;
+  created_at: string;
+};
+
 // Banco (Fase 5) — transações cruas NUNCA entram no caixa/URSSAF.
 export type BankReconcileStatus = "pending" | "suggested" | "confirmed" | "ignored" | "non_business";
 
