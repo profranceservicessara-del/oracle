@@ -66,6 +66,7 @@ const icons = {
   faturasRecebidas: (<svg {...s16}><path d="M22 12h-6l-2 3h-4l-2-3H2" /><path d="M5.5 5.5 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.5-6.5A2 2 0 0 0 16.8 4H7.2a2 2 0 0 0-1.7 1.5z" /></svg>),
   moedas: (<svg {...s16}><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18" /></svg>),
   receitasDespesas: (<svg {...s16}><path d="M17 3l4 4-4 4" /><path d="M21 7H7a4 4 0 0 0-4 4v1" /><path d="M7 21l-4-4 4-4" /><path d="M3 17h14a4 4 0 0 0 4-4v-1" /></svg>),
+  banco: (<svg {...s16}><path d="m3 9 9-6 9 6" /><path d="M4 9v11h16V9" /><path d="M8 20v-7M12 20v-7M16 20v-7" /><line x1="2" x2="22" y1="20" y2="20" /></svg>),
   urssaf: (<svg {...s16}><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z" /><path d="M13.5 11.5a2 2 0 1 0 0 3H10" /><path d="M9 13h4" /></svg>),
   declAux: (<svg {...s16}><rect height="18" rx="2" width="18" x="3" y="3" /><path d="M3 9h18M3 15h18M9 3v18M15 3v18" /></svg>),
   contrato: (<svg {...s16}><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z" /><path d="M9 13c1.5-1.5 3 1 4.5-.5" /><line x1="9" x2="15" y1="17" y2="17" /></svg>),
@@ -107,7 +108,7 @@ const nav: NavItem[] = [
     children: [
       { href: "/analise", label: "Análise", icon: icons.painel },
       { href: "/financeiro", label: "Fluxo de Caixa", icon: icons.receitasDespesas },
-      { href: "/banco", label: "Contas bancárias", icon: icons.receitasDespesas, premium: true },
+      { href: "/banco", label: "Contas bancárias", icon: icons.banco, premium: true },
       { href: "/urssaf", label: "Declaração de Urssaf", icon: icons.urssaf },
       { href: "/assistente", label: "Assistente de Declarações", icon: icons.conselheiro, premium: true },
       { href: "/declaracoes/auxiliares", label: "Declarações auxiliares", icon: icons.declAux },
@@ -131,6 +132,7 @@ const nav: NavItem[] = [
     icon: icons.contabilidade,
     children: [
       { href: "/documents", label: "Contabilidade", icon: icons.contabilidadeLeaf },
+      { href: "/livre-de-recettes", label: "Livros contábeis", icon: icons.declaracoes },
       { href: "/declaracoes/fiscais", label: "Declarações fiscais", icon: icons.declaracoes },
       { href: "/comprovantes", label: "Comprovantes", icon: icons.comprovantes },
       { href: "/facturation/fournisseurs", label: "Faturas recebidas", icon: icons.faturasRecebidas }

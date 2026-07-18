@@ -39,7 +39,18 @@ export async function POST() {
     "payments",
     "purchases",
     "sequences",
-    "audit_log"
+    "audit_log",
+    // Módulos adicionados depois do core (todas com coluna user_id + RLS):
+    "contract_templates",
+    "supplier_invoices",
+    "manual_receipts",
+    "advisor_requests",
+    "urssaf_declaration_drafts",
+    "urssaf_declaration_lines",
+    "bank_connections",
+    "bank_accounts",
+    "bank_transactions",
+    "bank_reconciliations"
   ];
 
   try {

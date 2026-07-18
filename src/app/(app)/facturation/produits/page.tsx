@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { BillingNav } from "@/components/app/billing-nav";
 import { createClient } from "@/lib/supabase/server";
 import { categoryLabels, type CatalogItem } from "@/lib/types";
 
@@ -29,8 +28,6 @@ export default async function ProduitsPage() {
   return (
     <main className="mx-auto max-w-6xl px-4 py-8">
       <div className="flex flex-col gap-6 lg:flex-row">
-        <BillingNav active="produits" />
-
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h1 className="text-2xl font-semibold text-ink">Produtos e serviços</h1>

@@ -90,10 +90,9 @@ export default async function FacturationPage() {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h1 className="text-2xl font-semibold text-ink">Faturas</h1>
             <div className="flex items-center gap-2">
-              {/* TODO: Connect exercise selector to real fiscal years. */}
-              <button className={secondaryButton} type="button">
-                Todos os exercícios
-              </button>
+              <Link className={secondaryButton} href="/documentos?type=facture">
+                Ver todas
+              </Link>
               <Link className={primaryButton} href="/documentos/novo?type=facture">
                 + Novo
               </Link>
@@ -107,8 +106,9 @@ export default async function FacturationPage() {
                 {euro.format(totalFacture)} <span className="text-sm font-normal text-muted">TTC</span>
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              {/* TODO: Connect search/filter to real invoice data source. */}
+            {/* Busca real: encaminha para /documentos (filtros completos). */}
+            <form action="/documentos" className="flex items-center gap-2" method="get">
+              <input name="type" type="hidden" value="facture" />
               <div className="relative">
                 <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
                   <svg fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeWidth="2" viewBox="0 0 24 24" width="16">
@@ -116,12 +116,12 @@ export default async function FacturationPage() {
                     <path d="m20 20-3-3" />
                   </svg>
                 </span>
-                <Input aria-label="Buscar fatura" className="w-full pl-9 sm:w-64" placeholder="Buscar..." type="search" />
+                <Input aria-label="Buscar fatura" className="w-full pl-9 sm:w-64" name="q" placeholder="Buscar..." type="search" />
               </div>
-              <button className={secondaryButton} type="button">
+              <button className={secondaryButton} type="submit">
                 Filtrar
               </button>
-            </div>
+            </form>
           </div>
 
           <div className="mt-4 grid gap-4 sm:grid-cols-3">

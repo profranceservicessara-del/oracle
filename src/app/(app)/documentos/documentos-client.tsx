@@ -57,9 +57,14 @@ export function DocumentosClient({
       : Object.keys(documentStatusLabels).includes(searchParams.get("status") ?? "")
         ? (searchParams.get("status") as DocumentStatus)
         : "todos";
-  const [typeFilter, setTypeFilter] = useState<TypeFilter>("todos");
+  const initialType =
+    searchParams.get("type") === "facture" || searchParams.get("type") === "devis"
+      ? (searchParams.get("type") as TypeFilter)
+      : "todos";
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>(initialType);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>(initialStatus);
   const [clientFilter, setClientFilter] = useState("todos");
+  const [search, setSearch] = useState(searchParams.get("q") ?? "");
   const [periodStart, setPeriodStart] = useState("");
   const [periodEnd, setPeriodEnd] = useState("");
   const [newOpen, setNewOpen] = useState(false);
@@ -97,6 +102,7 @@ export function DocumentosClient({
   );
 
   const filteredDocuments = useMemo(() => {
+    const term = search.trim().toLowerCase();
     return initialDocuments.filter((document) => {
       const matchesType = typeFilter === "todos" || document.type === typeFilter;
       const matchesStatus =
@@ -106,10 +112,13 @@ export function DocumentosClient({
       const date = document.date_emission ?? document.created_at.slice(0, 10);
       const matchesStart = !periodStart || date >= periodStart;
       const matchesEnd = !periodEnd || date <= periodEnd;
+      const client = document.client_id ? clientsById.get(document.client_id) : undefined;
+      const haystack = `${document.numero ?? ""} ${client ? clientName(client) : ""}`.toLowerCase();
+      const matchesSearch = !term || haystack.includes(term);
 
-      return matchesType && matchesStatus && matchesClient && matchesStart && matchesEnd;
+      return matchesType && matchesStatus && matchesClient && matchesStart && matchesEnd && matchesSearch;
     });
-  }, [clientFilter, initialDocuments, periodEnd, periodStart, statusFilter, typeFilter]);
+  }, [clientFilter, clientsById, initialDocuments, periodEnd, periodStart, search, statusFilter, typeFilter]);
 
   const columns: DataTableColumn<Document>[] = [
     {
@@ -205,7 +214,17 @@ export function DocumentosClient({
         </div>
       </div>
 
-      <section className="mb-4 grid gap-3 rounded-lg border border-line bg-white p-4 sm:grid-cols-5">
+      <section className="mb-4 grid gap-3 rounded-lg border border-line bg-white p-4 sm:grid-cols-3 lg:grid-cols-6">
+        <label className="text-sm font-medium text-ink">
+          Buscar
+          <Input
+            className="mt-2"
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Número ou cliente"
+            type="search"
+            value={search}
+          />
+        </label>
         <label className="text-sm font-medium text-ink">
           Tipo
           <Select

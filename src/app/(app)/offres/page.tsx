@@ -89,11 +89,8 @@ export default async function OffresPage() {
           <span className="font-semibold text-emerald-600">Trustpilot 4.8/5</span> · +13 000 avaliações
         </p>
 
-        {/* TODO: Connect billing period toggle (Mensuel/Annuel) to subscription pricing. */}
-        <div className="mt-6 inline-flex items-center gap-1 rounded-2xl bg-slate-100 p-1 text-sm font-semibold">
-          <span className="rounded-xl px-4 py-2 text-slate-500">Mensal</span>
-          <span className="rounded-xl bg-white px-4 py-2 text-ink shadow-sm">Anual</span>
-          <span className="ml-1 rounded-full bg-[#002D72]/10 px-2.5 py-0.5 text-xs font-semibold text-[#002D72]">Até -48€</span>
+        <div className="mt-6 inline-flex items-center rounded-full bg-slate-100 px-4 py-1.5 text-sm font-semibold text-slate-600">
+          Cobrança mensal · cancele quando quiser
         </div>
       </div>
 

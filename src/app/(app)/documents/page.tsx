@@ -42,13 +42,9 @@ export default async function DocumentsPage() {
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h1 className="text-2xl font-semibold text-ink">Contabilidade</h1>
-            {/* TODO: Connect exercise selector to real fiscal years. */}
-            <button className={secondaryButton} type="button">
+            <span className="inline-flex h-11 items-center justify-center rounded-full bg-white px-4 text-sm font-semibold text-muted shadow-sm ring-1 ring-black/5">
               Exercício {exercice}
-              <svg aria-hidden="true" fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeWidth="2" viewBox="0 0 24 24" width="16">
-                <path d="m6 9 6 6 6-6" />
-              </svg>
-            </button>
+            </span>
           </div>
 
           <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-rose-50 p-5 ring-1 ring-rose-200">
