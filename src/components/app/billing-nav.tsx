@@ -3,7 +3,8 @@ import Link from "next/link";
 const items = [
   { key: "factures", label: "Faturas", href: "/facturation" },
   { key: "recurrentes", label: "Faturas recorrentes", href: "/facturation/recurrentes" },
-  { key: "fournisseurs", label: "Faturas recebidas", href: "/facturation/fournisseurs" }
+  { key: "fournisseurs", label: "Faturas recebidas", href: "/facturation/fournisseurs" },
+  { key: "aparencia", label: "Personalizar fatura", href: "/configuracoes/aparencia" }
 ];
 
 export function BillingNav({ active }: { active: string }) {
