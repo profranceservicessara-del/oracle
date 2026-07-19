@@ -113,11 +113,13 @@ export type CrmDeal = {
 
 export type CrmAppointmentColor = "blue" | "green" | "purple" | "orange" | "rose";
 export type CrmAppointmentStatus = "confirmed" | "tentative" | "canceled";
+export type CrmAppointmentKind = "appointment" | "event";
 
 export type CrmAppointment = {
   id: string;
   company_id: string;
   client_id: string | null;
+  kind: CrmAppointmentKind;
   title: string;
   service: string | null;
   color: CrmAppointmentColor;
@@ -125,6 +127,8 @@ export type CrmAppointment = {
   location: string | null;
   note: string | null;
   price_option: string | null;
+  max_participants: number | null;
+  prep_minutes: number;
   start_at: string;
   end_at: string;
   created_at: string;

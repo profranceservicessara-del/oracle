@@ -91,10 +91,9 @@ const nav: NavItem[] = [
     icon: icons.gestao,
     children: [
       { href: "/analise", label: "Análise", icon: icons.painel },
+      { href: "/crm/agenda", label: "Agenda", icon: icons.agenda },
       { href: "/financeiro", label: "Fluxo de Caixa", icon: icons.receitasDespesas },
       { href: "/banco", label: "Contas bancárias", icon: icons.banco, premium: true },
-      { href: "/assistente", label: "Assistente de Declarações", icon: icons.conselheiro, premium: true },
-      { href: "/declaracoes/auxiliares", label: "Declarações auxiliares", icon: icons.declAux },
       { href: "/modelos-contrato", label: "Modelos de contrato", icon: icons.contrato },
       { href: "/conselheiro", label: "Meu Conselheiro", icon: icons.conselheiro }
     ]
@@ -111,7 +110,6 @@ const nav: NavItem[] = [
       { href: "/catalogo", label: "Catálogo", icon: icons.catalogoLeaf },
       { href: "/crm", label: "Comercial", icon: icons.crm },
       { href: "/crm/pipeline", label: "Pipeline", icon: icons.pipeline },
-      { href: "/crm/agenda", label: "Agenda", icon: icons.agenda },
       { href: "/clientes", label: "Clientes", icon: icons.clientesLeaf }
     ]
   },
@@ -133,6 +131,8 @@ const nav: NavItem[] = [
       { href: "/documents", label: "Contabilidade", icon: icons.contabilidadeLeaf },
       { href: "/livre-de-recettes", label: "Livros contábeis", icon: icons.declaracoes },
       { href: "/urssaf", label: "Declaração da Urssaf", icon: icons.urssaf },
+      { href: "/assistente", label: "Assistente de Declarações", icon: icons.conselheiro, premium: true },
+      { href: "/declaracoes/auxiliares", label: "Declarações auxiliares", icon: icons.declAux },
       { href: "/declaracoes/fiscais", label: "Declarações fiscais", icon: icons.declaracoes },
       { href: "/comprovantes", label: "Comprovantes", icon: icons.comprovantes },
       { href: "/facturation/fournisseurs", label: "Faturas recebidas", icon: icons.faturasRecebidas }

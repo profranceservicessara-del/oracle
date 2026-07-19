@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useToast } from "@/components/ui/toast";
 import { createClient } from "@/lib/supabase/client";
 import type { AppointmentWithClient, CompanyTask } from "@/lib/crm/queries";
-import type { CrmAppointmentColor } from "@/lib/crm/types";
+import type { CrmAppointmentColor, CrmAppointmentKind } from "@/lib/crm/types";
 import type { Locale } from "@/lib/i18n/dictionaries";
 
 // ---------------------------------------------------------------------------
@@ -107,7 +107,8 @@ export function AgendaClient({
   const [appointments, setAppointments] = useState(initialAppointments);
   const [anchor, setAnchor] = useState(() => startOfDay(new Date()));
   const [view, setView] = useState<View>("month");
-  const [creating, setCreating] = useState<{ date: string } | null>(null);
+  const [creating, setCreating] = useState<{ date: string; mode: CrmAppointmentKind } | null>(null);
+  const [newMenuOpen, setNewMenuOpen] = useState(false);
   const [detail, setDetail] = useState<AppointmentWithClient | null>(null);
   const today = startOfDay(new Date());
 
@@ -207,14 +208,40 @@ export function AgendaClient({
               </button>
             ))}
           </div>
-          <button
-            className="inline-flex h-9 items-center gap-1.5 rounded-full bg-brand px-4 text-sm font-semibold text-white shadow-sm ring-1 ring-[#002D72]/20 transition hover:bg-[#003a94] active:bg-[#001F4D]"
-            onClick={() => setCreating({ date: isoDate(anchor) })}
-            type="button"
-          >
-            <svg fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeWidth="2" viewBox="0 0 24 24" width="16"><path d="M12 5v14M5 12h14" /></svg>
-            Novo compromisso
-          </button>
+          <div className="relative">
+            <button
+              className="inline-flex h-9 items-center gap-1.5 rounded-full bg-brand px-4 text-sm font-semibold text-white shadow-sm ring-1 ring-[#002D72]/20 transition hover:bg-[#003a94] active:bg-[#001F4D]"
+              onClick={() => setNewMenuOpen((v) => !v)}
+              type="button"
+            >
+              <svg fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeWidth="2" viewBox="0 0 24 24" width="16"><path d="M12 5v14M5 12h14" /></svg>
+              Novo
+              <svg className={newMenuOpen ? "rotate-180" : ""} fill="none" height="14" stroke="currentColor" strokeLinecap="round" strokeWidth="2" viewBox="0 0 24 24" width="14"><path d="m6 9 6 6 6-6" /></svg>
+            </button>
+            {newMenuOpen ? (
+              <>
+                <button aria-hidden className="fixed inset-0 z-30 cursor-default" onClick={() => setNewMenuOpen(false)} tabIndex={-1} type="button" />
+                <div className="absolute right-0 z-40 mt-1 w-56 overflow-hidden rounded-xl bg-white p-1 shadow-xl ring-1 ring-black/10">
+                  <button
+                    className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-left text-sm text-ink transition hover:bg-slate-50"
+                    onClick={() => { setCreating({ date: isoDate(anchor), mode: "appointment" }); setNewMenuOpen(false); }}
+                    type="button"
+                  >
+                    <svg className="shrink-0 text-slate-400" fill="none" height="18" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24" width="18"><rect height="18" rx="2" width="18" x="3" y="4" /><path d="M16 2v4M8 2v4M3 10h18" /></svg>
+                    <span><span className="block font-medium">Compromisso</span><span className="block text-xs text-muted">Com um cliente</span></span>
+                  </button>
+                  <button
+                    className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-left text-sm text-ink transition hover:bg-slate-50"
+                    onClick={() => { setCreating({ date: isoDate(anchor), mode: "event" }); setNewMenuOpen(false); }}
+                    type="button"
+                  >
+                    <svg className="shrink-0 text-slate-400" fill="none" height="18" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24" width="18"><path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" /><circle cx="10" cy="7" r="3" /><path d="M21 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+                    <span><span className="block font-medium">Evento</span><span className="block text-xs text-muted">Em grupo, com vagas</span></span>
+                  </button>
+                </div>
+              </>
+            ) : null}
+          </div>
         </div>
       </div>
 
@@ -244,7 +271,7 @@ export function AgendaClient({
             <MonthView
               anchor={anchor}
               byDay={byDay}
-              onNew={(date) => setCreating({ date })}
+              onNew={(date) => setCreating({ date, mode: "appointment" })}
               onOpen={setDetail}
               tasksByDay={tasksByDay}
               today={today}
@@ -256,7 +283,7 @@ export function AgendaClient({
               anchor={anchor}
               byDay={byDay}
               days={view === "day" ? 1 : 7}
-              onNew={(date) => setCreating({ date })}
+              onNew={(date) => setCreating({ date, mode: "appointment" })}
               onOpen={setDetail}
               today={today}
             />
@@ -269,6 +296,7 @@ export function AgendaClient({
           clients={clients}
           companyId={companyId}
           initialDate={creating.date}
+          mode={creating.mode}
           onClose={() => setCreating(null)}
           onCreated={handleCreated}
           supabase={supabase}
@@ -558,9 +586,10 @@ function ListView({
   );
 }
 
-// --- Modal novo compromisso ------------------------------------------------
+// --- Modal novo compromisso / evento ---------------------------------------
 function AppointmentModal({
   companyId,
+  mode,
   clients,
   initialDate,
   supabase,
@@ -568,6 +597,7 @@ function AppointmentModal({
   onCreated
 }: {
   companyId: string;
+  mode: CrmAppointmentKind;
   clients: ClientOption[];
   initialDate: string;
   supabase: ReturnType<typeof createClient>;
@@ -575,15 +605,19 @@ function AppointmentModal({
   onCreated: (appt: AppointmentWithClient) => void;
 }) {
   const { showToast } = useToast();
+  const isEvent = mode === "event";
+  const defaultService = isEvent ? SERVICES[2] ?? SERVICES[0] : SERVICES[0];
   const [clientId, setClientId] = useState<string>("");
-  const [serviceLabel, setServiceLabel] = useState<string>(SERVICES[0]?.label ?? "");
-  const [color, setColor] = useState<CrmAppointmentColor>(SERVICES[0]?.color ?? "blue");
+  const [serviceLabel, setServiceLabel] = useState<string>(defaultService?.label ?? "");
+  const [color, setColor] = useState<CrmAppointmentColor>(defaultService?.color ?? "blue");
   const [title, setTitle] = useState("");
   const [date, setDate] = useState(initialDate);
   const [startTime, setStartTime] = useState("10:00");
-  const [endTime, setEndTime] = useState("11:00");
+  const [endTime, setEndTime] = useState(isEvent ? "11:00" : "11:00");
   const [location, setLocation] = useState("");
   const [note, setNote] = useState("");
+  const [maxParticipants, setMaxParticipants] = useState("");
+  const [prepMinutes, setPrepMinutes] = useState("0");
   const [saving, setSaving] = useState(false);
 
   function pickService(label: string) {
@@ -617,12 +651,15 @@ function AppointmentModal({
       .from("crm_appointments")
       .insert({
         company_id: companyId,
-        client_id: clientId || null,
+        kind: mode,
+        client_id: isEvent ? null : clientId || null,
         title: title.trim(),
         service: serviceLabel || null,
         color,
         location: location.trim() || null,
         note: note.trim() || null,
+        max_participants: isEvent && maxParticipants ? Number(maxParticipants) : null,
+        prep_minutes: isEvent ? Number(prepMinutes) || 0 : 0,
         start_at: start.toISOString(),
         end_at: end.toISOString()
       })
@@ -630,10 +667,10 @@ function AppointmentModal({
       .single();
     setSaving(false);
     if (error || !data) {
-      showToast("Não foi possível agendar o compromisso.", "error");
+      showToast(isEvent ? "Não foi possível criar o evento." : "Não foi possível agendar o compromisso.", "error");
       return;
     }
-    showToast("Compromisso agendado.", "success");
+    showToast(isEvent ? "Evento criado." : "Compromisso agendado.", "success");
     onCreated(data as AppointmentWithClient);
   }
 
@@ -642,21 +679,23 @@ function AppointmentModal({
       <button aria-label="Fechar" className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm" onClick={onClose} type="button" />
       <div className="relative flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
         <header className="flex items-center justify-between border-b border-line px-5 py-4">
-          <h2 className="text-lg font-bold text-ink">Novo compromisso</h2>
+          <h2 className="text-lg font-bold text-ink">{isEvent ? "Novo evento" : "Novo compromisso"}</h2>
           <button aria-label="Fechar" className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 ring-1 ring-black/5 transition hover:bg-slate-50 hover:text-ink" onClick={onClose} type="button">
             <svg fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeWidth="2" viewBox="0 0 24 24" width="16"><path d="M18 6 6 18M6 6l12 12" /></svg>
           </button>
         </header>
 
         <div className="flex-1 space-y-4 overflow-y-auto px-5 py-5">
-          <Field label="Cliente">
-            <select className={inputCls} onChange={(event) => setClientId(event.target.value)} value={clientId}>
-              <option value="">Sem cliente</option>
-              {clients.map((client) => (
-                <option key={client.id} value={client.id}>{client.name}</option>
-              ))}
-            </select>
-          </Field>
+          {!isEvent ? (
+            <Field label="Cliente">
+              <select className={inputCls} onChange={(event) => setClientId(event.target.value)} value={clientId}>
+                <option value="">Sem cliente</option>
+                {clients.map((client) => (
+                  <option key={client.id} value={client.id}>{client.name}</option>
+                ))}
+              </select>
+            </Field>
+          ) : null}
 
           <Field label="Serviço">
             <select className={inputCls} onChange={(event) => pickService(event.target.value)} value={serviceLabel}>
@@ -666,8 +705,8 @@ function AppointmentModal({
             </select>
           </Field>
 
-          <Field label="Título do compromisso">
-            <input className={inputCls} onChange={(event) => setTitle(event.target.value)} placeholder="Ex.: Reunião de descoberta" value={title} />
+          <Field label={isEvent ? "Título do evento" : "Título do compromisso"}>
+            <input className={inputCls} onChange={(event) => setTitle(event.target.value)} placeholder={isEvent ? "Ex.: Workshop de boas-vindas" : "Ex.: Reunião de descoberta"} value={title} />
           </Field>
 
           <div className="grid grid-cols-3 gap-3">
@@ -681,6 +720,21 @@ function AppointmentModal({
               <input className={inputCls} onChange={(event) => setEndTime(event.target.value)} type="time" value={endTime} />
             </Field>
           </div>
+
+          {isEvent ? (
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Máx. de participantes">
+                <input className={inputCls} min="1" onChange={(event) => setMaxParticipants(event.target.value)} placeholder="Ilimitado" type="number" value={maxParticipants} />
+              </Field>
+              <Field label="Tempo de preparação">
+                <select className={inputCls} onChange={(event) => setPrepMinutes(event.target.value)} value={prepMinutes}>
+                  {["0", "5", "10", "15", "30", "60"].map((m) => (
+                    <option key={m} value={m}>{m === "0" ? "Nenhum" : `${m} minutos`}</option>
+                  ))}
+                </select>
+              </Field>
+            </div>
+          ) : null}
 
           <Field label="Cor">
             <div className="flex gap-2">
@@ -700,7 +754,7 @@ function AppointmentModal({
             <input className={inputCls} onChange={(event) => setLocation(event.target.value)} placeholder="Onde? (endereço, link, telefone…)" value={location} />
           </Field>
 
-          <Field label="Nota ao cliente">
+          <Field label={isEvent ? "Descrição" : "Nota ao cliente"}>
             <textarea className={`${inputCls} min-h-[72px] resize-y`} maxLength={280} onChange={(event) => setNote(event.target.value)} placeholder="Adicionar nota (opcional)" value={note} />
           </Field>
         </div>
@@ -715,7 +769,7 @@ function AppointmentModal({
             onClick={() => void save()}
             type="button"
           >
-            {saving ? "Agendando…" : "Agendar compromisso"}
+            {saving ? "Salvando…" : isEvent ? "Criar evento" : "Agendar compromisso"}
           </button>
         </footer>
       </div>
@@ -755,6 +809,9 @@ function DetailModal({
                   <Link className="font-medium text-brand hover:underline" href={`/crm/${appointment.client_id}`}>{appointment.crm_clients.name}</Link>
                 ) : appointment.crm_clients.name}
               </Row>
+            ) : null}
+            {appointment.kind === "event" ? (
+              <Row label="Vagas">{appointment.max_participants ? `Até ${appointment.max_participants} participantes` : "Ilimitadas"}</Row>
             ) : null}
             {appointment.location ? <Row label="Local">{appointment.location}</Row> : null}
             {appointment.note ? <Row label="Nota">{appointment.note}</Row> : null}
