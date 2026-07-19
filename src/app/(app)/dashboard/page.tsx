@@ -347,6 +347,21 @@ export default async function DashboardPage() {
         </div>
       </section>
 
+      <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
+        <div className="mb-4">
+          <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Faturamento mensal recebido</p>
+          <h2 className="mt-1 text-xl font-medium text-ink">12 meses de {currentYear}</h2>
+        </div>
+        {monthlyValues.some((value) => value > 0) ? (
+          monthlyChart(monthlyValues)
+        ) : (
+          <div className="flex h-28 flex-col items-center justify-center gap-1 rounded-xl bg-slate-50 text-center ring-1 ring-black/5">
+            <p className="text-sm font-medium text-slate-500">Sem recebimentos registrados em {currentYear}</p>
+            <p className="text-xs text-slate-400">O gráfico aparece assim que houver receita lançada.</p>
+          </div>
+        )}
+      </section>
+
       <OnboardingCard email={user.email ?? ""} initialProfile={typedProfile} userId={user.id} />
 
       <section className="space-y-4">
@@ -465,21 +480,6 @@ export default async function DashboardPage() {
             )}
           </div>
         </div>
-      </section>
-
-      <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
-        <div className="mb-4">
-          <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Faturamento mensal recebido</p>
-          <h2 className="mt-1 text-xl font-medium text-ink">12 meses de {currentYear}</h2>
-        </div>
-        {monthlyValues.some((value) => value > 0) ? (
-          monthlyChart(monthlyValues)
-        ) : (
-          <div className="flex h-28 flex-col items-center justify-center gap-1 rounded-xl bg-slate-50 text-center ring-1 ring-black/5">
-            <p className="text-sm font-medium text-slate-500">Sem recebimentos registrados em {currentYear}</p>
-            <p className="text-xs text-slate-400">O gráfico aparece assim que houver receita lançada.</p>
-          </div>
-        )}
       </section>
 
       <div className="space-y-4 pt-2">
