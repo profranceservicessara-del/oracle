@@ -19,31 +19,80 @@ type Billing = {
   stripe_customer_id: string | null;
 };
 
-const plans: Array<{
-  key: PlanTier;
+type PlanCard = {
+  key: "pro" | "premium" | "business";
+  badge: { label: string; className: string };
   name: string;
-  price: string;
   tagline: string;
-  features: string[];
+  monthly: number;
+  annual: number;
   recommended: boolean;
-}> = [
+  external?: boolean;
+  features: string[];
+};
+
+// Mesma identidade da página /offres. Start e Mestre são compráveis via Stripe
+// (checkout keys pro/premium). Business abre a página completa de planos.
+const plans: PlanCard[] = [
   {
     key: "pro",
-    name: "Pro",
-    price: "9 €",
-    tagline: "Mais popular",
-    features: ["Faturas e orçamentos ilimitados", "CRM + agenda", "Lembretes automáticos", "Multi-moeda"],
-    recommended: true
+    badge: { label: "Start", className: "bg-brand text-white" },
+    name: "Para começar",
+    tagline: "Dê destaque ao seu negócio.",
+    monthly: 11,
+    annual: 9,
+    recommended: false,
+    features: [
+      "Faturas e orçamentos",
+      "Lembrete: Urssaf, impostos e CFE",
+      "Personalização de documentos",
+      "Atendimento ao cliente"
+    ]
   },
   {
     key: "premium",
-    name: "Premium",
-    price: "19 €",
-    tagline: "Para escalar",
-    features: ["Tudo do Pro", "Usuários ilimitados", "Integrações", "Suporte prioritário"],
-    recommended: false
+    badge: { label: "Pro", className: "bg-amber-400 text-ink" },
+    name: "Mestre",
+    tagline: "Ambiente completo e integrado.",
+    monthly: 19,
+    annual: 15,
+    recommended: true,
+    features: [
+      "Tudo da oferta Start",
+      "Livro de receitas",
+      "Personalização avançada de documentos",
+      "Declaração de transferência para o Urssaf",
+      "Modelos de contrato"
+    ]
+  },
+  {
+    key: "business",
+    badge: { label: "Business", className: "bg-fuchsia-500 text-white" },
+    name: "Indo além",
+    tagline: "Sem limites para crescer.",
+    monthly: 39,
+    annual: 33,
+    recommended: false,
+    external: true,
+    features: ["Tudo da oferta Pro", "Gestão de estoque", "Cobrança automática recorrente", "Atendimento prioritário"]
   }
 ];
+
+const euro = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 });
+
+function planSavings(monthly: number, annual: number): number {
+  return Math.round((1 - annual / monthly) * 100);
+}
+
+function PlanBadge({ label, className }: { label: string; className: string }) {
+  return (
+    <span
+      className={`inline-flex -skew-x-12 items-center rounded-md px-2.5 py-1 text-[11px] font-black uppercase italic tracking-wide shadow-sm ${className}`}
+    >
+      <span className="skew-x-12">{label}</span>
+    </span>
+  );
+}
 
 function formatDate(value: string | null): string | null {
   if (!value) return null;
@@ -77,6 +126,7 @@ export default function PagamentosPage() {
   const [pending, setPending] = useState<string | null>(null);
   const [invoices, setInvoices] = useState<BillingInvoice[]>([]);
   const [invoicesState, setInvoicesState] = useState<"loading" | "ok" | "empty" | "no-customer" | "error">("loading");
+  const [period, setPeriod] = useState<"mensal" | "anual">("anual");
 
   const load = useCallback(async () => {
     const supabase = createClient();
@@ -236,42 +286,89 @@ export default function PagamentosPage() {
 
       {/* Planos */}
       <section className="mb-6 scroll-mt-6" id="planos">
-        <div className="mb-4">
-          <h2 className="text-base font-semibold text-ink">{active ? "Alterar plano" : "Escolha o seu plano"}</h2>
-          <p className="mt-1 text-sm text-muted">Cobrança mensal segura via Stripe. Cancele quando quiser.</p>
+        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 className="text-base font-semibold text-ink">{active ? "Alterar plano" : "Escolha o seu plano"}</h2>
+            <p className="mt-1 text-sm text-muted">
+              Cobrança segura via Stripe.{" "}
+              <Link className="font-medium text-brand hover:underline" href="/offres">
+                Ver todos os planos
+              </Link>
+              .
+            </p>
+          </div>
+          {/* Toggle Mensal / Anual */}
+          <div className="inline-flex items-center rounded-full bg-slate-100 p-1 text-sm font-semibold">
+            {(["mensal", "anual"] as const).map((option) => (
+              <button
+                className={`rounded-full px-4 py-1.5 capitalize transition ${
+                  period === option ? "bg-brand text-white shadow-sm" : "text-slate-500 hover:text-ink"
+                }`}
+                key={option}
+                onClick={() => setPeriod(option)}
+                type="button"
+              >
+                {option}
+                {option === "anual" ? <span className="ml-1 text-xs font-bold text-emerald-500">-35%</span> : null}
+              </button>
+            ))}
+          </div>
         </div>
         <div className="grid gap-4 sm:grid-cols-3">
           {plans.map((plan) => {
             const isCurrent = active && tier === plan.key;
+            const price = period === "anual" ? plan.annual : plan.monthly;
+            const showDiscount = period === "anual" && plan.monthly > plan.annual;
             return (
               <div
                 className={`relative flex flex-col rounded-2xl bg-white p-5 shadow-sm transition ${
-                  plan.recommended ? "ring-2 ring-[#1D4ED8]" : "ring-1 ring-black/5"
+                  plan.recommended ? "ring-2 ring-brand" : "ring-1 ring-black/5"
                 }`}
                 key={plan.key}
               >
                 {plan.recommended ? (
-                  <span className="absolute -top-2.5 left-5 rounded-full bg-[#1D4ED8] px-2.5 py-0.5 text-[11px] font-semibold text-white shadow-sm">
-                    Recomendado
+                  <span className="absolute -top-2.5 right-5 rounded-full bg-ink px-2.5 py-0.5 text-[11px] font-semibold text-white shadow-sm">
+                    Mais popular
                   </span>
                 ) : null}
-                <p className="text-sm font-semibold text-ink">{plan.name}</p>
-                <p className="mt-0.5 text-xs text-muted">{plan.tagline}</p>
-                <p className="mt-3">
-                  <span className="text-2xl font-bold text-ink">{plan.price}</span>
-                  <span className="text-sm text-muted"> /mês</span>
-                </p>
+                <div className="flex min-h-[1.75rem] items-center">
+                  <PlanBadge className={plan.badge.className} label={plan.badge.label} />
+                </div>
+                <p className="mt-2.5 text-base font-bold text-ink">{plan.name}</p>
+                <p className="mt-0.5 min-h-[2.5rem] text-xs leading-5 text-muted">{plan.tagline}</p>
+                <div className="mt-2 flex min-h-[3.25rem] flex-col justify-end">
+                  {showDiscount ? (
+                    <p className="flex items-center gap-1.5 text-xs">
+                      <span className="rounded bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                        -{planSavings(plan.monthly, plan.annual)}%
+                      </span>
+                      <span className="text-slate-400 line-through">{euro.format(plan.monthly)} €</span>
+                    </p>
+                  ) : null}
+                  <p>
+                    <span className="text-2xl font-bold tabular-nums text-ink">{euro.format(price)} €</span>
+                    <span className="text-sm text-muted"> /mês</span>
+                  </p>
+                  {period === "anual" ? <p className="text-[11px] text-muted">cobrado anualmente</p> : null}
+                </div>
                 <ul className="mt-4 flex-1 space-y-2 text-sm text-slate-600">
                   {plan.features.map((feature) => (
                     <li className="flex items-start gap-2" key={feature}>
-                      <svg className="mt-0.5 shrink-0 text-[#1D4ED8]" fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" width="16">
+                      <svg className="mt-0.5 shrink-0 text-brand" fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" width="16">
                         <path d="M20 6 9 17l-5-5" />
                       </svg>
                       {feature}
                     </li>
                   ))}
                 </ul>
-                {isCurrent ? (
+                {plan.external ? (
+                  <Link
+                    className="mt-5 inline-flex h-11 w-full items-center justify-center rounded-full bg-white px-4 text-sm font-semibold text-ink shadow-sm ring-1 ring-black/5 transition hover:bg-slate-50"
+                    href="/offres"
+                  >
+                    Ver planos
+                  </Link>
+                ) : isCurrent ? (
                   <Button className="mt-5 w-full" disabled type="button" variant="secondary">
                     Plano atual
                   </Button>
@@ -279,7 +376,7 @@ export default function PagamentosPage() {
                   <Button
                     className="mt-5 w-full"
                     disabled={pending !== null}
-                    onClick={() => (active ? manageSubscription() : choosePlan(plan.key))}
+                    onClick={() => (active ? manageSubscription() : choosePlan(plan.key as PlanTier))}
                     type="button"
                     variant={plan.recommended ? "primary" : "secondary"}
                   >
