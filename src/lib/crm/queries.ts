@@ -12,7 +12,8 @@ import type {
   CrmDocument,
   CrmDossier,
   CrmNote,
-  CrmTask
+  CrmTask,
+  CrmTimeEntry
 } from "@/lib/crm/types";
 
 // Lazy bootstrap: ensure the signed-in user has a CRM company (+ owner membership
@@ -164,6 +165,52 @@ export async function listMyWorkTasks(companyId: string, assigneeId?: string): P
     const project = Array.isArray(task.crm_projects) ? task.crm_projects[0] ?? null : task.crm_projects;
     return { ...task, crm_projects: project };
   });
+}
+
+// Gestão do tempo — lançamentos de horas com nomes de projeto/cliente/tarefa
+// embutidos. Filtra por período visível (from/to) e opcionalmente usuário.
+export type TimeEntryRow = CrmTimeEntry & {
+  crm_projects: { name: string } | null;
+  crm_clients: { name: string } | null;
+  crm_tasks: { title: string } | null;
+};
+
+type TimeEntryRange = { from?: string; to?: string; userId?: string; projectId?: string };
+
+export async function listTimeEntries(companyId: string, range: TimeEntryRange = {}): Promise<TimeEntryRow[]> {
+  const supabase = createClient();
+  let query = supabase
+    .from("crm_time_entries")
+    .select("*, crm_projects(name), crm_clients(name), crm_tasks(title)")
+    .eq("company_id", companyId);
+  if (range.from) query = query.gte("entry_date", range.from);
+  if (range.to) query = query.lte("entry_date", range.to);
+  if (range.userId) query = query.eq("user_id", range.userId);
+  if (range.projectId) query = query.eq("project_id", range.projectId);
+  const { data } = await query.order("entry_date", { ascending: false }).order("created_at", { ascending: false });
+  return ((data ?? []) as unknown as Array<Record<string, unknown>>).map((r) => ({
+    ...(r as TimeEntryRow),
+    crm_projects: normalizeOne(r.crm_projects) as { name: string } | null,
+    crm_clients: normalizeOne(r.crm_clients) as { name: string } | null,
+    crm_tasks: normalizeOne(r.crm_tasks) as { title: string } | null
+  }));
+}
+
+function normalizeOne(v: unknown): Record<string, unknown> | null {
+  if (Array.isArray(v)) return (v[0] as Record<string, unknown>) ?? null;
+  return (v as Record<string, unknown>) ?? null;
+}
+
+// Membros da empresa (recursos do planejador). Nome via profiles quando o RLS
+// permite (dono vê o próprio); fallback para rótulo genérico.
+export type CompanyMember = { userId: string; name: string };
+
+export async function listCompanyMembers(companyId: string, currentUserId: string, currentUserName: string): Promise<CompanyMember[]> {
+  const supabase = createClient();
+  const { data } = await supabase.from("crm_company_members").select("user_id").eq("company_id", companyId);
+  const ids = ((data ?? []) as Array<{ user_id: string }>).map((m) => m.user_id);
+  if (!ids.includes(currentUserId)) ids.unshift(currentUserId);
+  return ids.map((id) => ({ userId: id, name: id === currentUserId ? currentUserName : "Membro" }));
 }
 
 export async function getProject(projectId: string): Promise<CrmProject | null> {

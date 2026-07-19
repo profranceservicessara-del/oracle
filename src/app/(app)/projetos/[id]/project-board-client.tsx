@@ -4,8 +4,9 @@ import { useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useToast } from "@/components/ui/toast";
 import { createClient } from "@/lib/supabase/client";
-import type { ProjectTask } from "@/lib/crm/queries";
+import type { ProjectTask, TimeEntryRow } from "@/lib/crm/queries";
 import type { CrmProject, CrmProjectStatus, CrmTaskPriority, CrmTaskStatus } from "@/lib/crm/types";
+import { minutesToHM, sumMinutes } from "@/lib/time";
 
 // Evita anos absurdos (ex.: 2563) vindos do campo de data nativo.
 function saneDate(iso: string | null | undefined): string | null {
@@ -40,11 +41,13 @@ const inputCls =
 export function ProjectBoardClient({
   companyId,
   project: initialProject,
-  initialTasks
+  initialTasks,
+  timeEntries = []
 }: {
   companyId: string;
   project: CrmProject;
   initialTasks: ProjectTask[];
+  timeEntries?: TimeEntryRow[];
 }) {
   const supabase = useMemo(() => createClient(), []);
   const { showToast } = useToast();
@@ -326,10 +329,7 @@ export function ProjectBoardClient({
       ) : view === "timeline" ? (
         <ProjectTimeline tasks={topLevel} />
       ) : view === "time" ? (
-        <EmptyPanel
-          hint="O registro de horas por tarefa ainda não faz parte do sistema. Nenhum dado é inventado aqui."
-          title="Tempo — sem folha de horas"
-        />
+        <ProjectTime entries={timeEntries} />
       ) : view === "profit" ? (
         <EmptyPanel
           hint="A rentabilidade depende de faturas, despesas e oportunidades ligadas a este projeto — vínculos que ainda não existem no modelo de dados. Sem números fabricados."
@@ -567,6 +567,40 @@ function TaskDetailModal({
 
 function Meta({ label, children }: { label: string; children: ReactNode }) {
   return (<div><p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">{label}</p>{children}</div>);
+}
+
+function ProjectTime({ entries }: { entries: TimeEntryRow[] }) {
+  if (entries.length === 0) {
+    return <EmptyPanel hint="Registre horas em Tempo e planejamento e vincule ao projeto para vê-las aqui." title="Tempo — sem lançamentos" />;
+  }
+  const planned = sumMinutes(entries.map((e) => e.planned_minutes));
+  const actual = sumMinutes(entries.map((e) => e.actual_minutes));
+  const billable = sumMinutes(entries.filter((e) => e.billable).map((e) => e.actual_minutes));
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-3 sm:grid-cols-3">
+        <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5"><p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Planejado</p><p className="mt-1 text-xl font-semibold tabular-nums text-ink">{minutesToHM(planned)}</p></div>
+        <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5"><p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Realizado</p><p className="mt-1 text-xl font-semibold tabular-nums text-ink">{minutesToHM(actual)}</p></div>
+        <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5"><p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Faturável (real)</p><p className="mt-1 text-xl font-semibold tabular-nums text-emerald-600">{minutesToHM(billable)}</p></div>
+      </div>
+      <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
+        <table className="w-full text-sm">
+          <thead><tr className="border-b border-line bg-slate-50 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-400"><th className="px-4 py-3">Data</th><th className="px-4 py-3">Tarefa</th><th className="px-4 py-3 text-right">Plan.</th><th className="px-4 py-3 text-right">Real</th><th className="px-4 py-3">Faturável</th></tr></thead>
+          <tbody className="divide-y divide-line">
+            {entries.map((e) => (
+              <tr key={e.id}>
+                <td className="whitespace-nowrap px-4 py-3 text-ink">{new Date(`${e.entry_date}T00:00:00`).toLocaleDateString("pt-BR")}</td>
+                <td className="px-4 py-3 text-muted">{e.crm_tasks?.title ?? "—"}</td>
+                <td className="px-4 py-3 text-right tabular-nums text-muted">{minutesToHM(e.planned_minutes)}</td>
+                <td className="px-4 py-3 text-right tabular-nums font-medium text-ink">{minutesToHM(e.actual_minutes)}</td>
+                <td className="px-4 py-3">{e.billable ? <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">Sim</span> : <span className="text-muted">—</span>}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
 }
 
 function EmptyPanel({ title, hint }: { title: string; hint: string }) {

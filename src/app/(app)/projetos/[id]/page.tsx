@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { getProject, listProjectTasks } from "@/lib/crm/queries";
+import { getProject, listProjectTasks, listTimeEntries } from "@/lib/crm/queries";
 import { createClient } from "@/lib/supabase/server";
 import { ProjectBoardClient } from "./project-board-client";
 
@@ -18,7 +18,10 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
     notFound();
   }
 
-  const tasks = await listProjectTasks(project.id);
+  const [tasks, timeEntries] = await Promise.all([
+    listProjectTasks(project.id),
+    listTimeEntries(project.company_id, { projectId: project.id })
+  ]);
 
-  return <ProjectBoardClient companyId={project.company_id} initialTasks={tasks} project={project} />;
+  return <ProjectBoardClient companyId={project.company_id} initialTasks={tasks} project={project} timeEntries={timeEntries} />;
 }

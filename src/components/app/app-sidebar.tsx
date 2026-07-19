@@ -123,6 +123,17 @@ const nav: NavItem[] = [
   },
   {
     kind: "group",
+    key: "tempo",
+    label: "Tempo e planejamento",
+    icon: icons.agenda,
+    children: [
+      { href: "/tempo/meus", label: "Meus tempos", icon: icons.agenda },
+      { href: "/tempo/todos", label: "Todos os momentos", icon: icons.crm },
+      { href: "/tempo", label: "Gestão do tempo", icon: icons.pipeline }
+    ]
+  },
+  {
+    kind: "group",
     key: "projetos",
     label: "Projetos",
     icon: icons.pipeline,

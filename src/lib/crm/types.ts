@@ -160,6 +160,25 @@ export type CrmAppointment = {
   updated_at: string;
 };
 
+export type CrmTimeEntry = {
+  id: string;
+  company_id: string;
+  user_id: string;
+  project_id: string | null;
+  client_id: string | null;
+  task_id: string | null;
+  entry_type: string;
+  billable: boolean;
+  planned_minutes: number;
+  actual_minutes: number;
+  entry_date: string;
+  start_time: string | null;
+  end_time: string | null;
+  comment: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type CrmActivityLog = {
   id: string;
   company_id: string;
