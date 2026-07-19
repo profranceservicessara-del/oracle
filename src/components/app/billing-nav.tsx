@@ -3,15 +3,14 @@ import Link from "next/link";
 const items = [
   { key: "factures", label: "Faturas", href: "/facturation" },
   { key: "recurrentes", label: "Faturas recorrentes", href: "/facturation/recurrentes" },
-  { key: "fournisseurs", label: "Faturas recebidas", href: "/facturation/fournisseurs" },
-  { key: "aparencia", label: "Aparência", href: "/configuracoes/aparencia" }
+  { key: "fournisseurs", label: "Faturas recebidas", href: "/facturation/fournisseurs" }
 ];
 
 export function BillingNav({ active }: { active: string }) {
   return (
     <nav
       aria-label="Cobrança"
-      className="flex gap-1 overflow-x-auto pb-1 lg:w-56 lg:shrink-0 lg:flex-col lg:overflow-visible lg:pb-0"
+      className="flex w-full gap-5 overflow-x-auto border-b border-line"
     >
       {items.map((item) => {
         const isActive = item.key === active;
@@ -19,10 +18,10 @@ export function BillingNav({ active }: { active: string }) {
         return (
           <Link
             aria-current={isActive ? "page" : undefined}
-            className={`shrink-0 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
+            className={`shrink-0 border-b-2 px-0 pb-3 pt-1 text-sm font-semibold transition ${
               isActive
-                ? "bg-[#002D72]/10 text-[#002D72]"
-                : "text-muted hover:bg-slate-100 hover:text-ink"
+                ? "border-brand text-brand"
+                : "border-transparent text-slate-500 hover:border-slate-300 hover:text-ink"
             }`}
             href={item.href}
             key={item.key}

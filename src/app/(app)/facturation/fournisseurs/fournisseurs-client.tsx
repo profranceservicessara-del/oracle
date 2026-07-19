@@ -346,7 +346,7 @@ function PurchasesView({ initialPurchases, userId }: { initialPurchases: Purchas
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-8">
-      <div className="flex flex-col gap-6 lg:flex-row">
+      <div className="space-y-6">
         <BillingNav active="fournisseurs" />
 
         <div className="min-w-0 flex-1">
@@ -625,7 +625,7 @@ function InvoicesView({ invoices, purchases, userId }: { invoices: SupplierInvoi
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-8">
-      <div className="flex flex-col gap-6 lg:flex-row">
+      <div className="space-y-6">
         <BillingNav active="fournisseurs" />
 
         <div className="min-w-0 flex-1">

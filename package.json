@@ -6,7 +6,11 @@
     "dev": "WATCHPACK_POLLING=true next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "vercel:link": "scripts/deploy-vercel.sh link",
+    "vercel:pull": "scripts/deploy-vercel.sh pull",
+    "deploy:preview": "scripts/deploy-vercel.sh preview",
+    "deploy:prod": "scripts/deploy-vercel.sh production"
   },
   "dependencies": {
     "@sparticuz/chromium": "^149.0.0",
