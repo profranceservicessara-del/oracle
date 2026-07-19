@@ -11,11 +11,23 @@ import {
   documentTypeLabels,
   type Client,
   type DocumentType,
+  type PaymentMethod,
   type Profile,
   type VatRegime
 } from "@/lib/types";
 
+// Rótulos em francês para o documento (voltado ao cliente francês).
+const MOYEN_FR: Record<PaymentMethod, string> = {
+  virement: "Virement bancaire",
+  cheque: "Chèque",
+  especes: "Espèces",
+  cb: "Carte bancaire",
+  stripe: "Paiement en ligne",
+  autre: "Autre"
+};
+
 type DocumentPreviewProps = {
+  acomptePct?: number | null;
   client: Client | null;
   conditionsPaiement: string;
   dateEcheance: string;
@@ -23,6 +35,7 @@ type DocumentPreviewProps = {
   datePrestation: string;
   documentType: DocumentType;
   lines: EditorLine[];
+  moyensPaiement?: PaymentMethod[];
   notesBasPage: string;
   profile: Profile | null;
   regimeTva: VatRegime;
@@ -51,6 +64,7 @@ function clientName(client: Client | null) {
 }
 
 export function DocumentPreview({
+  acomptePct,
   client,
   conditionsPaiement,
   dateEcheance,
@@ -58,6 +72,7 @@ export function DocumentPreview({
   datePrestation,
   documentType,
   lines,
+  moyensPaiement,
   notesBasPage,
   profile,
   regimeTva,
@@ -187,6 +202,12 @@ export function DocumentPreview({
             : "TVA applicable selon les taux indiqués par ligne."}
         </p>
         <p>Conditions de paiement: {conditionsPaiement || "Paiement à réception de facture."}</p>
+        {moyensPaiement && moyensPaiement.length > 0 ? (
+          <p>Moyens de paiement acceptés: {moyensPaiement.map((method) => MOYEN_FR[method]).join(", ")}.</p>
+        ) : null}
+        {acomptePct ? (
+          <p>Acompte de {acomptePct}% demandé à la commande{totals.totalTtc > 0 ? ` (${euroFormatter.format((totals.totalTtc * acomptePct) / 100)})` : ""}.</p>
+        ) : null}
         {notesBasPage ? <p>{notesBasPage}</p> : null}
       </div>
     </section>

@@ -91,6 +91,8 @@ export type Document = {
   mention_tva: string | null;
   conditions_paiement: string | null;
   notes_bas_page: string | null;
+  moyens_paiement: PaymentMethod[] | null;
+  acompte_pct: number | null;
   source_devis_id: string | null;
   facture_origine_id: string | null;
   pdf_path: string | null;

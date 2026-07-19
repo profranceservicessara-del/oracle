@@ -24,6 +24,7 @@ import {
   categoryLabels,
   clientTypeLabels,
   documentTypeLabels,
+  paymentMethodLabels,
   type ActivityCategory,
   type CatalogItem,
   type Client,
@@ -31,8 +32,13 @@ import {
   type Document,
   type DocumentType,
   type DocumentLine,
+  type PaymentMethod,
   type Profile
 } from "@/lib/types";
+
+// Meios de pagamento oferecidos como opção na fatura (subconjunto curado).
+const PAYMENT_METHOD_OPTIONS: PaymentMethod[] = ["virement", "cheque", "especes", "cb", "stripe"];
+const euroFmt = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
 import { DocumentPreview } from "./document-preview";
 import { ResteAVivrePanel } from "./reste-a-vivre-panel";
 
@@ -144,6 +150,15 @@ export function DocumentEditor({
     initialDocument?.conditions_paiement ?? "Paiement à réception de facture."
   );
   const [notesBasPage, setNotesBasPage] = useState(initialDocument?.notes_bas_page ?? "");
+  const [moyensPaiement, setMoyensPaiement] = useState<PaymentMethod[]>(
+    (initialDocument?.moyens_paiement as PaymentMethod[] | null) ?? []
+  );
+  const [acompteEnabled, setAcompteEnabled] = useState<boolean>(
+    initialDocument?.acompte_pct != null && Number(initialDocument.acompte_pct) > 0
+  );
+  const [acomptePct, setAcomptePct] = useState<string>(
+    initialDocument?.acompte_pct != null ? String(initialDocument.acompte_pct) : "30"
+  );
   const [lines, setLines] = useState<EditorLineWithUnit[]>(
     initialLines.length > 0 ? initialLines.map(fromDbLine) : [newLine()]
   );
@@ -182,6 +197,12 @@ export function DocumentEditor({
     setCustomDays("");
   }
 
+  function toggleMoyen(method: PaymentMethod) {
+    setMoyensPaiement((current) =>
+      current.includes(method) ? current.filter((item) => item !== method) : [...current, method]
+    );
+  }
+
   const regimeTva = profile?.regime_tva ?? "franchise";
   const totals = useMemo(() => calculateDocumentTotals(lines, regimeTva), [lines, regimeTva]);
   const selectedClient = clients.find((client) => client.id === clientId) ?? null;
@@ -189,6 +210,8 @@ export function DocumentEditor({
   const snapshot = useMemo(
     () =>
       JSON.stringify({
+        acompteEnabled,
+        acomptePct,
         clientId,
         conditionsPaiement,
         dateEcheance,
@@ -196,11 +219,14 @@ export function DocumentEditor({
         datePrestation,
         documentType,
         lines,
+        moyensPaiement,
         notesBasPage,
         totals,
         validiteJours
       }),
     [
+      acompteEnabled,
+      acomptePct,
       clientId,
       conditionsPaiement,
       dateEcheance,
@@ -208,6 +234,7 @@ export function DocumentEditor({
       datePrestation,
       documentType,
       lines,
+      moyensPaiement,
       notesBasPage,
       totals,
       validiteJours
@@ -288,7 +315,9 @@ export function DocumentEditor({
       total_ttc: totals.totalTtc,
       mention_tva: mentionTva,
       conditions_paiement: conditionsPaiement || null,
-      notes_bas_page: notesBasPage || null
+      notes_bas_page: notesBasPage || null,
+      moyens_paiement: moyensPaiement.length > 0 ? moyensPaiement : null,
+      acompte_pct: acompteEnabled && Number(acomptePct) > 0 ? Number(acomptePct) : null
     };
 
     let currentDocumentId = documentId;
@@ -576,9 +605,6 @@ export function DocumentEditor({
                       </option>
                     ))}
                 </Select>
-                <Button onClick={() => setLines((current) => [...current, newLine()])} type="button">
-                  Linha livre
-                </Button>
               </div>
             </div>
 
@@ -705,6 +731,11 @@ export function DocumentEditor({
                 </div>
               ))}
             </div>
+            <div className="mt-4 flex justify-end">
+              <Button onClick={() => setLines((current) => [...current, newLine()])} type="button">
+                Adicionar
+              </Button>
+            </div>
           </section>
 
           <section className="rounded-lg border border-line bg-white p-5 shadow-sm">
@@ -770,6 +801,67 @@ export function DocumentEditor({
                   value={conditionsPaiement}
                 />
               </div>
+
+              {/* Meios de pagamento aceitos */}
+              <div className="text-sm font-medium text-ink">
+                <span>Meios de pagamento aceitos</span>
+                <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {PAYMENT_METHOD_OPTIONS.map((method) => {
+                    const checked = moyensPaiement.includes(method);
+                    return (
+                      <label
+                        className={`flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm font-normal transition ${
+                          checked ? "border-brand bg-brand/5 text-ink" : "border-line text-slate-600 hover:bg-slate-50"
+                        }`}
+                        key={method}
+                      >
+                        <input
+                          checked={checked}
+                          className="h-4 w-4 accent-brand"
+                          onChange={() => toggleMoyen(method)}
+                          type="checkbox"
+                        />
+                        {paymentMethodLabels[method]}
+                      </label>
+                    );
+                  })}
+                </div>
+                <p className="mt-1.5 text-xs font-normal text-muted">Aparecem no rodapé do documento como formas aceitas.</p>
+              </div>
+
+              {/* Solicitar depósito (acompte) */}
+              <div className="text-sm font-medium text-ink">
+                <label className="flex cursor-pointer items-center gap-2.5">
+                  <input
+                    checked={acompteEnabled}
+                    className="h-4 w-4 accent-brand"
+                    onChange={(event) => setAcompteEnabled(event.target.checked)}
+                    type="checkbox"
+                  />
+                  Solicitar um depósito (acompte)
+                </label>
+                {acompteEnabled ? (
+                  <div className="mt-2 flex flex-wrap items-center gap-3">
+                    <div className="flex items-center gap-1.5">
+                      <Input
+                        className="h-9 w-24"
+                        max="100"
+                        min="1"
+                        onChange={(event) => setAcomptePct(event.target.value)}
+                        type="number"
+                        value={acomptePct}
+                      />
+                      <span className="text-sm font-normal text-slate-600">% do total</span>
+                    </div>
+                    {Number(acomptePct) > 0 && totals.totalTtc > 0 ? (
+                      <span className="text-sm font-normal text-muted">
+                        ≈ {euroFmt.format((totals.totalTtc * Number(acomptePct)) / 100)} na encomenda
+                      </span>
+                    ) : null}
+                  </div>
+                ) : null}
+              </div>
+
               <label className="text-sm font-medium text-ink">
                 Notas de rodapé
                 <Textarea
@@ -782,9 +874,11 @@ export function DocumentEditor({
           </section>
 
           <DocumentPreview
+            acomptePct={acompteEnabled && Number(acomptePct) > 0 ? Number(acomptePct) : null}
             client={selectedClient}
             conditionsPaiement={conditionsPaiement}
             dateEcheance={dateEcheance}
+            moyensPaiement={moyensPaiement}
             dateEmission={dateEmission}
             datePrestation={datePrestation}
             documentType={documentType}

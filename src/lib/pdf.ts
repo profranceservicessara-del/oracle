@@ -12,8 +12,18 @@ import {
   type Client,
   type Document,
   type DocumentLine,
+  type PaymentMethod,
   type Profile
 } from "@/lib/types";
+
+const MOYEN_FR: Record<PaymentMethod, string> = {
+  virement: "Virement bancaire",
+  cheque: "Chèque",
+  especes: "Espèces",
+  cb: "Carte bancaire",
+  stripe: "Paiement en ligne",
+  autre: "Autre"
+};
 
 type SupabaseServerClient = {
   from: (table: string) => any;
@@ -210,6 +220,8 @@ function renderDocumentHtml({
     <section class="legal">
       <p>${escapeHtml(regimeTva === "franchise" ? tvaFranchiseMention : "TVA applicable selon les taux indiqués par ligne.")}</p>
       <p>Conditions de paiement: ${escapeHtml(document.conditions_paiement || "Paiement à réception de facture.")}</p>
+      ${document.moyens_paiement && document.moyens_paiement.length > 0 ? `<p>Moyens de paiement acceptés: ${escapeHtml(document.moyens_paiement.map((method) => MOYEN_FR[method as PaymentMethod] ?? method).join(", "))}.</p>` : ""}
+      ${document.acompte_pct ? `<p>Acompte de ${escapeHtml(document.acompte_pct)}% demandé à la commande${totals.totalTtc > 0 ? ` (${escapeHtml(euroFormatter.format((totals.totalTtc * Number(document.acompte_pct)) / 100))})` : ""}.</p>` : ""}
       ${document.notes_bas_page ? `<p>${escapeHtml(document.notes_bas_page)}</p>` : ""}
     </section>
   </body>
