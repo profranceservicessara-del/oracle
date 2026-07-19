@@ -59,6 +59,13 @@ export function ConselheiroClient({ initialRequests }: { initialRequests: Adviso
     setRequests((cur) => [data as AdvisorRequest, ...cur]);
     setMessage("");
     showToast("Mensagem enviada. Responderemos em até 48 horas.", "success");
+    // Notifica a equipe por email (best-effort). Não afeta o fluxo do cliente
+    // se o email falhar ou o Resend não estiver configurado.
+    void fetch("/api/advisor/notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: trimmed })
+    }).catch(() => {});
   }
 
   return (
