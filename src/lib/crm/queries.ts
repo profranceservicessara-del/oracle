@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { Document } from "@/lib/types";
 import type {
   CrmActivityLog,
+  CrmAppointment,
   CrmClient,
   CrmClientType,
   CrmCompany,
@@ -112,6 +113,20 @@ export async function listCompanyTasks(companyId: string): Promise<CompanyTask[]
     .order("created_at", { ascending: false });
 
   return (data ?? []) as CompanyTask[];
+}
+
+// Compromisso da agenda com nome do cliente embutido.
+export type AppointmentWithClient = CrmAppointment & { crm_clients: { name: string } | null };
+
+export async function listAppointments(companyId: string): Promise<AppointmentWithClient[]> {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("crm_appointments")
+    .select("*, crm_clients(name)")
+    .eq("company_id", companyId)
+    .order("start_at", { ascending: true });
+
+  return (data ?? []) as AppointmentWithClient[];
 }
 
 // Deal com nome do cliente embutido, para o board do pipeline.
