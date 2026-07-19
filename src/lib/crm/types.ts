@@ -77,10 +77,25 @@ export type CrmTask = {
   company_id: string;
   client_id: string | null;
   dossier_id: string | null;
+  project_id: string | null;
   assignee_id: string | null;
   title: string;
   status: CrmTaskStatus;
   due_date: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type CrmProjectStatus = "active" | "on_hold" | "done" | "archived";
+
+export type CrmProject = {
+  id: string;
+  company_id: string;
+  client_id: string | null;
+  name: string;
+  status: CrmProjectStatus;
+  start_date: string | null;
+  end_date: string | null;
   created_at: string;
   updated_at: string;
 };

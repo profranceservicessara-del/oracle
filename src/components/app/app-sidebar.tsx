@@ -91,10 +91,8 @@ const nav: NavItem[] = [
     icon: icons.gestao,
     children: [
       { href: "/analise", label: "Análise", icon: icons.painel },
-      { href: "/crm/agenda", label: "Agenda", icon: icons.agenda },
       { href: "/financeiro", label: "Fluxo de Caixa", icon: icons.receitasDespesas },
       { href: "/banco", label: "Contas bancárias", icon: icons.banco, premium: true },
-      { href: "/modelos-contrato", label: "Modelos de contrato", icon: icons.contrato },
       { href: "/conselheiro", label: "Meu Conselheiro", icon: icons.conselheiro }
     ]
   },
@@ -107,10 +105,7 @@ const nav: NavItem[] = [
       { href: "/facturation", label: "Faturas", icon: icons.faturas },
       { href: "/facturation/devis", label: "Orçamentos", icon: icons.orcamentos },
       { href: "/facturation/produits", label: "Produtos e serviços", icon: icons.produtos },
-      { href: "/catalogo", label: "Catálogo", icon: icons.catalogoLeaf },
-      { href: "/crm", label: "Comercial", icon: icons.crm },
-      { href: "/crm/pipeline", label: "Pipeline", icon: icons.pipeline },
-      { href: "/clientes", label: "Clientes", icon: icons.clientesLeaf }
+      { href: "/catalogo", label: "Catálogo", icon: icons.catalogoLeaf }
     ]
   },
   {
@@ -119,6 +114,11 @@ const nav: NavItem[] = [
     label: "Produtividade",
     icon: icons.produtividade,
     children: [
+      { href: "/crm", label: "Comercial", icon: icons.crm },
+      { href: "/crm/pipeline", label: "Pipeline", icon: icons.pipeline },
+      { href: "/crm/agenda", label: "Agenda", icon: icons.agenda },
+      { href: "/clientes", label: "Clientes", icon: icons.clientesLeaf },
+      { href: "/projetos", label: "Projetos", icon: icons.pipeline },
       { href: "/tarefas", label: "Tarefas", icon: icons.tarefas }
     ]
   },
@@ -134,11 +134,19 @@ const nav: NavItem[] = [
       { href: "/assistente", label: "Assistente de Declarações", icon: icons.conselheiro, premium: true },
       { href: "/declaracoes/auxiliares", label: "Declarações auxiliares", icon: icons.declAux },
       { href: "/declaracoes/fiscais", label: "Declarações fiscais", icon: icons.declaracoes },
-      { href: "/comprovantes", label: "Comprovantes", icon: icons.comprovantes },
-      { href: "/facturation/fournisseurs", label: "Faturas recebidas", icon: icons.faturasRecebidas }
+      { href: "/comprovantes", label: "Comprovantes", icon: icons.comprovantes }
     ]
   },
-  { kind: "link", href: "/documentos", label: "Documentos", icon: icons.documentos }
+  {
+    kind: "group",
+    key: "documentos",
+    label: "Documentos",
+    icon: icons.documentos,
+    children: [
+      { href: "/documentos", label: "Documentos", icon: icons.declaracoes },
+      { href: "/modelos-contrato", label: "Modelos de contrato", icon: icons.contrato }
+    ]
+  }
 ];
 
 // ACTIVE item — premium glass: translucent fill + backdrop blur, inset ring,

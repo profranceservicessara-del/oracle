@@ -4,6 +4,7 @@ import type {
   CrmActivityLog,
   CrmAppointment,
   CrmClient,
+  CrmProject,
   CrmClientType,
   CrmCompany,
   CrmContact,
@@ -113,6 +114,47 @@ export async function listCompanyTasks(companyId: string): Promise<CompanyTask[]
     .order("created_at", { ascending: false });
 
   return (data ?? []) as CompanyTask[];
+}
+
+// Projetos (Produtividade) com estatísticas de tarefas para a lista.
+export type ProjectWithStats = CrmProject & { crm_clients: { name: string } | null; taskCount: number; doneCount: number };
+
+export async function listProjects(companyId: string): Promise<ProjectWithStats[]> {
+  const supabase = createClient();
+  const [projectsRes, tasksRes] = await Promise.all([
+    supabase.from("crm_projects").select("*, crm_clients(name)").eq("company_id", companyId).order("created_at", { ascending: false }),
+    supabase.from("crm_tasks").select("project_id, status").eq("company_id", companyId).not("project_id", "is", null)
+  ]);
+  const stats = new Map<string, { total: number; done: number }>();
+  for (const task of (tasksRes.data ?? []) as Array<{ project_id: string; status: string }>) {
+    const current = stats.get(task.project_id) ?? { total: 0, done: 0 };
+    current.total += 1;
+    if (task.status === "done") current.done += 1;
+    stats.set(task.project_id, current);
+  }
+  return ((projectsRes.data ?? []) as Array<CrmProject & { crm_clients: { name: string } | null }>).map((project) => ({
+    ...project,
+    taskCount: stats.get(project.id)?.total ?? 0,
+    doneCount: stats.get(project.id)?.done ?? 0
+  }));
+}
+
+export async function getProject(projectId: string): Promise<CrmProject | null> {
+  const supabase = createClient();
+  const { data } = await supabase.from("crm_projects").select("*").eq("id", projectId).maybeSingle();
+  return (data as CrmProject | null) ?? null;
+}
+
+export type ProjectTask = Pick<CrmTask, "id" | "title" | "status" | "due_date" | "created_at" | "project_id">;
+
+export async function listProjectTasks(projectId: string): Promise<ProjectTask[]> {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("crm_tasks")
+    .select("id, title, status, due_date, created_at, project_id")
+    .eq("project_id", projectId)
+    .order("created_at", { ascending: true });
+  return (data ?? []) as ProjectTask[];
 }
 
 // Compromisso da agenda com nome do cliente embutido.
