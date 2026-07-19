@@ -22,6 +22,13 @@ function fmtDate(iso: string | null) {
   return new Date(`${iso}T00:00:00`).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
 }
 
+// Evita anos absurdos (ex.: 2563 digitado por engano no campo de data).
+export function saneDate(iso: string | null | undefined): string | null {
+  if (!iso) return null;
+  const year = Number(iso.slice(0, 4));
+  return year >= 2000 && year <= 2100 ? iso : null;
+}
+
 const inputCls =
   "h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm text-ink outline-none transition placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20";
 
@@ -160,6 +167,10 @@ function NewProjectModal({
       showToast("Dê um nome ao projeto.", "error");
       return;
     }
+    if (startDate && !saneDate(startDate)) {
+      showToast("Data de início inválida. Use um ano entre 2000 e 2100.", "error");
+      return;
+    }
     setSaving(true);
     const { data, error } = await supabase
       .from("crm_projects")
@@ -168,7 +179,7 @@ function NewProjectModal({
         client_id: clientId || null,
         name: name.trim(),
         status,
-        start_date: startDate || null
+        start_date: saneDate(startDate)
       })
       .select("*, crm_clients(name)")
       .single();
@@ -198,7 +209,7 @@ function NewProjectModal({
             </select>
           </Field>
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Data de início"><input className={inputCls} onChange={(e) => setStartDate(e.target.value)} type="date" value={startDate} /></Field>
+            <Field label="Data de início"><input className={inputCls} max="2100-12-31" min="2000-01-01" onChange={(e) => setStartDate(e.target.value)} type="date" value={startDate} /></Field>
             <Field label="Status">
               <select className={inputCls} onChange={(e) => setStatus(e.target.value as CrmProjectStatus)} value={status}>
                 <option value="active">Ativo</option>

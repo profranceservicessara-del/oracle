@@ -5,7 +5,14 @@ import Link from "next/link";
 import { useToast } from "@/components/ui/toast";
 import { createClient } from "@/lib/supabase/client";
 import type { ProjectTask } from "@/lib/crm/queries";
-import type { CrmProject, CrmTaskPriority, CrmTaskStatus } from "@/lib/crm/types";
+import type { CrmProject, CrmProjectStatus, CrmTaskPriority, CrmTaskStatus } from "@/lib/crm/types";
+
+// Evita anos absurdos (ex.: 2563) vindos do campo de data nativo.
+function saneDate(iso: string | null | undefined): string | null {
+  if (!iso) return null;
+  const year = Number(iso.slice(0, 4));
+  return year >= 2000 && year <= 2100 ? iso : null;
+}
 
 const COLUMNS: { key: CrmTaskStatus; label: string; dot: string }[] = [
   { key: "todo", label: "A fazer", dot: "bg-slate-400" },
@@ -32,7 +39,7 @@ const inputCls =
 
 export function ProjectBoardClient({
   companyId,
-  project,
+  project: initialProject,
   initialTasks
 }: {
   companyId: string;
@@ -41,6 +48,8 @@ export function ProjectBoardClient({
 }) {
   const supabase = useMemo(() => createClient(), []);
   const { showToast } = useToast();
+  const [project, setProject] = useState(initialProject);
+  const [editingProject, setEditingProject] = useState(false);
   const [tasks, setTasks] = useState(initialTasks);
   const [view, setView] = useState<"summary" | "board" | "list">("summary");
   const [newTitle, setNewTitle] = useState("");
@@ -233,7 +242,12 @@ export function ProjectBoardClient({
 
           {/* Informações do projeto */}
           <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
-            <p className="mb-3 text-sm font-semibold text-ink">Informações do projeto</p>
+            <div className="mb-3 flex items-center justify-between">
+              <p className="text-sm font-semibold text-ink">Informações do projeto</p>
+              <button aria-label="Editar projeto" className="flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-ink" onClick={() => setEditingProject(true)} type="button">
+                <svg fill="none" height="15" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" width="15"><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
+              </button>
+            </div>
             <dl className="space-y-3 text-sm">
               <div>
                 <dt className="text-xs font-semibold uppercase tracking-wide text-slate-400">Status</dt>
@@ -351,6 +365,15 @@ export function ProjectBoardClient({
           subtasks={subtasks}
           supabase={supabase}
           task={detailTask}
+        />
+      ) : null}
+
+      {editingProject ? (
+        <EditProjectModal
+          onClose={() => setEditingProject(false)}
+          onSaved={(patch) => { setProject((p) => ({ ...p, ...patch })); setEditingProject(false); }}
+          project={project}
+          supabase={supabase}
         />
       ) : null}
     </main>
@@ -527,6 +550,72 @@ function TaskDetailModal({
 
 function Meta({ label, children }: { label: string; children: ReactNode }) {
   return (<div><p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">{label}</p>{children}</div>);
+}
+
+function EditProjectModal({
+  project,
+  supabase,
+  onClose,
+  onSaved
+}: {
+  project: CrmProject;
+  supabase: ReturnType<typeof createClient>;
+  onClose: () => void;
+  onSaved: (patch: Partial<CrmProject>) => void;
+}) {
+  const { showToast } = useToast();
+  const [name, setName] = useState(project.name);
+  const [startDate, setStartDate] = useState(project.start_date ?? "");
+  const [endDate, setEndDate] = useState(project.end_date ?? "");
+  const [status, setStatus] = useState<CrmProjectStatus>(project.status);
+  const [saving, setSaving] = useState(false);
+  const inputCls = "h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm text-ink outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20";
+
+  async function save() {
+    if (!name.trim()) { showToast("Dê um nome ao projeto.", "error"); return; }
+    if ((startDate && !saneDate(startDate)) || (endDate && !saneDate(endDate))) {
+      showToast("Data inválida. Use um ano entre 2000 e 2100.", "error");
+      return;
+    }
+    setSaving(true);
+    const patch = { name: name.trim(), start_date: saneDate(startDate), end_date: saneDate(endDate), status };
+    const { error } = await supabase.from("crm_projects").update(patch).eq("id", project.id);
+    setSaving(false);
+    if (error) { showToast("Não foi possível salvar o projeto.", "error"); return; }
+    showToast("Projeto atualizado.", "success");
+    onSaved(patch);
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <button aria-label="Fechar" className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm" onClick={onClose} type="button" />
+      <div className="relative w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl">
+        <header className="flex items-center justify-between border-b border-line px-5 py-4">
+          <h2 className="text-lg font-bold text-ink">Editar projeto</h2>
+          <button aria-label="Fechar" className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 ring-1 ring-black/5 transition hover:bg-slate-50 hover:text-ink" onClick={onClose} type="button"><svg fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeWidth="2" viewBox="0 0 24 24" width="16"><path d="M18 6 6 18M6 6l12 12" /></svg></button>
+        </header>
+        <div className="space-y-4 px-5 py-5">
+          <label className="block"><span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Nome</span><input autoFocus className={inputCls} onChange={(e) => setName(e.target.value)} value={name} /></label>
+          <div className="grid grid-cols-2 gap-3">
+            <label className="block"><span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Início</span><input className={inputCls} max="2100-12-31" min="2000-01-01" onChange={(e) => setStartDate(e.target.value)} type="date" value={startDate} /></label>
+            <label className="block"><span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Término</span><input className={inputCls} max="2100-12-31" min="2000-01-01" onChange={(e) => setEndDate(e.target.value)} type="date" value={endDate} /></label>
+          </div>
+          <label className="block"><span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Status</span>
+            <select className={inputCls} onChange={(e) => setStatus(e.target.value as CrmProjectStatus)} value={status}>
+              <option value="active">Ativo</option>
+              <option value="on_hold">Em espera</option>
+              <option value="done">Concluído</option>
+              <option value="archived">Arquivado</option>
+            </select>
+          </label>
+        </div>
+        <footer className="flex items-center justify-end gap-2 border-t border-line px-5 py-4">
+          <button className="inline-flex h-11 items-center justify-center rounded-full border border-slate-200 px-5 text-sm font-semibold text-ink transition hover:bg-slate-50" onClick={onClose} type="button">Cancelar</button>
+          <button className="inline-flex h-11 items-center justify-center rounded-full bg-brand px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#003a94] disabled:opacity-60" disabled={saving} onClick={() => void save()} type="button">{saving ? "Salvando…" : "Salvar"}</button>
+        </footer>
+      </div>
+    </div>
+  );
 }
 
 function Legend({ color, label, count }: { color: string; label: string; count: number }) {
