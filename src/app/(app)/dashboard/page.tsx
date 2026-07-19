@@ -328,6 +328,25 @@ export default async function DashboardPage() {
         </div>
       </section>
 
+      <section className="grid gap-4 sm:grid-cols-3">
+        <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5">
+          <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Faturamento recebido no trimestre</p>
+          <p className="mt-1 text-xl font-medium tabular-nums text-slate-700">
+            {euroFormatter.format(totalCategoryAmount(quarterTotals))}
+          </p>
+        </div>
+        <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5">
+          <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Venda</p>
+          <p className="mt-1 text-xl font-medium tabular-nums text-slate-700">{euroFormatter.format(quarterTotals.vente)}</p>
+        </div>
+        <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5">
+          <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Serviços</p>
+          <p className="mt-1 text-xl font-medium tabular-nums text-slate-700">
+            {euroFormatter.format(quarterTotals.service_bic + quarterTotals.service_bnc)}
+          </p>
+        </div>
+      </section>
+
       <OnboardingCard email={user.email ?? ""} initialProfile={typedProfile} userId={user.id} />
 
       <section className="space-y-4">
@@ -554,24 +573,6 @@ export default async function DashboardPage() {
         </p>
       </section>
 
-      <section className="grid gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5">
-          <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Faturamento recebido no trimestre</p>
-          <p className="mt-1 text-xl font-medium tabular-nums text-slate-700">
-            {euroFormatter.format(totalCategoryAmount(quarterTotals))}
-          </p>
-        </div>
-        <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5">
-          <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Vente</p>
-          <p className="mt-1 text-xl font-medium tabular-nums text-slate-700">{euroFormatter.format(quarterTotals.vente)}</p>
-        </div>
-        <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5">
-          <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Services</p>
-          <p className="mt-1 text-xl font-medium tabular-nums text-slate-700">
-            {euroFormatter.format(quarterTotals.service_bic + quarterTotals.service_bnc)}
-          </p>
-        </div>
-      </section>
       </div>
     </main>
   );
