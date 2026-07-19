@@ -133,6 +133,33 @@ const completePlans: CompletePlan[] = [
   }
 ];
 
+const faqs = [
+  {
+    q: "Posso parar a qualquer momento?",
+    a: "Você pode cancelar facilmente a qualquer momento. Com um clique na sua conta ProFrance, você cancela sua assinatura."
+  },
+  {
+    q: "Quais são os métodos de pagamento aceitos?",
+    a: "A ProFrance aceita a maioria dos cartões de crédito. Você também pode pagar com Google Pay e Apple Pay."
+  },
+  {
+    q: "Meus dados estão seguros?",
+    a: "Tomamos o máximo cuidado para fazer backup dos seus dados, para que você não perca nada. O acesso é protegido e somente você tem acesso a eles."
+  },
+  {
+    q: "O que acontece se eu tiver um problema?",
+    a: "Caso encontre alguma dificuldade, pode entrar em contato conosco via chat ou por telefone, dependendo do seu plano."
+  },
+  {
+    q: "Ganho algo ao recomendar a ProFrance?",
+    a: "Com certeza. Você pode participar do nosso programa de embaixadores e receber recompensas ao recomendar a ProFrance para outras pessoas."
+  },
+  {
+    q: "Não encontrou uma resposta?",
+    a: "Você pode entrar em contato conosco via chat e falar com um de nossos consultores."
+  }
+];
+
 const euro = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 });
 
 function savings(monthly: number, annual: number) {
@@ -220,10 +247,10 @@ export function OffresClient({ currentPlan }: { currentPlan: PlanTier }) {
                 {plan.badge ? <Badge className={plan.badge.className} label={plan.badge.label} /> : null}
               </div>
               <h3 className="mt-3 text-xl font-bold text-ink">{plan.tagline}</h3>
-              <p className="mt-1.5 min-h-[3.5rem] text-sm leading-6 text-muted">{plan.subtitle}</p>
+              <p className="mt-1.5 min-h-[6rem] text-sm leading-6 text-muted">{plan.subtitle}</p>
 
               {/* Preço */}
-              <div className="mt-4 min-h-[4.5rem]">
+              <div className="mt-4 flex min-h-[5rem] flex-col justify-end">
                 {isFree ? (
                   <p className="text-3xl font-bold text-ink">Grátis</p>
                 ) : (
@@ -282,9 +309,9 @@ export function OffresClient({ currentPlan }: { currentPlan: PlanTier }) {
                   </button>
                 )}
                 {!isFree ? (
-                  <p className="mt-2 text-center text-xs text-muted">Experimente grátis por 14 dias, sem compromisso.</p>
+                  <p className="mt-2 text-center text-xs text-muted">Experimente grátis por 14 dias.</p>
                 ) : (
-                  <p className="mt-2 text-center text-xs text-muted">Sem compromisso.</p>
+                  <p className="mt-2 text-center text-xs text-muted">Experimente grátis</p>
                 )}
               </div>
 
@@ -337,8 +364,8 @@ export function OffresClient({ currentPlan }: { currentPlan: PlanTier }) {
           {completePlans.map((plan) => (
             <div className="flex flex-col rounded-3xl bg-white p-6 shadow-sm ring-1 ring-black/5" key={plan.key}>
               <Badge className="bg-fuchsia-500 text-white" label="Business" />
-              <h3 className="mt-3 text-lg font-bold text-ink">{plan.name}</h3>
-              <p className="mt-1.5 text-sm leading-6 text-muted">{plan.subtitle}</p>
+              <h3 className="mt-3 min-h-[3.5rem] text-lg font-bold text-ink">{plan.name}</h3>
+              <p className="mt-1 min-h-[3rem] text-sm leading-6 text-muted">{plan.subtitle}</p>
               <p className="mt-4 flex items-baseline gap-1">
                 <span className="text-2xl font-bold tabular-nums text-ink">
                   {billing === "anual" ? plan.annual : plan.monthly}
@@ -367,7 +394,20 @@ export function OffresClient({ currentPlan }: { currentPlan: PlanTier }) {
         </div>
       </div>
 
-      <p className="mx-auto mt-10 max-w-2xl text-center text-xs leading-5 text-muted">
+      {/* Dúvidas frequentes */}
+      <div className="mt-16">
+        <h2 className="text-center text-2xl font-bold text-ink">Alguma pergunta?</h2>
+        <div className="mx-auto mt-8 grid max-w-5xl gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
+          {faqs.map((item) => (
+            <div key={item.q}>
+              <h3 className="text-base font-bold text-ink">{item.q}</h3>
+              <p className="mt-2 text-sm leading-6 text-muted">{item.a}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <p className="mx-auto mt-14 max-w-2xl text-center text-xs leading-5 text-muted">
         Os valores exibidos são orientativos e não incluem IVA. A cobrança efetiva é processada no checkout seguro.
         Cancele quando quiser.
       </p>
