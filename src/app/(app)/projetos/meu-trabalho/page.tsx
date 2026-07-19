@@ -17,7 +17,7 @@ export default async function MeuTrabalhoPage() {
 
   const company = await getOrCreateCompany();
   const [tasks, projects] = company
-    ? await Promise.all([listMyWorkTasks(company.id), listProjects(company.id)])
+    ? await Promise.all([listMyWorkTasks(company.id, user.id), listProjects(company.id)])
     : [[], []];
 
   return (

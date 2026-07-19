@@ -46,6 +46,22 @@ export function ProjetosClient({
   const { showToast } = useToast();
   const [projects, setProjects] = useState(initialProjects);
   const [creating, setCreating] = useState(false);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | CrmProjectStatus>("all");
+  const [sortKey, setSortKey] = useState<"recent" | "name" | "progress">("recent");
+
+  const visible = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    let list = projects.filter((p) => statusFilter === "all" || p.status === statusFilter);
+    if (q) list = list.filter((p) => (p.name || "").toLowerCase().includes(q) || (p.crm_clients?.name || "").toLowerCase().includes(q));
+    const sorted = [...list];
+    if (sortKey === "name") sorted.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+    else if (sortKey === "progress") {
+      const pct = (p: ProjectWithStats) => (p.taskCount > 0 ? p.doneCount / p.taskCount : 0);
+      sorted.sort((a, b) => pct(b) - pct(a));
+    }
+    return sorted;
+  }, [projects, search, statusFilter, sortKey]);
 
   function handleCreated(project: ProjectWithStats) {
     setProjects((current) => [project, ...current]);
@@ -86,7 +102,29 @@ export function ProjetosClient({
           </button>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
+        <>
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            <input
+              className="h-10 min-w-[12rem] flex-1 rounded-full border border-slate-300 bg-white px-4 text-sm text-ink outline-none transition placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20"
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar por projeto ou cliente…"
+              type="search"
+              value={search}
+            />
+            <select className="h-10 rounded-full border border-slate-300 bg-white px-3 text-sm text-ink outline-none focus:border-brand" onChange={(e) => setStatusFilter(e.target.value as "all" | CrmProjectStatus)} value={statusFilter}>
+              <option value="all">Todos os status</option>
+              <option value="active">Ativo</option>
+              <option value="on_hold">Em espera</option>
+              <option value="done">Concluído</option>
+              <option value="archived">Arquivado</option>
+            </select>
+            <select className="h-10 rounded-full border border-slate-300 bg-white px-3 text-sm text-ink outline-none focus:border-brand" onChange={(e) => setSortKey(e.target.value as "recent" | "name" | "progress")} value={sortKey}>
+              <option value="recent">Mais recentes</option>
+              <option value="name">Nome (A–Z)</option>
+              <option value="progress">Progresso</option>
+            </select>
+          </div>
+          <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-line bg-slate-50 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-400">
@@ -98,7 +136,10 @@ export function ProjetosClient({
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
-              {projects.map((project) => {
+              {visible.length === 0 ? (
+                <tr><td className="px-4 py-10 text-center text-sm text-muted" colSpan={5}>Nenhum projeto encontrado.</td></tr>
+              ) : null}
+              {visible.map((project) => {
                 const pct = project.taskCount > 0 ? Math.round((project.doneCount / project.taskCount) * 100) : 0;
                 return (
                   <tr className="cursor-pointer transition hover:bg-slate-50" key={project.id} onClick={() => router.push(`/projetos/${project.id}`)}>
@@ -127,7 +168,8 @@ export function ProjetosClient({
               })}
             </tbody>
           </table>
-        </div>
+          </div>
+        </>
       )}
 
       {creating ? (

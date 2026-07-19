@@ -72,7 +72,8 @@ const icons = {
   contrato: (<svg {...s16}><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z" /><path d="M9 13c1.5-1.5 3 1 4.5-.5" /><line x1="9" x2="15" y1="17" y2="17" /></svg>),
   conselheiro: (<svg {...s16}><path d="M13 2 3 14h7l-1 8 10-12h-7z" /></svg>),
   produtividade: (<svg {...s18}><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91 0z" /><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" /><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" /><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" /></svg>),
-  tarefas: (<svg {...s16}><rect height="18" rx="2" width="14" x="5" y="3" /><path d="m9 8 1.5 1.5L13 7" /><path d="m9 14 1.5 1.5L13 13" /><line x1="16" x2="16" y1="8" y2="8" /><line x1="16" x2="16" y1="14" y2="14" /></svg>)
+  tarefas: (<svg {...s16}><rect height="18" rx="2" width="14" x="5" y="3" /><path d="m9 8 1.5 1.5L13 7" /><path d="m9 14 1.5 1.5L13 13" /><line x1="16" x2="16" y1="8" y2="8" /><line x1="16" x2="16" y1="14" y2="14" /></svg>),
+  academia: (<svg {...s18}><path d="M4 19.5V5a2 2 0 0 1 2-2h12v18H6a2 2 0 0 1-2-1.5z" /><path d="M8 7h6M8 11h7" /><path d="M6 17h12" /></svg>)
 } as const;
 
 // soon = módulo ainda não pronto para produção: exibido "Em breve", desabilitado
@@ -92,6 +93,7 @@ const nav: NavItem[] = [
     children: [
       { href: "/financeiro", label: "Fluxo de Caixa", icon: icons.receitasDespesas },
       { href: "/crm/agenda", label: "Agenda", icon: icons.agenda },
+      { href: "/clientes", label: "Clientes", icon: icons.clientesLeaf },
       { href: "/banco", label: "Contas bancárias", icon: icons.banco, premium: true },
       { href: "/conselheiro", label: "Meu Conselheiro", icon: icons.conselheiro }
     ]
@@ -116,9 +118,17 @@ const nav: NavItem[] = [
     children: [
       { href: "/crm", label: "Comercial", icon: icons.crm },
       { href: "/crm/pipeline", label: "Pipeline", icon: icons.pipeline },
-      { href: "/clientes", label: "Clientes", icon: icons.clientesLeaf },
-      { href: "/projetos", label: "Projetos", icon: icons.pipeline },
       { href: "/tarefas", label: "Tarefas", icon: icons.tarefas }
+    ]
+  },
+  {
+    kind: "group",
+    key: "projetos",
+    label: "Projetos",
+    icon: icons.pipeline,
+    children: [
+      { href: "/projetos", label: "Todos os projetos", icon: icons.pipeline },
+      { href: "/projetos/meu-trabalho", label: "Meu trabalho", icon: icons.tarefas }
     ]
   },
   {
@@ -127,9 +137,9 @@ const nav: NavItem[] = [
     label: "Contabilidade",
     icon: icons.contabilidade,
     children: [
-      { href: "/documents", label: "Contabilidade", icon: icons.contabilidadeLeaf },
-      { href: "/assistente", label: "Assistente de Declarações", icon: icons.conselheiro, premium: true },
-      { href: "/declaracoes/fiscais", label: "Declarações fiscais", icon: icons.declaracoes }
+      { href: "/livre-de-recettes", label: "Livros contábeis", icon: icons.declaracoes },
+      { href: "/declaracoes/fiscais", label: "Declarações fiscais", icon: icons.declaracoes },
+      { href: "/assistente", label: "Assistente de Declarações", icon: icons.conselheiro, premium: true }
     ]
   },
   {
@@ -139,11 +149,11 @@ const nav: NavItem[] = [
     icon: icons.documentos,
     children: [
       { href: "/documentos", label: "Orçamentos e Faturas", icon: icons.declaracoes },
-      { href: "/livre-de-recettes", label: "Livros contábeis", icon: icons.declaracoes },
       { href: "/comprovantes", label: "Comprovantes", icon: icons.comprovantes },
       { href: "/modelos-contrato", label: "Modelos de contrato", icon: icons.contrato }
     ]
-  }
+  },
+  { kind: "link", href: "/academia", label: "Academia", icon: icons.academia }
 ];
 
 // ACTIVE item — premium glass: translucent fill + backdrop blur, inset ring,
@@ -305,10 +315,46 @@ function NavList({ onNavigate, collapsed, onExpand, onCollapse }: { onNavigate?:
     if (owner) setOpenKey(owner);
   }, [activeHref]);
 
+  // Projetos recentes (dados reais do CRM, RLS por company) anexados como
+  // sub-itens dinâmicos do grupo Projetos. Sem hardcode de nomes.
+  const supabase = useMemo(() => createClient(), []);
+  const [projectLeaves, setProjectLeaves] = useState<Leaf[]>([]);
+  useEffect(() => {
+    let alive = true;
+    void supabase
+      .from("crm_projects")
+      .select("id, name")
+      .order("created_at", { ascending: false })
+      .limit(6)
+      .then(({ data }) => {
+        if (!alive || !data) return;
+        setProjectLeaves(
+          (data as Array<{ id: string; name: string }>).map((p) => ({
+            href: `/projetos/${p.id}`,
+            label: p.name || "Projeto sem nome",
+            icon: icons.pipeline
+          }))
+        );
+      });
+    return () => {
+      alive = false;
+    };
+  }, [supabase]);
+
+  const navRender = useMemo<NavItem[]>(
+    () =>
+      nav.map((item) =>
+        item.kind === "group" && item.key === "projetos"
+          ? { ...item, children: [...item.children, ...projectLeaves] }
+          : item
+      ),
+    [projectLeaves]
+  );
+
   if (collapsed) {
     return (
       <nav className="flex flex-1 flex-col items-center gap-1 overflow-y-auto">
-        {nav.map((item) => {
+        {navRender.map((item) => {
           const active =
             item.kind === "link" ? item.href === activeHref : item.children.some((child) => child.href === activeHref);
           const cls = `flex h-11 w-11 items-center justify-center rounded-xl transition-all duration-200 ${
@@ -331,7 +377,7 @@ function NavList({ onNavigate, collapsed, onExpand, onCollapse }: { onNavigate?:
 
   return (
     <nav className="flex flex-1 flex-col gap-1 overflow-y-auto pr-0.5">
-      {nav.map((item) =>
+      {navRender.map((item) =>
         item.kind === "link" ? (
           <Link
             aria-current={item.href === activeHref ? "page" : undefined}

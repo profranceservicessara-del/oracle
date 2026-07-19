@@ -51,7 +51,7 @@ export function ProjectBoardClient({
   const [project, setProject] = useState(initialProject);
   const [editingProject, setEditingProject] = useState(false);
   const [tasks, setTasks] = useState(initialTasks);
-  const [view, setView] = useState<"summary" | "board" | "list">("summary");
+  const [view, setView] = useState<"summary" | "board" | "list" | "timeline" | "time" | "profit">("summary");
   const [newTitle, setNewTitle] = useState("");
   const [newDue, setNewDue] = useState("");
   const [newStatus, setNewStatus] = useState<CrmTaskStatus>("todo");
@@ -164,7 +164,7 @@ export function ProjectBoardClient({
         </div>
         <div className="flex items-center gap-2">
           <div className="flex items-center rounded-full bg-slate-100 p-1 text-sm font-medium">
-            {([["summary", "Resumo"], ["board", "Quadro"], ["list", "Lista"]] as const).map(([key, label]) => (
+            {([["summary", "Resumo"], ["board", "Quadro"], ["list", "Lista"], ["timeline", "Linha do tempo"], ["time", "Tempo"], ["profit", "Rentabilidade"]] as const).map(([key, label]) => (
               <button className={`rounded-full px-3 py-1.5 transition ${view === key ? "bg-brand text-white shadow-sm" : "text-slate-500 hover:text-ink"}`} key={key} onClick={() => setView(key)} type="button">{label}</button>
             ))}
           </div>
@@ -323,6 +323,18 @@ export function ProjectBoardClient({
             </div>
           ))}
         </div>
+      ) : view === "timeline" ? (
+        <ProjectTimeline tasks={topLevel} />
+      ) : view === "time" ? (
+        <EmptyPanel
+          hint="O registro de horas por tarefa ainda não faz parte do sistema. Nenhum dado é inventado aqui."
+          title="Tempo — sem folha de horas"
+        />
+      ) : view === "profit" ? (
+        <EmptyPanel
+          hint="A rentabilidade depende de faturas, despesas e oportunidades ligadas a este projeto — vínculos que ainda não existem no modelo de dados. Sem números fabricados."
+          title="Rentabilidade — sem vínculos financeiros"
+        />
       ) : (
         <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
           {topLevel.length === 0 ? (
@@ -555,6 +567,61 @@ function TaskDetailModal({
 
 function Meta({ label, children }: { label: string; children: ReactNode }) {
   return (<div><p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">{label}</p>{children}</div>);
+}
+
+function EmptyPanel({ title, hint }: { title: string; hint: string }) {
+  return (
+    <div className="rounded-2xl bg-white px-6 py-16 text-center shadow-sm ring-1 ring-black/5">
+      <p className="text-sm font-semibold text-ink">{title}</p>
+      <p className="mx-auto mt-2 max-w-md text-sm text-muted">{hint}</p>
+    </div>
+  );
+}
+
+// Linha do tempo (Gantt leve) — barras derivadas de start_date/due_date reais,
+// sem lib externa. Só tarefas com data. Estado vazio honesto caso contrário.
+function ProjectTimeline({ tasks }: { tasks: ProjectTask[] }) {
+  const DAY = 86400000;
+  const dated = tasks
+    .map((t) => {
+      const s = t.start_date ?? t.due_date;
+      const e = t.due_date ?? t.start_date;
+      if (!s || !e) return null;
+      return { task: t, start: new Date(`${s}T00:00:00`).getTime(), end: new Date(`${e}T00:00:00`).getTime() };
+    })
+    .filter((x): x is { task: ProjectTask; start: number; end: number } => x !== null);
+
+  if (dated.length === 0) {
+    return <EmptyPanel hint="Adicione data de início e/ou prazo às tarefas para vê-las na linha do tempo." title="Linha do tempo — sem tarefas com data" />;
+  }
+
+  const min = Math.min(...dated.map((d) => d.start));
+  const max = Math.max(...dated.map((d) => d.end + DAY));
+  const total = Math.max(DAY, max - min);
+
+  return (
+    <div className="overflow-hidden rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
+      <div className="mb-3 flex justify-between text-xs text-muted">
+        <span>{fmtDate(new Date(min).toISOString().slice(0, 10))}</span>
+        <span>{fmtDate(new Date(max - DAY).toISOString().slice(0, 10))}</span>
+      </div>
+      <div className="space-y-2">
+        {dated.map(({ task, start, end }) => {
+          const left = ((start - min) / total) * 100;
+          const width = Math.max(3, ((end + DAY - start) / total) * 100);
+          const col = COLUMNS.find((c) => c.key === task.status);
+          return (
+            <div className="grid grid-cols-[minmax(8rem,14rem)_1fr] items-center gap-3" key={task.id}>
+              <button className="truncate text-left text-sm text-ink hover:text-brand hover:underline" onClick={() => undefined} title={task.title} type="button">{task.title}</button>
+              <div className="relative h-6 rounded bg-slate-50 ring-1 ring-inset ring-black/5">
+                <div className={`absolute top-1/2 h-4 -translate-y-1/2 rounded ${col?.dot}`} style={{ left: `${left}%`, width: `${width}%` }} title={`${fmtDate(new Date(start).toISOString().slice(0, 10))} – ${fmtDate(new Date(end).toISOString().slice(0, 10))}`} />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 function EditProjectModal({

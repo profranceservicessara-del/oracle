@@ -150,14 +150,16 @@ type MyWorkTaskRow = Omit<MyWorkTask, "crm_projects"> & {
   crm_projects: { name: string } | { name: string }[] | null;
 };
 
-export async function listMyWorkTasks(companyId: string): Promise<MyWorkTask[]> {
+export async function listMyWorkTasks(companyId: string, assigneeId?: string): Promise<MyWorkTask[]> {
   const supabase = createClient();
-  const { data } = await supabase
+  let query = supabase
     .from("crm_tasks")
     .select("id, title, status, priority, due_date, created_at, project_id, parent_task_id, crm_projects(name)")
     .eq("company_id", companyId)
-    .not("project_id", "is", null)
-    .order("due_date", { ascending: true, nullsFirst: false });
+    .not("project_id", "is", null);
+  // "Meu trabalho" = tarefas atribuídas ao usuário autenticado (assignee real).
+  if (assigneeId) query = query.eq("assignee_id", assigneeId);
+  const { data } = await query.order("due_date", { ascending: true, nullsFirst: false });
   return ((data ?? []) as unknown as MyWorkTaskRow[]).map((task) => {
     const project = Array.isArray(task.crm_projects) ? task.crm_projects[0] ?? null : task.crm_projects;
     return { ...task, crm_projects: project };
