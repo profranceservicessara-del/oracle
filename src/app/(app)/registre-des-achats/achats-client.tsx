@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { LivresNav } from "@/components/app/livres-nav";
 import { Button } from "@/components/ui/button";
 import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
 import { FormModal } from "@/components/ui/form-modal";
@@ -198,6 +199,8 @@ export function RegistreDesAchatsClient({
           </Button>
         </div>
       </div>
+
+      <LivresNav active="compras" />
 
       <section className="mb-4 grid gap-3 rounded-lg border border-line bg-white p-4 sm:grid-cols-2">
         <label className="text-sm font-medium text-ink">

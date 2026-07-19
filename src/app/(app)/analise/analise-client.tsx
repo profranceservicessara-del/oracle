@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { LivresNav } from "@/components/app/livres-nav";
 import { Select } from "@/components/ui/select";
 
 const euro = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "EUR" });
@@ -177,6 +178,8 @@ export function AnaliseClient({
           ))}
         </Select>
       </div>
+
+      <LivresNav active="resultados" />
 
       {/* Gráfico anual */}
       <section className="mb-6 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">

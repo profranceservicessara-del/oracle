@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { LivresNav } from "@/components/app/livres-nav";
 import { Button } from "@/components/ui/button";
 import { FormModal } from "@/components/ui/form-modal";
 import { Input } from "@/components/ui/input";
@@ -39,12 +40,6 @@ type ReceiptForm = {
   moyen: PaymentMethod;
   montant: string;
 };
-
-const TABS = [
-  { label: "Livro de receitas", href: "/livre-de-recettes", active: true },
-  { label: "Livro de compras", href: "/registre-des-achats", active: false },
-  { label: "Resultados", href: "/analise", active: false }
-];
 
 function availableYears(rows: BookRow[]) {
   const years = [...new Set(rows.map((row) => row.date.slice(0, 4)))].sort().reverse();
@@ -234,15 +229,7 @@ export function LivreDeRecettesClient({
           </a>
         </div>
       </div>
-      <nav className="mb-6 flex gap-5 border-b border-line text-sm font-medium">
-        {TABS.map((t) =>
-          t.active ? (
-            <span className="border-b-2 border-brand pb-2 text-brand" key={t.href}>{t.label}</span>
-          ) : (
-            <Link className="pb-2 text-slate-500 transition hover:text-ink" href={t.href} key={t.href}>{t.label}</Link>
-          )
-        )}
-      </nav>
+      <LivresNav active="receitas" />
 
       {isEmpty ? (
         /* Hero vazio (referência) */
