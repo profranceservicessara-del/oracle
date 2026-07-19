@@ -292,6 +292,7 @@ export function ProjectBoardClient({
                         {task.priority !== "none" ? <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${PRIORITY[task.priority].chip}`}>{PRIORITY[task.priority].label}</span> : null}
                         {due ? <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-500">📅 {due}</span> : null}
                         {subCount.length > 0 ? <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-500">☑ {subDone}/{subCount.length}</span> : null}
+                        {(task.skills ?? []).slice(0, 2).map((skill) => (<span className="rounded bg-brand/10 px-1.5 py-0.5 text-[10px] font-medium text-brand" key={skill}>{skill}</span>))}
                       </div>
                       <div className="mt-2 flex items-center justify-end gap-1 opacity-0 transition group-hover:opacity-100">
                         <button aria-label="Voltar" className="flex h-6 w-6 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-ink disabled:opacity-30" disabled={idx === 0} onClick={(e) => { e.stopPropagation(); void moveTask(task, -1); }} type="button"><svg fill="none" height="14" stroke="currentColor" strokeLinecap="round" strokeWidth="2" viewBox="0 0 24 24" width="14"><path d="m15 18-6-6 6-6" /></svg></button>
@@ -379,8 +380,12 @@ function TaskDetailModal({
   const [description, setDescription] = useState(task.description ?? "");
   const [newSub, setNewSub] = useState("");
   const [addingSub, setAddingSub] = useState(false);
+  const [newSkill, setNewSkill] = useState("");
   const subDone = subtasks.filter((s) => s.status === "done").length;
   const subPct = subtasks.length > 0 ? Math.round((subDone / subtasks.length) * 100) : 0;
+  const skills = task.skills ?? [];
+  const statusMeta = COLUMNS.find((c) => c.key === task.status);
+  const nextStatus = ORDER[ORDER.indexOf(task.status) + 1];
 
   async function addSub() {
     const title = newSub.trim();
@@ -389,6 +394,13 @@ function TaskDetailModal({
     const created = await onInsertSubtask(title);
     setAddingSub(false);
     if (created) setNewSub("");
+  }
+
+  function addSkill() {
+    const value = newSkill.trim();
+    if (!value || skills.includes(value)) { setNewSkill(""); return; }
+    void onUpdate(task.id, { skills: [...skills, value] });
+    setNewSkill("");
   }
 
   return (
@@ -403,6 +415,31 @@ function TaskDetailModal({
           />
           <button aria-label="Fechar" className="ml-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-400 ring-1 ring-black/5 transition hover:bg-slate-50 hover:text-ink" onClick={onClose} type="button"><svg fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeWidth="2" viewBox="0 0 24 24" width="16"><path d="M18 6 6 18M6 6l12 12" /></svg></button>
         </header>
+
+        {/* Status rápido: pill + avançar + concluir */}
+        <div className="flex items-center gap-2 border-b border-line bg-slate-50/60 px-5 py-2.5">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-ink ring-1 ring-black/5">
+            <span className={`h-2 w-2 rounded-full ${statusMeta?.dot}`} />
+            {statusMeta?.label}
+          </span>
+          <button
+            className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand text-white transition hover:bg-[#003a94] disabled:opacity-40"
+            disabled={!nextStatus}
+            onClick={() => { if (nextStatus) void onUpdate(task.id, { status: nextStatus }); }}
+            title="Avançar status"
+            type="button"
+          >
+            <svg fill="none" height="15" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" width="15"><path d="m9 18 6-6-6-6" /></svg>
+          </button>
+          <button
+            className={`flex h-7 w-7 items-center justify-center rounded-lg transition ${task.status === "done" ? "bg-emerald-500 text-white" : "bg-white text-slate-500 ring-1 ring-black/5 hover:bg-emerald-50 hover:text-emerald-600"}`}
+            onClick={() => void onUpdate(task.id, { status: task.status === "done" ? "todo" : "done" })}
+            title={task.status === "done" ? "Reabrir" : "Concluir"}
+            type="button"
+          >
+            <svg fill="none" height="15" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" viewBox="0 0 24 24" width="15"><path d="M20 6 9 17l-5-5" /></svg>
+          </button>
+        </div>
 
         <div className="grid flex-1 gap-5 overflow-y-auto px-5 py-5 sm:grid-cols-[9rem_1fr]">
           {/* meta */}
@@ -419,6 +456,27 @@ function TaskDetailModal({
             </Meta>
             <Meta label="Prazo">
               <input className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-sm outline-none focus:border-brand" onChange={(e) => void onUpdate(task.id, { due_date: e.target.value || null })} type="date" value={task.due_date ?? ""} />
+            </Meta>
+            <Meta label="Habilidades">
+              {skills.length > 0 ? (
+                <div className="mb-1.5 flex flex-wrap gap-1">
+                  {skills.map((skill) => (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-brand/10 px-2 py-0.5 text-[11px] font-medium text-brand" key={skill}>
+                      {skill}
+                      <button aria-label={`Remover ${skill}`} className="text-brand/60 transition hover:text-brand" onClick={() => void onUpdate(task.id, { skills: skills.filter((s) => s !== skill) })} type="button">
+                        <svg fill="none" height="11" stroke="currentColor" strokeLinecap="round" strokeWidth="2.5" viewBox="0 0 24 24" width="11"><path d="M18 6 6 18M6 6l12 12" /></svg>
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+              <input
+                className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-sm outline-none focus:border-brand"
+                onChange={(e) => setNewSkill(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addSkill(); } }}
+                placeholder="Adicionar…"
+                value={newSkill}
+              />
             </Meta>
           </div>
 
