@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { AnaliseClient } from "@/app/(app)/analise/analise-client";
 import { OnboardingCard } from "@/components/onboarding/onboarding-card";
+import { loadAnaliseData } from "@/lib/analise-data";
 import { fiscalConfig } from "@/config/fiscal";
 import {
   activityCategories,
   categoryLabel,
   currentQuarterRange,
   emptyCategoryTotals,
-  monthRanges,
   nextUrssafDeadline,
   periodOptions,
   roundCurrency,
@@ -127,34 +128,6 @@ function categoryBar({
   );
 }
 
-function monthlyChart(monthlyValues: number[]) {
-  const width = 720;
-  const height = 180;
-  const baseline = 150;
-  const max = Math.max(...monthlyValues, 1);
-  const barWidth = 38;
-  const gap = 20;
-
-  return (
-    <svg className="h-auto w-full" role="img" viewBox={`0 0 ${width} ${height}`}>
-      <line stroke="#d8dee4" x1="0" x2={width} y1={baseline} y2={baseline} />
-      {monthlyValues.map((value, index) => {
-        const barHeight = (value / max) * 120;
-        const x = index * (barWidth + gap) + 10;
-        const y = baseline - barHeight;
-
-        return (
-          <g key={index}>
-            <rect fill="#002D72" height={barHeight} rx="4" width={barWidth} x={x} y={y} />
-            <text fill="#65727f" fontSize="10" textAnchor="middle" x={x + barWidth / 2} y="170">
-              {index + 1}
-            </text>
-          </g>
-        );
-      })}
-    </svg>
-  );
-}
 
 export default async function DashboardPage() {
   const supabase = createClient();
@@ -185,7 +158,8 @@ export default async function DashboardPage() {
     declarationRows,
     quarterRows,
     documentsResponse,
-    paymentsResponse
+    paymentsResponse,
+    analiseData
   ] = await Promise.all([
     fetchRevenueBookRows(supabase, yearRange(currentYear)),
     fetchRevenueBookRows(supabase, yearRange(previousYear)),
@@ -197,7 +171,8 @@ export default async function DashboardPage() {
       .in("type", ["devis", "facture"])
       .in("status", ["sent", "partial"])
       .order("date_echeance", { ascending: true }),
-    supabase.from("payments").select("document_id,montant")
+    supabase.from("payments").select("document_id,montant"),
+    loadAnaliseData(user.id)
   ]);
 
   const documents = (documentsResponse.data ?? []) as Document[];
@@ -215,12 +190,6 @@ export default async function DashboardPage() {
   const previousTotal = totalCategoryAmount(previousTotals);
   const annualDelta = previousTotal === 0 ? null : roundCurrency(((annualTotal - previousTotal) / previousTotal) * 100);
 
-  const monthlyLabels = monthRanges(currentYear);
-  const monthlyValues = monthlyLabels.map((month) =>
-    totalCategoryAmount(
-      sumCategoryTotals(yearRows.filter((row) => row.date >= month.start && row.date <= month.end))
-    )
-  );
   const projection = roundCurrency((annualTotal / Math.max(1, now.getMonth() + 1)) * 12);
 
   const pendingFactures = documents.filter(
@@ -347,20 +316,14 @@ export default async function DashboardPage() {
         </div>
       </section>
 
-      <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
-        <div className="mb-4">
-          <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Faturamento mensal recebido</p>
-          <h2 className="mt-1 text-xl font-medium text-ink">12 meses de {currentYear}</h2>
-        </div>
-        {monthlyValues.some((value) => value > 0) ? (
-          monthlyChart(monthlyValues)
-        ) : (
-          <div className="flex h-28 flex-col items-center justify-center gap-1 rounded-xl bg-slate-50 text-center ring-1 ring-black/5">
-            <p className="text-sm font-medium text-slate-500">Sem recebimentos registrados em {currentYear}</p>
-            <p className="text-xs text-slate-400">O gráfico aparece assim que houver receita lançada.</p>
-          </div>
-        )}
-      </section>
+      <AnaliseClient
+        aReceber={analiseData.aReceber}
+        bank={analiseData.bank}
+        embedded
+        entradas={analiseData.entradas}
+        periodicite={analiseData.periodicite}
+        saidas={analiseData.saidas}
+      />
 
       <OnboardingCard email={user.email ?? ""} initialProfile={typedProfile} userId={user.id} />
 

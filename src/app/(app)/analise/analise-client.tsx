@@ -4,13 +4,10 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { LivresNav } from "@/components/app/livres-nav";
 import { Select } from "@/components/ui/select";
+import type { BankRow, EntradaRow, SaidaRow } from "@/lib/analise-data";
 
 const euro = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "EUR" });
 const MONTHS_SHORT = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
-
-export type EntradaRow = { date: string; montant: number };
-export type SaidaRow = { date: string; montant: number; fournisseur: string };
-export type BankRow = { date: string; amount: number; direction: "credit" | "debit" };
 
 function sum(values: number[]): number {
   return values.reduce((s, v) => s + v, 0);
@@ -85,13 +82,15 @@ export function AnaliseClient({
   saidas,
   bank,
   aReceber,
-  periodicite
+  periodicite,
+  embedded = false
 }: {
   entradas: EntradaRow[];
   saidas: SaidaRow[];
   bank: BankRow[];
   aReceber: number;
   periodicite: "mensal" | "trimestral";
+  embedded?: boolean;
 }) {
   const now = new Date();
   const currentYear = now.getFullYear();
@@ -164,23 +163,16 @@ export function AnaliseClient({
     return { total, label };
   }, [entradas, periodicite, currentYear, currentMonth]);
 
-  return (
-    <main className="mx-auto max-w-4xl px-4 py-8">
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Gestão</p>
-          <h1 className="mt-1 text-2xl font-semibold text-ink">Análise</h1>
-          <p className="mt-1 text-sm text-muted">Faturamento, despesas e resultado do ano, com tesouraria e declaração num só lugar.</p>
-        </div>
-        <Select aria-label="Ano" className="w-24" onChange={(e) => setYear(Number(e.target.value))} value={year}>
-          {years.map((y) => (
-            <option key={y} value={y}>{y}</option>
-          ))}
-        </Select>
-      </div>
+  const yearSelect = (
+    <Select aria-label="Ano" className="w-24" onChange={(e) => setYear(Number(e.target.value))} value={year}>
+      {years.map((y) => (
+        <option key={y} value={y}>{y}</option>
+      ))}
+    </Select>
+  );
 
-      <LivresNav active="resultados" />
-
+  const cards = (
+    <>
       {/* Gráfico anual */}
       <section className="mb-6 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
         <div className="flex flex-col gap-5 lg:flex-row">
@@ -280,6 +272,38 @@ export function AnaliseClient({
           </div>
         </div>
       </section>
+    </>
+  );
+
+  if (embedded) {
+    return (
+      <section>
+        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Gestão</p>
+            <h2 className="mt-1 text-xl font-medium text-ink">Análise</h2>
+          </div>
+          {yearSelect}
+        </div>
+        {cards}
+      </section>
+    );
+  }
+
+  return (
+    <main className="mx-auto max-w-4xl px-4 py-8">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Gestão</p>
+          <h1 className="mt-1 text-2xl font-semibold text-ink">Análise</h1>
+          <p className="mt-1 text-sm text-muted">Faturamento, despesas e resultado do ano, com tesouraria e declaração num só lugar.</p>
+        </div>
+        {yearSelect}
+      </div>
+
+      <LivresNav active="resultados" />
+
+      {cards}
     </main>
   );
 }

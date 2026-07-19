@@ -90,8 +90,8 @@ const nav: NavItem[] = [
     label: "Gestão",
     icon: icons.gestao,
     children: [
-      { href: "/analise", label: "Análise", icon: icons.painel },
       { href: "/financeiro", label: "Fluxo de Caixa", icon: icons.receitasDespesas },
+      { href: "/crm/agenda", label: "Agenda", icon: icons.agenda },
       { href: "/banco", label: "Contas bancárias", icon: icons.banco, premium: true },
       { href: "/conselheiro", label: "Meu Conselheiro", icon: icons.conselheiro }
     ]
@@ -116,7 +116,6 @@ const nav: NavItem[] = [
     children: [
       { href: "/crm", label: "Comercial", icon: icons.crm },
       { href: "/crm/pipeline", label: "Pipeline", icon: icons.pipeline },
-      { href: "/crm/agenda", label: "Agenda", icon: icons.agenda },
       { href: "/clientes", label: "Clientes", icon: icons.clientesLeaf },
       { href: "/projetos", label: "Projetos", icon: icons.pipeline },
       { href: "/tarefas", label: "Tarefas", icon: icons.tarefas }
@@ -129,12 +128,8 @@ const nav: NavItem[] = [
     icon: icons.contabilidade,
     children: [
       { href: "/documents", label: "Contabilidade", icon: icons.contabilidadeLeaf },
-      { href: "/livre-de-recettes", label: "Livros contábeis", icon: icons.declaracoes },
-      { href: "/urssaf", label: "Declaração da Urssaf", icon: icons.urssaf },
       { href: "/assistente", label: "Assistente de Declarações", icon: icons.conselheiro, premium: true },
-      { href: "/declaracoes/auxiliares", label: "Declarações auxiliares", icon: icons.declAux },
-      { href: "/declaracoes/fiscais", label: "Declarações fiscais", icon: icons.declaracoes },
-      { href: "/comprovantes", label: "Comprovantes", icon: icons.comprovantes }
+      { href: "/declaracoes/fiscais", label: "Declarações fiscais", icon: icons.declaracoes }
     ]
   },
   {
@@ -143,7 +138,9 @@ const nav: NavItem[] = [
     label: "Documentos",
     icon: icons.documentos,
     children: [
-      { href: "/documentos", label: "Documentos", icon: icons.declaracoes },
+      { href: "/documentos", label: "Orçamentos e Faturas", icon: icons.declaracoes },
+      { href: "/livre-de-recettes", label: "Livros contábeis", icon: icons.declaracoes },
+      { href: "/comprovantes", label: "Comprovantes", icon: icons.comprovantes },
       { href: "/modelos-contrato", label: "Modelos de contrato", icon: icons.contrato }
     ]
   }
@@ -169,6 +166,10 @@ const idleRow =
 const allHrefs = nav.flatMap((item) => (item.kind === "link" ? [item.href] : item.children.map((child) => child.href)));
 
 function activeHrefFor(pathname: string): string {
+  if (pathname === "/urssaf" || pathname.startsWith("/urssaf/") || pathname === "/declaracoes/auxiliares" || pathname.startsWith("/declaracoes/auxiliares/")) {
+    return "/declaracoes/fiscais";
+  }
+
   let best = "";
   for (const href of allHrefs) {
     if ((pathname === href || pathname.startsWith(`${href}/`)) && href.length > best.length) {
