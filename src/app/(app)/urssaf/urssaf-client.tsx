@@ -3,6 +3,7 @@
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { DeclarationsNav } from "@/components/app/declarations-nav";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { useToast } from "@/components/ui/toast";
@@ -201,10 +202,12 @@ export function UrssafClient({
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-8">
+      <DeclarationsNav active="urssaf" />
+
       {/* Header */}
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Gestão</p>
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Contabilidade</p>
           <div className="mt-1 flex flex-wrap items-center gap-2.5">
             <h1 className="text-2xl font-semibold text-ink">Declaração URSSAF</h1>
             <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ring-1 ring-inset ${statusBadge.cls}`}>{statusBadge.label}</span>
@@ -238,13 +241,6 @@ export function UrssafClient({
         </Link>
       </section>
 
-      {/* Disclaimer */}
-      <div className="mb-6 flex items-start gap-2.5 rounded-xl bg-amber-50 p-4 text-sm text-amber-800 ring-1 ring-amber-200">
-        <svg className="mt-0.5 shrink-0" fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" width="16">
-          <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" x2="12" y1="9" y2="13" /><line x1="12" x2="12.01" y1="17" y2="17" />
-        </svg>
-        Esta ferramenta prepara uma base de declaração usando os dados registrados no Oracle. Revise os valores antes de qualquer envio oficial à URSSAF.
-      </div>
 
       {/* KPIs */}
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
