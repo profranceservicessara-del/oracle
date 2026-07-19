@@ -172,14 +172,14 @@ export async function getProject(projectId: string): Promise<CrmProject | null> 
 
 export type ProjectTask = Pick<
   CrmTask,
-  "id" | "title" | "description" | "status" | "priority" | "due_date" | "skills" | "created_at" | "project_id" | "parent_task_id"
+  "id" | "title" | "description" | "status" | "priority" | "start_date" | "due_date" | "skills" | "created_at" | "project_id" | "parent_task_id"
 >;
 
 export async function listProjectTasks(projectId: string): Promise<ProjectTask[]> {
   const supabase = createClient();
   const { data } = await supabase
     .from("crm_tasks")
-    .select("id, title, description, status, priority, due_date, skills, created_at, project_id, parent_task_id")
+    .select("id, title, description, status, priority, start_date, due_date, skills, created_at, project_id, parent_task_id")
     .eq("project_id", projectId)
     .order("created_at", { ascending: true });
   return (data ?? []) as ProjectTask[];

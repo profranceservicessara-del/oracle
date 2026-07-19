@@ -296,7 +296,9 @@ export function ProjectBoardClient({
               <div className="space-y-2">
                 {byStatus[col.key].map((task) => {
                   const idx = ORDER.indexOf(task.status);
+                  const start = fmtDate(task.start_date);
                   const due = fmtDate(task.due_date);
+                  const dateLabel = start && due ? `${start} – ${due}` : due || start;
                   const subCount = tasks.filter((t) => t.parent_task_id === task.id);
                   const subDone = subCount.filter((t) => t.status === "done").length;
                   return (
@@ -304,7 +306,7 @@ export function ProjectBoardClient({
                       <p className={`text-sm ${task.status === "done" ? "text-muted line-through" : "font-medium text-ink"}`}>{task.title}</p>
                       <div className="mt-2 flex flex-wrap items-center gap-1.5">
                         {task.priority !== "none" ? <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${PRIORITY[task.priority].chip}`}>{PRIORITY[task.priority].label}</span> : null}
-                        {due ? <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-500">📅 {due}</span> : null}
+                        {dateLabel ? <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-500">📅 {dateLabel}</span> : null}
                         {subCount.length > 0 ? <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-500">☑ {subDone}/{subCount.length}</span> : null}
                         {(task.skills ?? []).slice(0, 2).map((skill) => (<span className="rounded bg-brand/10 px-1.5 py-0.5 text-[10px] font-medium text-brand" key={skill}>{skill}</span>))}
                       </div>
@@ -477,8 +479,11 @@ function TaskDetailModal({
                 {PRIORITY_KEYS.map((p) => (<option key={p} value={p}>{PRIORITY[p].label}</option>))}
               </select>
             </Meta>
+            <Meta label="Início">
+              <input className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-sm outline-none focus:border-brand" max="2100-12-31" min="2000-01-01" onChange={(e) => void onUpdate(task.id, { start_date: saneDate(e.target.value) })} type="date" value={task.start_date ?? ""} />
+            </Meta>
             <Meta label="Prazo">
-              <input className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-sm outline-none focus:border-brand" onChange={(e) => void onUpdate(task.id, { due_date: e.target.value || null })} type="date" value={task.due_date ?? ""} />
+              <input className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-sm outline-none focus:border-brand" max="2100-12-31" min="2000-01-01" onChange={(e) => void onUpdate(task.id, { due_date: saneDate(e.target.value) })} type="date" value={task.due_date ?? ""} />
             </Meta>
             <Meta label="Habilidades">
               {skills.length > 0 ? (

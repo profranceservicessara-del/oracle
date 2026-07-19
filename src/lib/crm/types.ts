@@ -86,6 +86,7 @@ export type CrmTask = {
   description: string | null;
   priority: CrmTaskPriority;
   status: CrmTaskStatus;
+  start_date: string | null;
   due_date: string | null;
   skills: string[] | null;
   created_at: string;
