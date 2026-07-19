@@ -42,7 +42,7 @@ export function ProjectBoardClient({
   const supabase = useMemo(() => createClient(), []);
   const { showToast } = useToast();
   const [tasks, setTasks] = useState(initialTasks);
-  const [view, setView] = useState<"board" | "list">("board");
+  const [view, setView] = useState<"summary" | "board" | "list">("summary");
   const [newTitle, setNewTitle] = useState("");
   const [newDue, setNewDue] = useState("");
   const [newStatus, setNewStatus] = useState<CrmTaskStatus>("todo");
@@ -54,7 +54,12 @@ export function ProjectBoardClient({
   const topLevel = useMemo(() => tasks.filter((t) => !t.parent_task_id), [tasks]);
   const total = topLevel.length;
   const done = topLevel.filter((t) => t.status === "done").length;
+  const doing = topLevel.filter((t) => t.status === "doing").length;
+  const todo = topLevel.filter((t) => t.status === "todo").length;
   const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  const todayIso = new Date().toLocaleDateString("en-CA");
+  const overdue = topLevel.filter((t) => t.status !== "done" && t.due_date && t.due_date < todayIso).length;
+  const dueToday = topLevel.filter((t) => t.status !== "done" && t.due_date === todayIso).length;
 
   const byStatus = useMemo(() => {
     const map: Record<CrmTaskStatus, ProjectTask[]> = { todo: [], doing: [], done: [] };
@@ -150,7 +155,7 @@ export function ProjectBoardClient({
         </div>
         <div className="flex items-center gap-2">
           <div className="flex items-center rounded-full bg-slate-100 p-1 text-sm font-medium">
-            {([["board", "Quadro"], ["list", "Lista"]] as const).map(([key, label]) => (
+            {([["summary", "Resumo"], ["board", "Quadro"], ["list", "Lista"]] as const).map(([key, label]) => (
               <button className={`rounded-full px-3 py-1.5 transition ${view === key ? "bg-brand text-white shadow-sm" : "text-slate-500 hover:text-ink"}`} key={key} onClick={() => setView(key)} type="button">{label}</button>
             ))}
           </div>
@@ -187,7 +192,86 @@ export function ProjectBoardClient({
         </div>
       ) : null}
 
-      {view === "board" ? (
+      {view === "summary" ? (
+        <div className="grid gap-4 lg:grid-cols-3">
+          {/* Elementos criados */}
+          <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5 lg:col-span-3">
+            <p className="mb-4 text-sm font-semibold text-ink">Elementos do projeto</p>
+            <div className="grid grid-cols-3 gap-4 text-center">
+              <div>
+                <p className={`text-3xl font-bold ${overdue > 0 ? "text-rose-600" : "text-ink"}`}>{overdue}</p>
+                <p className="mt-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Tarefas atrasadas</p>
+              </div>
+              <div>
+                <p className="text-3xl font-bold text-ink">{dueToday}</p>
+                <p className="mt-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Tarefas hoje</p>
+              </div>
+              <div>
+                <p className="text-3xl font-bold text-ink">{total}</p>
+                <p className="mt-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Total de tarefas</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Progresso do projeto (donut) */}
+          <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5 lg:col-span-2">
+            <p className="mb-4 text-sm font-semibold text-ink">Progresso do projeto</p>
+            <div className="flex flex-col items-center gap-5 sm:flex-row sm:justify-center">
+              <ProgressDonut done={done} doing={doing} todo={todo} total={total} />
+              <div className="space-y-2 text-sm">
+                <Legend color="bg-slate-400" count={todo} label="Pendente" />
+                <Legend color="bg-blue-500" count={doing} label="Em andamento" />
+                <Legend color="bg-emerald-500" count={done} label="Concluído" />
+                <p className="pt-1 text-xs text-muted">Total {total}</p>
+              </div>
+            </div>
+            <div className="mt-5">
+              <div className="mb-1 text-center text-sm font-medium text-ink">{pct}% do projeto concluído</div>
+              <div className="h-2.5 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-emerald-500" style={{ width: `${pct}%` }} /></div>
+            </div>
+          </div>
+
+          {/* Informações do projeto */}
+          <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
+            <p className="mb-3 text-sm font-semibold text-ink">Informações do projeto</p>
+            <dl className="space-y-3 text-sm">
+              <div>
+                <dt className="text-xs font-semibold uppercase tracking-wide text-slate-400">Status</dt>
+                <dd className="mt-0.5 text-ink">{project.status === "active" ? "Ativo" : project.status === "on_hold" ? "Em espera" : project.status === "done" ? "Concluído" : "Arquivado"}</dd>
+              </div>
+              <div>
+                <dt className="text-xs font-semibold uppercase tracking-wide text-slate-400">Datas</dt>
+                <dd className="mt-0.5 text-ink">
+                  de {project.start_date ? fmtDate(project.start_date) : "—"} a {project.end_date ? fmtDate(project.end_date) : "indefinido"}
+                </dd>
+              </div>
+            </dl>
+          </div>
+
+          {/* Detalhamento por status */}
+          <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5 lg:col-span-3">
+            <p className="mb-4 text-sm font-semibold text-ink">Detalhamento por status</p>
+            {total === 0 ? (
+              <p className="text-sm text-muted">Nenhuma tarefa neste projeto ainda.</p>
+            ) : (
+              <div className="space-y-3">
+                {([["todo", todo], ["doing", doing], ["done", done]] as const).map(([key, count]) => {
+                  const col = COLUMNS.find((c) => c.key === key);
+                  const w = total > 0 ? Math.round((count / total) * 100) : 0;
+                  return (
+                    <div className="flex items-center gap-3" key={key}>
+                      <span className="w-32 shrink-0 text-sm text-slate-600">{col?.label}</span>
+                      <div className="h-4 flex-1 overflow-hidden rounded bg-slate-100">
+                        <div className={`flex h-full items-center justify-end rounded px-2 text-[11px] font-semibold text-white ${col?.dot}`} style={{ width: `${Math.max(count > 0 ? 8 : 0, w)}%` }}>{count > 0 ? count : ""}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      ) : view === "board" ? (
         <div className="grid gap-4 md:grid-cols-3">
           {COLUMNS.map((col) => (
             <div className="rounded-2xl bg-slate-50 p-3 ring-1 ring-black/5" key={col.key}>
@@ -385,4 +469,56 @@ function TaskDetailModal({
 
 function Meta({ label, children }: { label: string; children: ReactNode }) {
   return (<div><p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">{label}</p>{children}</div>);
+}
+
+function Legend({ color, label, count }: { color: string; label: string; count: number }) {
+  return (
+    <p className="flex items-center gap-2 text-slate-600">
+      <span className={`h-2.5 w-2.5 rounded-full ${color}`} />
+      {label} <span className="ml-auto pl-3 font-semibold tabular-nums text-ink">{count}</span>
+    </p>
+  );
+}
+
+function ProgressDonut({ todo, doing, done, total }: { todo: number; doing: number; done: number; total: number }) {
+  const cx = 70;
+  const cy = 70;
+  const r = 52;
+  const c = 2 * Math.PI * r;
+  const segments = [
+    { v: todo, color: "#94a3b8" },
+    { v: doing, color: "#3b82f6" },
+    { v: done, color: "#10b981" }
+  ];
+  let acc = 0;
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  return (
+    <svg height="140" role="img" viewBox="0 0 140 140" width="140">
+      <circle cx={cx} cy={cy} fill="none" r={r} stroke="#f1f5f9" strokeWidth="16" />
+      {total > 0
+        ? segments.map((s, i) => {
+            const frac = s.v / total;
+            const len = frac * c;
+            const rot = acc * 360 - 90;
+            acc += frac;
+            if (s.v === 0) return null;
+            return (
+              <circle
+                cx={cx}
+                cy={cy}
+                fill="none"
+                key={i}
+                r={r}
+                stroke={s.color}
+                strokeDasharray={`${len} ${c - len}`}
+                strokeWidth="16"
+                transform={`rotate(${rot} ${cx} ${cy})`}
+              />
+            );
+          })
+        : null}
+      <text fill="#172033" fontSize="20" fontWeight="700" textAnchor="middle" x={cx} y={cy + 2}>{pct}%</text>
+      <text fill="#94a3b8" fontSize="11" textAnchor="middle" x={cx} y={cy + 20}>{done}/{total}</text>
+    </svg>
+  );
 }

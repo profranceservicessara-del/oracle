@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
 import { createClient } from "@/lib/supabase/client";
 import type { MyWorkTask } from "@/lib/crm/queries";
@@ -31,12 +32,15 @@ function fmtDate(iso: string | null) {
 
 export function MeuTrabalhoClient({
   initialTasks,
-  recentProjects
+  recentProjects,
+  allProjects
 }: {
   initialTasks: MyWorkTask[];
   recentProjects: RecentProject[];
+  allProjects: RecentProject[];
 }) {
   const supabase = useMemo(() => createClient(), []);
+  const router = useRouter();
   const { showToast } = useToast();
   const [tasks, setTasks] = useState(initialTasks);
   const [topTab, setTopTab] = useState<"work" | "status">("work");
@@ -80,6 +84,11 @@ export function MeuTrabalhoClient({
     return counts;
   }, [tasks]);
   const statusTotal = tasks.length;
+
+  const recentTasks = useMemo(
+    () => [...tasks].sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? "")).slice(0, 5),
+    [tasks]
+  );
 
   async function complete(task: MyWorkTask) {
     const previous = tasks;
@@ -152,9 +161,22 @@ export function MeuTrabalhoClient({
           </div>
 
           {/* Sidebar */}
-          <aside>
+          <aside className="space-y-4">
             <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
-              <p className="mb-3 text-sm font-semibold text-ink">Projetos recentes</p>
+              <div className="mb-3 flex items-center justify-between gap-2">
+                <p className="text-sm font-semibold text-ink">Projetos recentes</p>
+                {allProjects.length > 0 ? (
+                  <select
+                    aria-label="Acesse um projeto"
+                    className="h-8 max-w-[10rem] rounded-full border border-slate-200 bg-white px-3 text-xs text-slate-600 outline-none transition focus:border-brand"
+                    onChange={(e) => { if (e.target.value) router.push(`/projetos/${e.target.value}`); }}
+                    value=""
+                  >
+                    <option value="">Acesse um projeto</option>
+                    {allProjects.map((p) => (<option key={p.id} value={p.id}>{p.name || "Projeto sem nome"}</option>))}
+                  </select>
+                ) : null}
+              </div>
               {recentProjects.length === 0 ? (
                 <p className="text-sm text-muted">Nenhum projeto ainda.</p>
               ) : (
@@ -164,6 +186,26 @@ export function MeuTrabalhoClient({
                       <Link className="flex items-center gap-2.5 rounded-lg px-2 py-2 text-sm text-ink transition hover:bg-slate-50" href={`/projetos/${project.id}`}>
                         <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand/10 text-brand"><svg fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" width="16"><rect height="14" rx="2" width="18" x="3" y="7" /><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg></span>
                         <span className="truncate font-medium">{project.name || "Projeto sem nome"}</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+
+            <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
+              <p className="mb-3 text-sm font-semibold text-ink">Tarefas recentes</p>
+              {recentTasks.length === 0 ? (
+                <p className="text-sm text-muted">Nenhuma tarefa ainda.</p>
+              ) : (
+                <ul className="divide-y divide-line">
+                  {recentTasks.map((task) => (
+                    <li key={task.id}>
+                      <Link className="block rounded-lg px-1 py-2 transition hover:bg-slate-50" href={task.project_id ? `/projetos/${task.project_id}` : "/projetos"}>
+                        <span className="block truncate text-sm font-medium text-ink">{task.title}</span>
+                        <span className="mt-0.5 block truncate text-xs text-muted">
+                          {task.crm_projects?.name ?? "Projeto"} · <span className="inline-flex items-center gap-1"><span className={`h-1.5 w-1.5 rounded-full ${STATUS_META[task.status].bar}`} />{STATUS_META[task.status].label}</span>
+                        </span>
                       </Link>
                     </li>
                   ))}

@@ -143,7 +143,7 @@ export async function listProjects(companyId: string): Promise<ProjectWithStats[
 // painel pessoal — agrupadas por vencimento e prioridade no client.
 export type MyWorkTask = Pick<
   CrmTask,
-  "id" | "title" | "status" | "priority" | "due_date" | "project_id" | "parent_task_id"
+  "id" | "title" | "status" | "priority" | "due_date" | "created_at" | "project_id" | "parent_task_id"
 > & { crm_projects: { name: string } | null };
 
 type MyWorkTaskRow = Omit<MyWorkTask, "crm_projects"> & {
@@ -154,7 +154,7 @@ export async function listMyWorkTasks(companyId: string): Promise<MyWorkTask[]> 
   const supabase = createClient();
   const { data } = await supabase
     .from("crm_tasks")
-    .select("id, title, status, priority, due_date, project_id, parent_task_id, crm_projects(name)")
+    .select("id, title, status, priority, due_date, created_at, project_id, parent_task_id, crm_projects(name)")
     .eq("company_id", companyId)
     .not("project_id", "is", null)
     .order("due_date", { ascending: true, nullsFirst: false });

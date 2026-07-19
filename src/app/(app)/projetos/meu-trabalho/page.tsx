@@ -22,6 +22,7 @@ export default async function MeuTrabalhoPage() {
 
   return (
     <MeuTrabalhoClient
+      allProjects={projects.map((project) => ({ id: project.id, name: project.name }))}
       initialTasks={tasks}
       recentProjects={projects.slice(0, 6).map((project) => ({ id: project.id, name: project.name }))}
     />
