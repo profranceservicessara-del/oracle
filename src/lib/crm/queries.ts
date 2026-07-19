@@ -139,6 +139,31 @@ export async function listProjects(companyId: string): Promise<ProjectWithStats[
   }));
 }
 
+// "Meu trabalho": todas as tarefas de projetos (com nome do projeto) para o
+// painel pessoal — agrupadas por vencimento e prioridade no client.
+export type MyWorkTask = Pick<
+  CrmTask,
+  "id" | "title" | "status" | "priority" | "due_date" | "project_id" | "parent_task_id"
+> & { crm_projects: { name: string } | null };
+
+type MyWorkTaskRow = Omit<MyWorkTask, "crm_projects"> & {
+  crm_projects: { name: string } | { name: string }[] | null;
+};
+
+export async function listMyWorkTasks(companyId: string): Promise<MyWorkTask[]> {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from("crm_tasks")
+    .select("id, title, status, priority, due_date, project_id, parent_task_id, crm_projects(name)")
+    .eq("company_id", companyId)
+    .not("project_id", "is", null)
+    .order("due_date", { ascending: true, nullsFirst: false });
+  return ((data ?? []) as unknown as MyWorkTaskRow[]).map((task) => {
+    const project = Array.isArray(task.crm_projects) ? task.crm_projects[0] ?? null : task.crm_projects;
+    return { ...task, crm_projects: project };
+  });
+}
+
 export async function getProject(projectId: string): Promise<CrmProject | null> {
   const supabase = createClient();
   const { data } = await supabase.from("crm_projects").select("*").eq("id", projectId).maybeSingle();

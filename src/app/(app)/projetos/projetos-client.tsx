@@ -64,6 +64,11 @@ export function ProjetosClient({
         </button>
       </div>
 
+      <div className="mb-5 flex gap-5 border-b border-line text-sm font-semibold">
+        <span className="border-b-2 border-brand pb-2 text-brand">Projetos</span>
+        <Link className="border-b-2 border-transparent pb-2 text-slate-500 transition hover:text-ink" href="/projetos/meu-trabalho">Meu trabalho</Link>
+      </div>
+
       {projects.length === 0 ? (
         <div className="rounded-2xl bg-white px-6 py-20 text-center shadow-sm ring-1 ring-black/5">
           <p className="text-sm font-medium text-ink">Nenhum projeto ainda.</p>
