@@ -72,14 +72,19 @@ export type CrmNote = {
   updated_at: string;
 };
 
+export type CrmTaskPriority = "none" | "low" | "medium" | "high";
+
 export type CrmTask = {
   id: string;
   company_id: string;
   client_id: string | null;
   dossier_id: string | null;
   project_id: string | null;
+  parent_task_id: string | null;
   assignee_id: string | null;
   title: string;
+  description: string | null;
+  priority: CrmTaskPriority;
   status: CrmTaskStatus;
   due_date: string | null;
   created_at: string;

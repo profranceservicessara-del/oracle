@@ -123,7 +123,7 @@ export async function listProjects(companyId: string): Promise<ProjectWithStats[
   const supabase = createClient();
   const [projectsRes, tasksRes] = await Promise.all([
     supabase.from("crm_projects").select("*, crm_clients(name)").eq("company_id", companyId).order("created_at", { ascending: false }),
-    supabase.from("crm_tasks").select("project_id, status").eq("company_id", companyId).not("project_id", "is", null)
+    supabase.from("crm_tasks").select("project_id, status").eq("company_id", companyId).not("project_id", "is", null).is("parent_task_id", null)
   ]);
   const stats = new Map<string, { total: number; done: number }>();
   for (const task of (tasksRes.data ?? []) as Array<{ project_id: string; status: string }>) {
@@ -145,13 +145,16 @@ export async function getProject(projectId: string): Promise<CrmProject | null> 
   return (data as CrmProject | null) ?? null;
 }
 
-export type ProjectTask = Pick<CrmTask, "id" | "title" | "status" | "due_date" | "created_at" | "project_id">;
+export type ProjectTask = Pick<
+  CrmTask,
+  "id" | "title" | "description" | "status" | "priority" | "due_date" | "created_at" | "project_id" | "parent_task_id"
+>;
 
 export async function listProjectTasks(projectId: string): Promise<ProjectTask[]> {
   const supabase = createClient();
   const { data } = await supabase
     .from("crm_tasks")
-    .select("id, title, status, due_date, created_at, project_id")
+    .select("id, title, description, status, priority, due_date, created_at, project_id, parent_task_id")
     .eq("project_id", projectId)
     .order("created_at", { ascending: true });
   return (data ?? []) as ProjectTask[];
