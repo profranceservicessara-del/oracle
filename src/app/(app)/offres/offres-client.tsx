@@ -48,7 +48,11 @@ const plans: Plan[] = [
       "Crie faturas",
       "Orçamentos",
       "Lembrete: Urssaf, impostos e CFE",
-      "Personalização de documentos"
+      "Personalização de documentos",
+      "Fluxo de caixa",
+      "Agenda",
+      "Clientes",
+      "Projetos"
     ],
     acompanhamento: ["Serviço de atendimento ao cliente limitado"]
   },
@@ -68,11 +72,7 @@ const plans: Plan[] = [
       "Personalização avançada de documentos",
       "Declaração de transferência para o Urssaf",
       "Modelos de contrato",
-      "Academia",
-      "Fluxo de caixa",
-      "Agenda",
-      "Clientes",
-      "Projetos"
+      "Academia"
     ],
     acompanhamento: ["Serviço de atendimento ao cliente limitado"]
   },
