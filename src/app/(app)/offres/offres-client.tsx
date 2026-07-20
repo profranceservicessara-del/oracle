@@ -203,6 +203,40 @@ function Badge({ label, className }: { label: string; className: string }) {
   );
 }
 
+// Toggle compartilhado: aparece no topo da vitrine e na seção Gestão
+// completa, ambos ligados ao mesmo estado de cobrança.
+function BillingToggle({
+  discountLabel,
+  onChange,
+  value
+}: {
+  discountLabel: string;
+  onChange: (billing: Billing) => void;
+  value: Billing;
+}) {
+  return (
+    <div className="mt-8 flex justify-center">
+      <div className="inline-flex items-center rounded-full bg-white p-1 shadow-sm ring-1 ring-black/5">
+        {(["mensal", "anual"] as const).map((option) => (
+          <button
+            className={`rounded-full px-6 py-2 text-sm font-semibold capitalize transition ${
+              value === option ? "bg-brand text-white shadow-sm" : "text-slate-500 hover:text-ink"
+            }`}
+            key={option}
+            onClick={() => onChange(option)}
+            type="button"
+          >
+            {option}
+            {option === "anual" ? (
+              <span className="ml-1.5 text-xs font-bold text-emerald-500">{discountLabel}</span>
+            ) : null}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // publicMode: mesma vitrine na landing (visitante deslogado). Sem checkout —
 // todos os CTAs levam ao cadastro. Fonte única de verdade dos planos.
 export function OffresClient({ currentPlan, publicMode = false }: { currentPlan: PlanTier; publicMode?: boolean }) {
@@ -211,23 +245,7 @@ export function OffresClient({ currentPlan, publicMode = false }: { currentPlan:
   return (
     <div>
       {/* Toggle Mensal / Anual */}
-      <div className="mt-8 flex justify-center">
-        <div className="inline-flex items-center rounded-full bg-white p-1 shadow-sm ring-1 ring-black/5">
-          {(["mensal", "anual"] as const).map((option) => (
-            <button
-              className={`rounded-full px-6 py-2 text-sm font-semibold capitalize transition ${
-                billing === option ? "bg-brand text-white shadow-sm" : "text-slate-500 hover:text-ink"
-              }`}
-              key={option}
-              onClick={() => setBilling(option)}
-              type="button"
-            >
-              {option}
-              {option === "anual" ? <span className="ml-1.5 text-xs font-bold text-emerald-500">-35%</span> : null}
-            </button>
-          ))}
-        </div>
-      </div>
+      <BillingToggle discountLabel="-35%" onChange={setBilling} value={billing} />
 
       {/* Cards */}
       <div className="mt-8 grid items-start gap-5 lg:grid-cols-4">
@@ -382,6 +400,8 @@ export function OffresClient({ currentPlan, publicMode = false }: { currentPlan:
             Prefere delegar? Nossos especialistas cuidam de tudo por você — do faturamento à declaração.
           </p>
         </div>
+
+        <BillingToggle discountLabel="-20%" onChange={setBilling} value={billing} />
 
         <div className="mx-auto mt-8 grid max-w-4xl gap-5 md:grid-cols-2">
           {completePlans.map((plan) => (
