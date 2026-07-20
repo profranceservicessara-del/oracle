@@ -17,8 +17,18 @@ export default function LoginPage() {
     <main className="flex min-h-screen">
       {/* Painel esquerdo — branding ProFrance (desktop) */}
       <aside className="relative hidden w-1/2 overflow-hidden bg-gradient-to-br from-[#020D2C] via-[#0A2352] to-[#122C6E] lg:flex lg:flex-col lg:justify-between lg:p-12">
-        <div aria-hidden className="pointer-events-none absolute -top-24 -right-24 h-80 w-80 rounded-full bg-[#1D4ED8]/25 blur-[100px]" />
-        <div aria-hidden className="pointer-events-none absolute -bottom-32 -left-24 h-96 w-96 rounded-full bg-[#5B3FA0]/20 blur-[110px]" />
+        {/* Foto de fundo. O gradiente do <aside> permanece como fallback. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-cover"
+          style={{
+            backgroundImage: "url('/illustrations/login-hero.jpg')",
+            // Foco no rosto: o painel é vertical, então o corte é horizontal.
+            backgroundPosition: "58% center"
+          }}
+        />
+        {/* Véu escuro: garante contraste do texto branco sobre a foto clara. */}
+        <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#020D2C]/95 via-[#031339]/80 to-[#0A2352]/35" />
         <div className="relative z-10">
           <p className="text-xl font-semibold tracking-tight text-white">Oracle</p>
           <p className="mt-1 text-xs font-semibold uppercase tracking-[0.2em] text-white/50">Sistema financeiro</p>
