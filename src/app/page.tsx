@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { OffresClient } from "@/app/(app)/offres/offres-client";
 import { createClient } from "@/lib/supabase/server";
 
 const features = [
@@ -20,41 +21,6 @@ const features = [
     description: "Avisos de échéance e exportação/eliminação de dados conforme a lei, prontos para usar."
   }
 ];
-
-const plans = [
-  {
-    name: "Essencial",
-    price: "€ 0",
-    cadence: "/mês",
-    description: "O básico para começar a emitir com tranquilidade.",
-    features: ["Devis e faturas ilimitados", "Livre de recettes", "1 perfil fiscal"],
-    highlighted: false
-  },
-  {
-    name: "Pro",
-    price: "€ 9",
-    cadence: "/mês",
-    description: "Para quem já fatura e quer manter tudo sob controle.",
-    features: ["Tudo do Essencial", "Lembretes automáticos", "Acompanhamento de seuils e TVA"],
-    highlighted: true
-  },
-  {
-    name: "Premium",
-    price: "€ 15",
-    cadence: "/mês",
-    description: "Automação completa para o seu acompanhamento fiscal.",
-    features: ["Tudo do Pro", "Exportações RGPD", "Suporte prioritário"],
-    highlighted: false
-  }
-];
-
-function CheckIcon() {
-  return (
-    <svg aria-hidden="true" className="mt-0.5 shrink-0 text-emerald-600" fill="none" height="18" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" viewBox="0 0 24 24" width="18">
-      <path d="M20 6 9 17l-5-5" />
-    </svg>
-  );
-}
 
 export default async function HomePage() {
   const supabase = createClient();
@@ -135,52 +101,14 @@ export default async function HomePage() {
           </div>
         </section>
 
+        {/* Planos — mesma vitrine de /offres (fonte única), em modo público. */}
         <section className="mx-auto max-w-6xl px-4 py-12" id="planos">
-          <div className="mb-8 text-center">
+          <div className="mb-2 text-center">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Planos</p>
-            <h2 className="mt-2 text-2xl font-semibold text-ink">Comece grátis, evolua quando precisar</h2>
-            <p className="mx-auto mt-2 max-w-md text-sm text-muted">Valores ilustrativos. Os planos definitivos serão confirmados no lançamento.</p>
+            <h2 className="mt-2 text-2xl font-semibold text-ink">O plano de gestão mais adequado ao seu negócio</h2>
+            <p className="mx-auto mt-2 max-w-md text-sm text-muted">Escolha entre cobrança mensal ou anual. Cancele quando quiser.</p>
           </div>
-          <div className="grid gap-4 lg:grid-cols-3">
-            {plans.map((plan) => (
-              <div
-                className={`flex flex-col rounded-2xl bg-white p-6 shadow-sm ${
-                  plan.highlighted ? "ring-2 ring-[#002D72]" : "ring-1 ring-black/5"
-                }`}
-                key={plan.name}
-              >
-                {plan.highlighted ? (
-                  <span className="mb-3 inline-flex w-fit rounded-full bg-[#002D72]/10 px-2.5 py-0.5 text-[11px] font-semibold text-[#002D72]">
-                    Mais popular
-                  </span>
-                ) : null}
-                <p className="text-sm font-semibold text-ink">{plan.name}</p>
-                <p className="mt-3 flex items-baseline gap-1">
-                  <span className="text-3xl font-semibold tabular-nums text-ink">{plan.price}</span>
-                  <span className="text-sm text-muted">{plan.cadence}</span>
-                </p>
-                <p className="mt-2 text-sm leading-6 text-muted">{plan.description}</p>
-                <ul className="mt-5 flex-1 space-y-2.5">
-                  {plan.features.map((item) => (
-                    <li className="flex gap-2 text-sm text-slate-700" key={item}>
-                      <CheckIcon />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  className={`mt-6 inline-flex h-11 items-center justify-center rounded-2xl px-4 text-sm font-semibold transition ${
-                    plan.highlighted
-                      ? "bg-brand text-white shadow-sm ring-1 ring-[#002D72]/20 hover:bg-[#003a94] active:bg-[#001F4D]"
-                      : "bg-white text-ink shadow-sm ring-1 ring-black/5 hover:bg-slate-50"
-                  }`}
-                  href="/cadastro"
-                >
-                  Começar
-                </Link>
-              </div>
-            ))}
-          </div>
+          <OffresClient currentPlan="free" publicMode />
         </section>
 
         <section className="mx-auto max-w-6xl px-4 py-12">

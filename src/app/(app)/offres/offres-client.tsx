@@ -195,7 +195,9 @@ function Badge({ label, className }: { label: string; className: string }) {
   );
 }
 
-export function OffresClient({ currentPlan }: { currentPlan: PlanTier }) {
+// publicMode: mesma vitrine na landing (visitante deslogado). Sem checkout —
+// todos os CTAs levam ao cadastro. Fonte única de verdade dos planos.
+export function OffresClient({ currentPlan, publicMode = false }: { currentPlan: PlanTier; publicMode?: boolean }) {
   const [billing, setBilling] = useState<Billing>("anual");
 
   return (
@@ -274,7 +276,18 @@ export function OffresClient({ currentPlan }: { currentPlan: PlanTier }) {
 
               {/* CTA */}
               <div className="mt-5">
-                {isCurrent ? (
+                {publicMode ? (
+                  <Link
+                    className={`inline-flex h-11 w-full items-center justify-center rounded-full px-4 text-sm font-semibold shadow-sm transition ${
+                      isFree
+                        ? "bg-white text-ink ring-1 ring-black/10 hover:bg-slate-50"
+                        : "bg-brand text-white ring-1 ring-[#002D72]/20 hover:bg-[#003a94] active:bg-[#001F4D]"
+                    }`}
+                    href="/cadastro"
+                  >
+                    {isFree ? "Começar grátis" : "Assine agora"}
+                  </Link>
+                ) : isCurrent ? (
                   <button
                     className="inline-flex h-11 w-full cursor-not-allowed items-center justify-center rounded-full bg-slate-100 px-4 text-sm font-semibold text-slate-400"
                     disabled
@@ -377,7 +390,7 @@ export function OffresClient({ currentPlan }: { currentPlan: PlanTier }) {
               </p>
               <Link
                 className="mt-5 inline-flex h-11 w-full items-center justify-center rounded-full bg-brand px-4 text-sm font-semibold text-white shadow-sm ring-1 ring-[#002D72]/20 transition hover:bg-[#003a94] active:bg-[#001F4D]"
-                href="/conselheiro"
+                href={publicMode ? "/cadastro" : "/conselheiro"}
               >
                 Falar com a equipe
               </Link>
