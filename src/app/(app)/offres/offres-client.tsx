@@ -33,7 +33,7 @@ const plans: Plan[] = [
     monthly: 0,
     annual: 0,
     software: ["Crie faturas e orçamentos", "Lembrete: Urssaf, impostos e CFE"],
-    acompanhamento: ["Serviço de atendimento ao cliente limitado"]
+    acompanhamento: []
   },
   {
     key: "start",
@@ -65,10 +65,14 @@ const plans: Plan[] = [
     inherits: "Tudo da oferta Start",
     software: [
       "Livro de receitas",
-      "Comprar livro",
       "Personalização avançada de documentos",
       "Declaração de transferência para o Urssaf",
-      "Modelos de contrato"
+      "Modelos de contrato",
+      "Academia",
+      "Fluxo de caixa",
+      "Agenda",
+      "Clientes",
+      "Projetos"
     ],
     acompanhamento: ["Serviço de atendimento ao cliente limitado"]
   },
@@ -101,6 +105,8 @@ type CompletePlan = {
   subtitle: string;
   monthly: string;
   annual: string;
+  /** Mesmo desconto anual aplicado aos planos de software. */
+  discount: number;
   points: string[];
 };
 
@@ -110,7 +116,8 @@ const completePlans: CompletePlan[] = [
     name: "Gestão completa para AE",
     subtitle: "Auto-entrepreneur acompanhado de ponta a ponta pela nossa equipe.",
     monthly: "99 € – 199 €",
-    annual: "79 € – 179 €",
+    annual: "79 € – 159 €",
+    discount: 20,
     points: [
       "Tudo da oferta Business",
       "Declarações Urssaf preparadas e revisadas",
@@ -123,7 +130,8 @@ const completePlans: CompletePlan[] = [
     name: "Gestão completa para BTP",
     subtitle: "Solução completa para o setor da construção (BTP).",
     monthly: "199 € – 299 €",
-    annual: "179 € – 279 €",
+    annual: "159 € – 239 €",
+    discount: 20,
     points: [
       "Tudo da Gestão completa para AE",
       "Gestão de canteiros e situações de obra",
@@ -347,7 +355,8 @@ export function OffresClient({ currentPlan, publicMode = false }: { currentPlan:
                 </ul>
               </div>
 
-              {/* Acompanhamento */}
+              {/* Acompanhamento — omitido quando o plano não oferece nenhum. */}
+              {plan.acompanhamento.length === 0 ? null : (
               <div className="mt-5 rounded-2xl bg-emerald-50/60 p-4">
                 <p className="text-[11px] font-bold uppercase tracking-wide text-emerald-700">Acompanhamento</p>
                 <ul className="mt-3 space-y-2.5">
@@ -359,6 +368,7 @@ export function OffresClient({ currentPlan, publicMode = false }: { currentPlan:
                   ))}
                 </ul>
               </div>
+              )}
             </div>
           );
         })}
@@ -379,7 +389,15 @@ export function OffresClient({ currentPlan, publicMode = false }: { currentPlan:
               <Badge className="bg-fuchsia-500 text-white" label="Business" />
               <h3 className="mt-3 min-h-[3.5rem] text-lg font-bold text-ink">{plan.name}</h3>
               <p className="mt-1 min-h-[3rem] text-sm leading-6 text-muted">{plan.subtitle}</p>
-              <p className="mt-4 flex items-baseline gap-1">
+              {billing === "anual" ? (
+                <p className="mt-4 flex items-center gap-2 text-sm">
+                  <span className="rounded bg-rose-500 px-1.5 py-0.5 text-[11px] font-bold text-white">
+                    -{plan.discount}%
+                  </span>
+                  <span className="text-slate-400 line-through">{plan.monthly}</span>
+                </p>
+              ) : null}
+              <p className={`${billing === "anual" ? "mt-1" : "mt-4"} flex items-baseline gap-1`}>
                 <span className="text-2xl font-bold tabular-nums text-ink">
                   {billing === "anual" ? plan.annual : plan.monthly}
                 </span>
