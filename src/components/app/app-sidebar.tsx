@@ -116,7 +116,7 @@ const nav: NavItem[] = [
     label: "Produtividade",
     icon: icons.produtividade,
     children: [
-      { href: "/crm", label: "Comercial", icon: icons.crm },
+      { href: "/crm", label: "CRM", icon: icons.crm },
       { href: "/crm/pipeline", label: "Pipeline", icon: icons.pipeline },
       { href: "/tarefas", label: "Tarefas", icon: icons.tarefas },
       { href: "/tempo/meus", label: "Meus tempos", icon: icons.agenda },
