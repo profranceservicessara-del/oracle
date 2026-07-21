@@ -118,18 +118,10 @@ const nav: NavItem[] = [
     children: [
       { href: "/crm", label: "Comercial", icon: icons.crm },
       { href: "/crm/pipeline", label: "Pipeline", icon: icons.pipeline },
-      { href: "/tarefas", label: "Tarefas", icon: icons.tarefas }
-    ]
-  },
-  {
-    kind: "group",
-    key: "tempo",
-    label: "Tempo e planejamento",
-    icon: icons.agenda,
-    children: [
+      { href: "/tarefas", label: "Tarefas", icon: icons.tarefas },
       { href: "/tempo/meus", label: "Meus tempos", icon: icons.agenda },
       { href: "/tempo/todos", label: "Todos os momentos", icon: icons.crm },
-      { href: "/tempo", label: "Gestão do tempo", icon: icons.pipeline }
+      { href: "/tempo", label: "Gestão de Tempo", icon: icons.pipeline }
     ]
   },
   {
