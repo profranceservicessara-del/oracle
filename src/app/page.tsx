@@ -270,7 +270,8 @@ export default async function HomePage() {
         </section>
 
         {/* Nossas soluções — segmentos por porte do negócio (ref: Sellsy). */}
-        <section className="mx-auto max-w-6xl px-4 py-12" id="solucoes">
+        <section className="bg-[#ECEAFB]" id="solucoes">
+          <div className="mx-auto max-w-6xl px-4 py-12">
           <div className="mb-8 text-center">
             <span className="inline-flex rounded-full bg-white px-3 py-1 text-xs font-medium text-muted ring-1 ring-black/5">Nossas soluções</span>
             <h2 className="mx-auto mt-4 max-w-2xl text-2xl font-semibold leading-tight text-ink sm:text-3xl">
@@ -298,6 +299,7 @@ export default async function HomePage() {
               </div>
             ))}
           </div>
+          </div>
         </section>
 
         {/* Para quê — pilares do produto (ref: Sellsy). Texto provisório. */}
@@ -320,7 +322,8 @@ export default async function HomePage() {
         </section>
 
         {/* Uma única ferramenta — áreas do produto (ref: Sellsy). */}
-        <section className="mx-auto max-w-6xl px-4 py-12">
+        <section className="bg-[#ECEAFB]">
+          <div className="mx-auto max-w-6xl px-4 py-12">
           <div className="mb-10 text-center">
             <h2 className="mx-auto max-w-3xl text-2xl font-semibold leading-tight text-ink sm:text-3xl">
               Uma única ferramenta para <span className="text-brand">estruturar</span>, <span className="text-brand">gerir</span> e <span className="text-brand">expandir</span> o seu negócio.
@@ -348,6 +351,7 @@ export default async function HomePage() {
                 </div>
               </div>
             ))}
+          </div>
           </div>
         </section>
 
