@@ -8,6 +8,7 @@ import { Select } from "@/components/ui/select";
 import { useToast } from "@/components/ui/toast";
 import { createClient } from "@/lib/supabase/client";
 import { purchaseSchema } from "@/lib/validation";
+import { FluxoDeCaixaTab } from "./fluxo-caixa-tab";
 
 export type CashMovement = {
   id: string;
@@ -67,6 +68,7 @@ export function FinanceiroClient({
   const [form, setForm] = useState(emptyForm);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
+  const [tab, setTab] = useState<"geral" | "fluxo">("geral");
 
   const visible = useMemo(
     () =>
@@ -149,29 +151,50 @@ export function FinanceiroClient({
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-8">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Gestão</p>
-          <h1 className="mt-1 text-2xl font-semibold text-ink">Fluxo de Caixa</h1>
-          <p className="mt-1 text-sm text-muted">Recebimentos das faturas (entradas) e compras (saídas), com saldo.</p>
+          <h1 className="mt-1 text-2xl font-semibold text-ink">Financeiro</h1>
+          <p className="mt-1 text-sm text-muted">Acompanhe entradas, saídas, saldo e recebíveis.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Select aria-label="Ano" className="w-28" onChange={(e) => setYear(Number(e.target.value))} value={year}>
-            {years.map((y) => (
-              <option key={y} value={y}>
-                {y}
-              </option>
-            ))}
-          </Select>
-          <Button onClick={exportCsv} type="button" variant="secondary">
-            Exportar CSV
-          </Button>
+          {tab === "geral" ? (
+            <>
+              <Select aria-label="Ano" className="w-28" onChange={(e) => setYear(Number(e.target.value))} value={year}>
+                {years.map((y) => (
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
+              </Select>
+              <Button onClick={exportCsv} type="button" variant="secondary">
+                Exportar CSV
+              </Button>
+            </>
+          ) : null}
           <Button onClick={() => { setForm(emptyForm); setErrors({}); setIsOpen(true); }} type="button">
             + Saída
           </Button>
         </div>
       </div>
 
+      {/* Abas */}
+      <div className="mb-6 grid grid-cols-2 gap-1 rounded-2xl bg-white p-1 shadow-sm ring-1 ring-black/5">
+        {(["geral", "fluxo"] as const).map((t) => (
+          <button
+            className={`rounded-xl py-2.5 text-sm font-semibold transition ${tab === t ? "bg-brand text-white shadow-sm" : "text-slate-600 hover:bg-slate-50"}`}
+            key={t}
+            onClick={() => setTab(t)}
+            type="button"
+          >
+            {t === "geral" ? "Visão Geral" : "Fluxo de Caixa"}
+          </button>
+        ))}
+      </div>
+
+      {tab === "fluxo" ? <FluxoDeCaixaTab movements={movements} /> : null}
+
+      <div className={tab === "geral" ? "" : "hidden"}>
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Recebidas ({year})</p>
@@ -249,6 +272,7 @@ export function FinanceiroClient({
           ))}
         </div>
       )}
+      </div>
 
       <FormModal description="Registre uma despesa/saída de caixa." isOpen={isOpen} onClose={() => setIsOpen(false)} title="Nova saída">
         <form
