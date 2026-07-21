@@ -110,27 +110,68 @@ const toolCards = [
   {
     title: "Oferta",
     tagline: "Aumente sua receita vendendo mais e melhor.",
-    description: "Gestão de contatos · Orçamentos e assinaturas eletrônicas · Acompanhamento de oportunidades de negócios",
+    description: "Gestão de clientes · Orçamentos · CRM e pipeline · Acompanhamento de oportunidades",
     gradient: "from-[#0f766e] to-[#2dd4bf]"
   },
   {
     title: "Cobrança",
     tagline: "Economize tempo nas suas faturas e pagamentos.",
-    description: "Orçamentos e faturas · Pedidos de compra e notas de entrega · Compras · Contabilidade preliminar · Lembretes de pagamento · Pagamento online",
+    description: "Orçamentos e faturas conformes · Compras · Comprovantes · Condições e lembretes de pagamento",
     gradient: "from-[#9f1239] to-[#fb7185]"
   },
   {
-    title: "Marketing",
-    tagline: "Aproveite uma solução poderosa integrada ao seu CRM.",
-    description: "Páginas de destino · Campanhas de e-mail e SMS · Automação de marketing · Pontuação de leads",
+    title: "Produtividade",
+    tagline: "Organize projetos, tarefas e tempo num só lugar.",
+    description: "Projetos e Kanban · Tarefas · Gestão de tempo · Agenda",
     gradient: "from-[#4c1d95] to-[#a78bfa]"
   },
   {
     title: "Tesouraria",
     tagline: "Gerencie seu fluxo de caixa com facilidade.",
-    description: "Sincronização bancária · Monitoramento de fluxo de caixa · Previsão · Categorização automática",
+    description: "Contas bancárias · Fluxo de caixa · Recebíveis · Exportação em CSV",
     gradient: "from-[#0c4a6e] to-[#38bdf8]"
   }
+];
+
+// Seção confiança/segurança. Texto adaptado ao Oracle e HONESTO: sem claims
+// de certificação (ISO, hospedagem na França, "16 anos") que exigiriam
+// verificação. Só recursos reais (RGPD, isolamento por conta, formato legal).
+const trustCards = [
+  {
+    tint: "bg-[#EAF0FF] text-[#2B4F9E]",
+    title: "Feito para as regras francesas",
+    description: "Faturas no formato legal francês, livro de receitas e preparação das declarações Urssaf, pensado para o auto-entrepreneur na França.",
+    icon: (
+      <svg fill="none" height="20" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" width="20"><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z" /><path d="M9 13h6M9 17h4" /></svg>
+    )
+  },
+  {
+    tint: "bg-[#E3F2EA] text-[#16794C]",
+    title: "Seus dados protegidos",
+    description: "Acesso isolado por conta, conformidade com o RGPD e exportação ou eliminação dos seus dados quando você quiser.",
+    icon: (
+      <svg fill="none" height="20" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" width="20"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z" /><path d="m9 12 2 2 4-4" /></svg>
+    )
+  },
+  {
+    tint: "bg-[#EDE7FB] text-[#6A4FB0]",
+    title: "Tudo num só lugar",
+    description: "Faturação, CRM, contabilidade e fluxo de caixa conectados, sem planilhas e sem pular entre ferramentas.",
+    icon: (
+      <svg fill="none" height="20" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" width="20"><rect height="7" rx="1.5" width="7" x="3" y="3" /><rect height="7" rx="1.5" width="7" x="14" y="3" /><rect height="7" rx="1.5" width="7" x="3" y="14" /><circle cx="17.5" cy="17.5" r="3.5" /></svg>
+    )
+  }
+];
+
+const trustChips = [
+  "Conformidade com o RGPD",
+  "Exportação dos seus dados",
+  "Eliminação de conta (RGPD)",
+  "Acesso isolado por conta",
+  "Faturas em formato legal francês",
+  "Livro de receitas automático",
+  "Suporte humano em português",
+  "Sistema todo em português"
 ];
 
 function ArrowIcon() {
@@ -305,6 +346,37 @@ export default async function HomePage() {
                     <ArrowIcon />
                   </Link>
                 </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Confiança e segurança (ref: Sellsy). Texto adaptado e honesto. */}
+        <section className="mx-auto max-w-6xl px-4 py-12">
+          <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-brand">
+            <span aria-hidden>🇫🇷</span> ProFrance, feito para a França
+          </p>
+          <h2 className="mt-3 max-w-2xl text-2xl font-semibold leading-tight text-ink sm:text-4xl">
+            Pare de escolher entre simplicidade, conformidade e controle.
+          </h2>
+          <div className="mt-8 grid gap-5 md:grid-cols-3">
+            {trustCards.map((card) => (
+              <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5" key={card.title}>
+                <span className={`inline-flex h-11 w-11 items-center justify-center rounded-xl ${card.tint}`}>{card.icon}</span>
+                <h3 className="mt-4 text-lg font-bold leading-snug text-ink">{card.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-muted">{card.description}</p>
+                <Link className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-brand hover:text-[#003a94]" href="/cadastro">
+                  Saber mais
+                  <svg fill="none" height="14" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" width="14"><path d="m9 6 6 6-6 6" /></svg>
+                </Link>
+              </div>
+            ))}
+          </div>
+          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {trustChips.map((chip) => (
+              <div className="flex items-center gap-2.5 rounded-xl bg-white px-3.5 py-3 text-sm text-slate-700 ring-1 ring-black/5" key={chip}>
+                <svg className="shrink-0 text-emerald-600" fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" viewBox="0 0 24 24" width="16"><path d="M20 6 9 17l-5-5" /></svg>
+                {chip}
               </div>
             ))}
           </div>
