@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/client";
 import type { AuthError } from "@supabase/supabase-js";
-import { AppleIcon, GoogleIcon, oauthButtonClass, startOAuth } from "../oauth";
+import { AppleIcon, GoogleIcon, oauthButtonClass, SHOW_SOCIAL_LOGIN, startOAuth } from "../oauth";
 
 const loginSchema = z.object({
   email: z.string().trim().email("Informe um email válido."),
@@ -141,24 +141,28 @@ export function LoginForm() {
 
   return (
     <div className="w-full">
-      {/* OAuth */}
-      <div className="space-y-3">
-        <button className={oauthButtonClass} disabled={disabled} onClick={() => void signInWithProvider("google")} type="button">
-          <GoogleIcon />
-          {busy === "google" ? "Redirecionando…" : "Iniciar sessão com o Google"}
-        </button>
-        <button className={oauthButtonClass} disabled={disabled} onClick={() => void signInWithProvider("apple")} type="button">
-          <AppleIcon />
-          {busy === "apple" ? "Redirecionando…" : "Conecte-se com a Apple"}
-        </button>
-      </div>
+      {SHOW_SOCIAL_LOGIN ? (
+        <>
+          {/* OAuth */}
+          <div className="space-y-3">
+            <button className={oauthButtonClass} disabled={disabled} onClick={() => void signInWithProvider("google")} type="button">
+              <GoogleIcon />
+              {busy === "google" ? "Redirecionando…" : "Iniciar sessão com o Google"}
+            </button>
+            <button className={oauthButtonClass} disabled={disabled} onClick={() => void signInWithProvider("apple")} type="button">
+              <AppleIcon />
+              {busy === "apple" ? "Redirecionando…" : "Conecte-se com a Apple"}
+            </button>
+          </div>
 
-      {/* Divisor */}
-      <div className="my-6 flex items-center gap-4">
-        <span className="h-px flex-1 bg-slate-200" />
-        <span className="text-sm text-muted">Ou</span>
-        <span className="h-px flex-1 bg-slate-200" />
-      </div>
+          {/* Divisor */}
+          <div className="my-6 flex items-center gap-4">
+            <span className="h-px flex-1 bg-slate-200" />
+            <span className="text-sm text-muted">Ou</span>
+            <span className="h-px flex-1 bg-slate-200" />
+          </div>
+        </>
+      ) : null}
 
       {/* Email + senha */}
       <form

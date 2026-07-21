@@ -3,6 +3,11 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+// Login social (Google/Apple) oculto até os providers serem configurados
+// no painel Supabase. Trocar para true reativa os botões em /login e
+// /cadastro — nenhuma outra mudança necessária.
+export const SHOW_SOCIAL_LOGIN = false;
+
 export const oauthButtonClass =
   "flex h-12 w-full items-center justify-center gap-2.5 rounded-full bg-white text-sm font-semibold text-ink ring-1 ring-inset ring-slate-300 transition hover:bg-slate-50 disabled:opacity-60";
 
