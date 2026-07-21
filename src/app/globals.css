@@ -21,3 +21,23 @@ a {
   color: inherit;
   text-decoration: none;
 }
+
+/* Scrollbar glass: fina e translúcida. Na sidebar (fundo navy escuro) o
+   trilho fica invisível e o thumb é um branco translúcido, efeito vidro. */
+.sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+.sidebar-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+}
+.sidebar-scroll:hover::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.28);
+}

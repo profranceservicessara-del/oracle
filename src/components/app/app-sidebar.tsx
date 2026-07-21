@@ -354,7 +354,7 @@ function NavList({ onNavigate, collapsed, onExpand, onCollapse }: { onNavigate?:
 
   if (collapsed) {
     return (
-      <nav className="flex flex-1 flex-col items-center gap-1 overflow-y-auto">
+      <nav className="flex flex-1 flex-col items-center gap-1 overflow-y-auto sidebar-scroll">
         {navRender.map((item) => {
           const active =
             item.kind === "link" ? item.href === activeHref : item.children.some((child) => child.href === activeHref);
@@ -377,7 +377,7 @@ function NavList({ onNavigate, collapsed, onExpand, onCollapse }: { onNavigate?:
   }
 
   return (
-    <nav className="flex flex-1 flex-col gap-1 overflow-y-auto pr-0.5">
+    <nav className="flex flex-1 flex-col gap-1 overflow-y-auto pr-0.5 sidebar-scroll">
       {navRender.map((item) =>
         item.kind === "link" ? (
           <Link
@@ -560,7 +560,7 @@ function ShortcutsBlock({ collapsed, onNavigate, onCollapse }: { collapsed?: boo
               </button>
             </header>
 
-            <div className="flex-1 space-y-5 overflow-y-auto px-5 py-5">
+            <div className="flex-1 space-y-5 overflow-y-auto px-5 py-5 sidebar-scroll">
               <div className="flex items-start gap-3 rounded-2xl bg-[#EAF2FF] p-4">
                 <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-lg leading-none shadow-sm">💡</span>
                 <div>

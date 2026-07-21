@@ -9,6 +9,7 @@ import { useToast } from "@/components/ui/toast";
 import { createClient } from "@/lib/supabase/client";
 import { purchaseSchema } from "@/lib/validation";
 import { FluxoDeCaixaTab } from "./fluxo-caixa-tab";
+import { ResumoFinanceiro } from "./resumo-financeiro";
 
 export type CashMovement = {
   id: string;
@@ -322,6 +323,8 @@ export function FinanceiroClient({
           <p className="mt-0.5 text-[11px] text-muted">Realizado {euro.format(saldo)} + a receber</p>
         </div>
       </div>
+
+      <ResumoFinanceiro movements={movements} />
 
       {initialReceivables.length > 0 ? (
         <section className="mb-6 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
