@@ -304,10 +304,20 @@ export const vatRegimeLabels: Record<VatRegime, string> = {
   assujetti: "Assujetti TVA"
 };
 
+// Rótulos do documento em si — usados na prévia e no PDF. DEVEM permanecer
+// em francês: é o texto legal que sai no documento entregue ao cliente.
 export const documentTypeLabels: Record<DocumentType, string> = {
   devis: "Devis",
   facture: "Facture",
   avoir: "Avoir"
+};
+
+// Rótulos apenas de interface (seletor do editor, lista de documentos).
+// Português para o usuário; nunca aparecem na prévia nem no PDF.
+export const documentTypeUiLabels: Record<DocumentType, string> = {
+  devis: "Orçamento",
+  facture: "Fatura",
+  avoir: "Nota de crédito"
 };
 
 export const documentStatusLabels: Record<DocumentStatus, string> = {

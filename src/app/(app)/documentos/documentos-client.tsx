@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import {
   documentStatusLabels,
-  documentTypeLabels,
+  documentTypeUiLabels,
   type Client,
   type Document,
   type DocumentStatus,
@@ -126,7 +126,7 @@ export function DocumentosClient({
       render: (document) => (
         <div>
           <p className="font-medium">
-            {document.numero || `${documentTypeLabels[document.type]} rascunho`}
+            {document.numero || `${documentTypeUiLabels[document.type]} rascunho`}
           </p>
           <p className="mt-1 text-sm text-muted">
             {document.date_emission || "Sem data de emissão"}
@@ -140,7 +140,7 @@ export function DocumentosClient({
     },
     {
       header: "Tipo",
-      render: (document) => documentTypeLabels[document.type]
+      render: (document) => documentTypeUiLabels[document.type]
     },
     {
       header: "Status",

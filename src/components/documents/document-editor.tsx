@@ -23,7 +23,7 @@ import { clientSchema } from "@/lib/validation";
 import {
   categoryLabels,
   clientTypeLabels,
-  documentTypeLabels,
+  documentTypeUiLabels,
   paymentMethodLabels,
   type ActivityCategory,
   type CatalogItem,
@@ -474,7 +474,7 @@ export function DocumentEditor({
           <div className="mt-2 flex flex-wrap items-center gap-3">
             {documentType === "avoir" ? (
               <Select className="w-44" disabled value="avoir">
-                <option value="avoir">Avoir</option>
+                <option value="avoir">{documentTypeUiLabels.avoir}</option>
               </Select>
             ) : (
               <Select
@@ -482,8 +482,8 @@ export function DocumentEditor({
                 onChange={(event) => setDocumentType(event.target.value as "devis" | "facture")}
                 value={documentType}
               >
-                <option value="devis">Devis</option>
-                <option value="facture">Facture</option>
+                <option value="devis">{documentTypeUiLabels.devis}</option>
+                <option value="facture">{documentTypeUiLabels.facture}</option>
               </Select>
             )}
             <Badge tone="warning">Rascunho</Badge>
