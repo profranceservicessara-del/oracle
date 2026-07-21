@@ -175,32 +175,32 @@ export function FluxoDeCaixaTab({ movements }: { movements: CashMovement[] }) {
         </button>
       </div>
 
-      {/* KPIs */}
+      {/* KPIs — fundo tingido + ícone em círculo, como o print */}
       <div className="mb-4 grid gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
-          <div className="flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-50 text-sky-600">
+        <div className="rounded-2xl bg-sky-50/70 p-5 ring-1 ring-inset ring-sky-100">
+          <div className="flex items-center gap-2.5">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-sky-600 shadow-sm">
               <svg fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" width="16"><path d="M12 19V5M5 12l7-7 7 7" /></svg>
             </span>
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Receita</p>
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Receita</p>
           </div>
           <p className="mt-3 text-2xl font-bold tabular-nums text-ink">{euro.format(receita)}</p>
         </div>
-        <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
-          <div className="flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-50 text-rose-600">
+        <div className="rounded-2xl bg-rose-50/70 p-5 ring-1 ring-inset ring-rose-100">
+          <div className="flex items-center gap-2.5">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-rose-600 shadow-sm">
               <svg fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" width="16"><path d="M12 5v14M5 12l7 7 7-7" /></svg>
             </span>
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Saídas</p>
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Saídas</p>
           </div>
           <p className="mt-3 text-2xl font-bold tabular-nums text-ink">{euro.format(saidas)}</p>
         </div>
-        <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
-          <div className="flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+        <div className="rounded-2xl bg-emerald-50/70 p-5 ring-1 ring-inset ring-emerald-100">
+          <div className="flex items-center gap-2.5">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-emerald-600 shadow-sm">
               <svg fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" width="16"><path d="M4 18V9M10 18V5M16 18v-6M4 21h16" /></svg>
             </span>
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Saldo líquido</p>
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Saldo líquido</p>
           </div>
           <p className={`mt-3 text-2xl font-bold tabular-nums ${liquido >= 0 ? "text-ink" : "text-rose-600"}`}>{euro.format(liquido)}</p>
         </div>
@@ -275,9 +275,9 @@ export function FluxoDeCaixaTab({ movements }: { movements: CashMovement[] }) {
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-5 py-3">
                 <h3 className="text-sm font-semibold capitalize text-ink">{g.label}</h3>
                 <div className="flex gap-3 text-xs font-semibold tabular-nums">
-                  <span className="text-emerald-600">+{euro.format(g.totalIn)}</span>
+                  <span className="text-sky-600">+{euro.format(g.totalIn)}</span>
                   <span className="text-rose-600">−{euro.format(g.totalOut)}</span>
-                  <span className={g.totalIn - g.totalOut >= 0 ? "text-ink" : "text-rose-600"}>= {euro.format(g.totalIn - g.totalOut)}</span>
+                  <span className="text-emerald-600">= {euro.format(g.totalIn - g.totalOut)}</span>
                 </div>
               </div>
               <div className="divide-y divide-line">

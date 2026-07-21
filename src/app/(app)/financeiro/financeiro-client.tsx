@@ -150,12 +150,12 @@ export function FinanceiroClient({
   }
 
   return (
-    <main className="mx-auto max-w-4xl px-4 py-8">
+    <main className="mx-auto max-w-5xl px-4 py-8">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Gestão</p>
           <h1 className="mt-1 text-2xl font-semibold text-ink">Financeiro</h1>
-          <p className="mt-1 text-sm text-muted">Acompanhe entradas, saídas, saldo e recebíveis.</p>
+          <p className="mt-1 text-sm text-muted">Acompanhe entradas, saídas, saldo, recebíveis e resultados por produto ou serviço.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {tab === "geral" ? (
@@ -178,11 +178,11 @@ export function FinanceiroClient({
         </div>
       </div>
 
-      {/* Abas */}
-      <div className="mb-6 grid grid-cols-2 gap-1 rounded-2xl bg-white p-1 shadow-sm ring-1 ring-black/5">
+      {/* Abas — segmented control */}
+      <div className="mb-6 grid grid-cols-2 gap-1 rounded-2xl bg-slate-100 p-1">
         {(["geral", "fluxo"] as const).map((t) => (
           <button
-            className={`rounded-xl py-2.5 text-sm font-semibold transition ${tab === t ? "bg-brand text-white shadow-sm" : "text-slate-600 hover:bg-slate-50"}`}
+            className={`rounded-xl py-2.5 text-sm font-semibold transition ${tab === t ? "bg-white text-ink shadow-sm ring-1 ring-black/5" : "text-slate-500 hover:text-ink"}`}
             key={t}
             onClick={() => setTab(t)}
             type="button"
