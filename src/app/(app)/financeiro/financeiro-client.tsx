@@ -39,6 +39,7 @@ const methodLabels: Record<string, string> = {
 };
 
 const emptyForm = { date_achat: new Date().toISOString().slice(0, 10), fournisseur: "", designation: "", montant: "", moyen: "", reference_piece: "" };
+const emptyEntrada = { document_id: "", montant: "", moyen: "virement", date_encaissement: new Date().toISOString().slice(0, 10) };
 
 function yearsOf(movs: CashMovement[]): number[] {
   const set = new Set<number>();
@@ -69,6 +70,10 @@ export function FinanceiroClient({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [tab, setTab] = useState<"geral" | "fluxo">("geral");
+  const [isEntradaOpen, setIsEntradaOpen] = useState(false);
+  const [entradaForm, setEntradaForm] = useState(emptyEntrada);
+  const [entradaErrors, setEntradaErrors] = useState<Record<string, string>>({});
+  const [savingEntrada, setSavingEntrada] = useState(false);
 
   const visible = useMemo(
     () =>
@@ -130,6 +135,66 @@ export function FinanceiroClient({
     showToast("Saída registrada.", "success");
   }
 
+  function setEnt<K extends keyof typeof emptyEntrada>(key: K, value: string) {
+    setEntradaForm((c) => ({ ...c, [key]: value }));
+  }
+
+  // Entrada = recebimento de uma fatura em aberto (insere em payments, a fonte
+  // real de caixa). Não usa manual_receipts, que é o livro de receitas e fica
+  // fora do /financeiro de propósito (anti double-count com a base URSSAF).
+  async function saveEntrada() {
+    const next: Record<string, string> = {};
+    if (!entradaForm.document_id) next.document_id = "Selecione a fatura recebida.";
+    const montant = Number(entradaForm.montant.replace(",", "."));
+    if (!montant || montant <= 0) next.montant = "Informe um valor maior que zero.";
+    if (!entradaForm.date_encaissement) next.date_encaissement = "Informe a data.";
+    if (Object.keys(next).length > 0) {
+      setEntradaErrors(next);
+      return;
+    }
+    setEntradaErrors({});
+    setSavingEntrada(true);
+    const { data, error } = await supabase
+      .from("payments")
+      .insert({
+        user_id: userId,
+        document_id: entradaForm.document_id,
+        montant,
+        moyen: entradaForm.moyen,
+        date_encaissement: entradaForm.date_encaissement,
+        notes: "Entrada registrada no Financeiro"
+      })
+      .select("id, date_encaissement, montant, moyen, documents(numero)")
+      .single();
+    setSavingEntrada(false);
+    if (error || !data) {
+      showToast("Não foi possível registrar a entrada.", "error");
+      return;
+    }
+    const row = data as unknown as {
+      id: string;
+      date_encaissement: string;
+      montant: number;
+      moyen: string | null;
+      documents: { numero: string | null } | { numero: string | null }[] | null;
+    };
+    const doc = Array.isArray(row.documents) ? row.documents[0] : row.documents;
+    setMovements((cur) => [
+      {
+        id: `in-${row.id}`,
+        date: row.date_encaissement,
+        kind: "in",
+        label: doc?.numero ? `Recebimento · ${doc.numero}` : "Recebimento",
+        method: row.moyen ?? null,
+        amount: Number(row.montant) || 0
+      },
+      ...cur
+    ]);
+    setEntradaForm(emptyEntrada);
+    setIsEntradaOpen(false);
+    showToast("Entrada registrada.", "success");
+  }
+
   function exportCsv() {
     const header = ["Data", "Tipo", "Descrição", "Método", "Valor"];
     const rows = visible.map((m) => [
@@ -158,23 +223,20 @@ export function FinanceiroClient({
           <p className="mt-1 text-sm text-muted">Acompanhe entradas, saídas, saldo, recebíveis e resultados por produto ou serviço.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {tab === "geral" ? (
-            <>
-              <Select aria-label="Ano" className="w-28" onChange={(e) => setYear(Number(e.target.value))} value={year}>
-                {years.map((y) => (
-                  <option key={y} value={y}>
-                    {y}
-                  </option>
-                ))}
-              </Select>
-              <Button onClick={exportCsv} type="button" variant="secondary">
-                Exportar CSV
-              </Button>
-            </>
-          ) : null}
-          <Button onClick={() => { setForm(emptyForm); setErrors({}); setIsOpen(true); }} type="button">
-            + Saída
-          </Button>
+          <button
+            className="inline-flex h-10 items-center gap-1 rounded-full border border-emerald-200 bg-white px-4 text-sm font-semibold text-emerald-700 shadow-sm transition hover:bg-emerald-50 active:scale-[0.98]"
+            onClick={() => { setEntradaForm(emptyEntrada); setEntradaErrors({}); setIsEntradaOpen(true); }}
+            type="button"
+          >
+            <span className="text-base leading-none">+</span> Entrada
+          </button>
+          <button
+            className="inline-flex h-10 items-center gap-1 rounded-full border border-rose-200 bg-white px-4 text-sm font-semibold text-rose-700 shadow-sm transition hover:bg-rose-50 active:scale-[0.98]"
+            onClick={() => { setForm(emptyForm); setErrors({}); setIsOpen(true); }}
+            type="button"
+          >
+            <span className="text-base leading-none">+</span> Saída
+          </button>
         </div>
       </div>
 
@@ -195,6 +257,18 @@ export function FinanceiroClient({
       {tab === "fluxo" ? <FluxoDeCaixaTab movements={movements} /> : null}
 
       <div className={tab === "geral" ? "" : "hidden"}>
+      <div className="mb-4 flex flex-wrap items-center justify-end gap-2">
+        <Select aria-label="Ano" className="w-28" onChange={(e) => setYear(Number(e.target.value))} value={year}>
+          {years.map((y) => (
+            <option key={y} value={y}>
+              {y}
+            </option>
+          ))}
+        </Select>
+        <Button onClick={exportCsv} type="button" variant="secondary">
+          Exportar CSV
+        </Button>
+      </div>
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Recebidas ({year})</p>
@@ -324,6 +398,73 @@ export function FinanceiroClient({
             </Button>
           </div>
         </form>
+      </FormModal>
+
+      <FormModal description="Registre o recebimento de uma fatura em aberto." isOpen={isEntradaOpen} onClose={() => setIsEntradaOpen(false)} title="Nova entrada">
+        {initialReceivables.length === 0 ? (
+          <div className="py-2 text-sm text-muted">
+            Nenhuma fatura em aberto. As entradas do caixa vêm do recebimento de faturas emitidas.
+          </div>
+        ) : (
+          <form
+            className="grid gap-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              void saveEntrada();
+            }}
+          >
+            <label className="text-sm font-medium text-ink">
+              Fatura recebida
+              <Select
+                className="mt-2"
+                onChange={(e) => {
+                  const r = initialReceivables.find((x) => x.id === e.target.value);
+                  setEntradaForm((c) => ({ ...c, document_id: e.target.value, montant: r ? r.amount.toFixed(2) : c.montant }));
+                }}
+                value={entradaForm.document_id}
+              >
+                <option value="">Selecionar fatura</option>
+                {initialReceivables.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {(r.numero ?? "Fatura")}{r.client ? ` · ${r.client}` : ""} (devido {euro.format(r.amount)})
+                  </option>
+                ))}
+              </Select>
+              {entradaErrors.document_id ? <span className="mt-1 block text-xs text-red-600">{entradaErrors.document_id}</span> : null}
+            </label>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="text-sm font-medium text-ink">
+                Valor (€)
+                <Input className="mt-2" min="0" onChange={(e) => setEnt("montant", e.target.value)} step="0.01" type="number" value={entradaForm.montant} />
+                {entradaErrors.montant ? <span className="mt-1 block text-xs text-red-600">{entradaErrors.montant}</span> : null}
+              </label>
+              <label className="text-sm font-medium text-ink">
+                Data
+                <Input className="mt-2" onChange={(e) => setEnt("date_encaissement", e.target.value)} type="date" value={entradaForm.date_encaissement} />
+                {entradaErrors.date_encaissement ? <span className="mt-1 block text-xs text-red-600">{entradaErrors.date_encaissement}</span> : null}
+              </label>
+            </div>
+            <label className="text-sm font-medium text-ink">
+              Método
+              <Select className="mt-2" onChange={(e) => setEnt("moyen", e.target.value)} value={entradaForm.moyen}>
+                <option value="virement">Transferência</option>
+                <option value="cb">Cartão</option>
+                <option value="especes">Dinheiro</option>
+                <option value="cheque">Cheque</option>
+                <option value="stripe">Stripe</option>
+                <option value="autre">Outro</option>
+              </Select>
+            </label>
+            <div className="flex justify-end gap-2">
+              <Button onClick={() => setIsEntradaOpen(false)} type="button" variant="secondary">
+                Cancelar
+              </Button>
+              <Button disabled={savingEntrada} type="submit">
+                {savingEntrada ? "Salvando…" : "Registrar entrada"}
+              </Button>
+            </div>
+          </form>
+        )}
       </FormModal>
     </main>
   );
