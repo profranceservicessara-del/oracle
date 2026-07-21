@@ -103,6 +103,36 @@ const pillars = [
   }
 ];
 
+// Uma única ferramenta — 4 áreas do produto. Imagem = placeholder colorido
+// (trocar por screenshots da ProFrance). Paleta fria e on-brand: no lugar do
+// amarelo do print, a Tesouraria usa azul.
+const toolCards = [
+  {
+    title: "Oferta",
+    tagline: "Aumente sua receita vendendo mais e melhor.",
+    description: "Gestão de contatos · Orçamentos e assinaturas eletrônicas · Acompanhamento de oportunidades de negócios",
+    gradient: "from-[#0f766e] to-[#2dd4bf]"
+  },
+  {
+    title: "Cobrança",
+    tagline: "Economize tempo nas suas faturas e pagamentos.",
+    description: "Orçamentos e faturas · Pedidos de compra e notas de entrega · Compras · Contabilidade preliminar · Lembretes de pagamento · Pagamento online",
+    gradient: "from-[#9f1239] to-[#fb7185]"
+  },
+  {
+    title: "Marketing",
+    tagline: "Aproveite uma solução poderosa integrada ao seu CRM.",
+    description: "Páginas de destino · Campanhas de e-mail e SMS · Automação de marketing · Pontuação de leads",
+    gradient: "from-[#4c1d95] to-[#a78bfa]"
+  },
+  {
+    title: "Tesouraria",
+    tagline: "Gerencie seu fluxo de caixa com facilidade.",
+    description: "Sincronização bancária · Monitoramento de fluxo de caixa · Previsão · Categorização automática",
+    gradient: "from-[#0c4a6e] to-[#38bdf8]"
+  }
+];
+
 function ArrowIcon() {
   return (
     <svg fill="none" height="18" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" width="18"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
@@ -243,6 +273,38 @@ export default async function HomePage() {
                 <span className={`inline-flex h-11 w-11 items-center justify-center rounded-xl ${pillar.tint}`}>{pillar.icon}</span>
                 <h3 className="mt-4 text-base font-semibold text-ink">{pillar.title}</h3>
                 <p className="mt-2 text-sm leading-6 text-muted">{pillar.description}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Uma única ferramenta — áreas do produto (ref: Sellsy). */}
+        <section className="mx-auto max-w-6xl px-4 py-12">
+          <div className="mb-10 text-center">
+            <h2 className="mx-auto max-w-3xl text-2xl font-semibold leading-tight text-ink sm:text-3xl">
+              Uma única ferramenta para <span className="text-brand">estruturar</span>, <span className="text-brand">gerir</span> e <span className="text-brand">expandir</span> o seu negócio.
+            </h2>
+            <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-muted">
+              Seus dados não precisam mais transitar entre diversas ferramentas. Tudo se comunica em tempo real, permitindo uma gestão eficiente e colaborativa.
+            </p>
+          </div>
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {toolCards.map((card) => (
+              <div className="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5" key={card.title}>
+                {/* Imagem placeholder até os screenshots da ProFrance entrarem. */}
+                <div aria-hidden className={`h-40 bg-gradient-to-br ${card.gradient}`} />
+                <div className="flex flex-1 flex-col p-6">
+                  <h3 className="text-lg font-bold text-ink">{card.title}</h3>
+                  <p className="mt-1 text-sm font-semibold text-ink">{card.tagline}</p>
+                  <p className="mt-3 flex-1 text-sm leading-6 text-muted">{card.description}</p>
+                  <Link
+                    aria-label={`Saber mais sobre ${card.title}`}
+                    className="mt-5 inline-flex h-10 w-10 items-center justify-center rounded-full bg-brand text-white shadow-sm transition hover:bg-[#003a94] active:bg-[#001F4D]"
+                    href="/cadastro"
+                  >
+                    <ArrowIcon />
+                  </Link>
+                </div>
               </div>
             ))}
           </div>
