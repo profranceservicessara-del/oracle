@@ -6,11 +6,34 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/supabase/client";
+import type { AuthError } from "@supabase/supabase-js";
 
 const signupSchema = z.object({
   email: z.string().trim().email("Informe um email válido."),
   password: z.string().min(8, "A senha precisa ter pelo menos 8 caracteres.")
 });
+
+// Traduz o erro cru do Supabase numa mensagem acionável em vez de um
+// genérico "tente novamente" — o usuário precisa saber o que fazer.
+function signupErrorMessage(err: AuthError) {
+  const code = err.code ?? "";
+  if (err.status === 429 || code === "over_email_send_rate_limit") {
+    return "Muitas tentativas de cadastro agora. Aguarde alguns minutos e tente de novo.";
+  }
+  if (code === "user_already_exists" || /already registered|already been registered/i.test(err.message)) {
+    return "Este email já tem conta. Faça login ou use \"Esqueceu sua senha?\".";
+  }
+  if (code === "weak_password") {
+    return "Senha fraca. Use pelo menos 8 caracteres, com letras e números.";
+  }
+  if (code === "email_address_invalid") {
+    return "Email inválido. Confira o endereço digitado.";
+  }
+  if (code === "signup_disabled") {
+    return "Cadastro temporariamente indisponível. Tente novamente mais tarde.";
+  }
+  return "Não foi possível criar a conta. Tente novamente em instantes.";
+}
 
 export function SignupForm() {
   const router = useRouter();
@@ -42,7 +65,7 @@ export function SignupForm() {
     setIsLoading(false);
 
     if (authError) {
-      setError("Não foi possível criar a conta. Tente novamente.");
+      setError(signupErrorMessage(authError));
       return;
     }
 
