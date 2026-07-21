@@ -90,6 +90,7 @@ export function FinanceiroClient({
   // A receber = faturas emitidas não pagas (snapshot atual, não filtra por ano).
   const totalReceber = initialReceivables.reduce((s, r) => s + r.amount, 0);
   const saldoEstimado = saldo + totalReceber; // realizado + previsto
+  const overdueCount = initialReceivables.filter((r) => r.overdue).length;
 
   function set<K extends keyof typeof emptyForm>(key: K, value: string) {
     setForm((c) => ({ ...c, [key]: value }));
@@ -269,6 +270,39 @@ export function FinanceiroClient({
           Exportar CSV
         </Button>
       </div>
+
+      {/* Hero — Saldo atual */}
+      <div className="mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-[#071a3f] via-[#0b2350] to-[#1a2f5e] p-6 shadow-lg ring-1 ring-white/10">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-white/50">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Saldo atual
+            </p>
+            <p className={`mt-2 text-4xl font-bold tabular-nums ${saldo >= 0 ? "text-white" : "text-rose-300"}`}>{euro.format(saldo)}</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-xs font-medium tabular-nums text-white/80 ring-1 ring-inset ring-white/15">
+                <svg fill="none" height="12" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" width="12"><rect height="16" rx="2" width="18" x="3" y="4" /><path d="M3 10h18M8 2v4M16 2v4" /></svg>
+                {year}
+              </span>
+              {overdueCount === 0 ? (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2.5 py-1 text-xs font-medium text-emerald-300 ring-1 ring-inset ring-emerald-400/20">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Tudo em dia
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/15 px-2.5 py-1 text-xs font-medium text-amber-300 ring-1 ring-inset ring-amber-400/20">
+                  <span className="h-1.5 w-1.5 rounded-full bg-amber-400" /> {overdueCount} atrasada{overdueCount > 1 ? "s" : ""}
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="text-right">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-white/50">Saldo estimado</p>
+            <p className={`mt-1 text-3xl font-bold tabular-nums ${saldoEstimado >= 0 ? "text-white" : "text-rose-300"}`}>{euro.format(saldoEstimado)}</p>
+            <p className="mt-1 text-xs text-white/40">Realizado + a receber</p>
+          </div>
+        </div>
+      </div>
+
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Recebidas ({year})</p>
