@@ -99,47 +99,6 @@ const plans: Plan[] = [
   }
 ];
 
-type CompletePlan = {
-  key: string;
-  name: string;
-  subtitle: string;
-  monthly: string;
-  annual: string;
-  /** Mesmo desconto anual aplicado aos planos de software. */
-  discount: number;
-  points: string[];
-};
-
-const completePlans: CompletePlan[] = [
-  {
-    key: "ae",
-    name: "Gestão completa para AE",
-    subtitle: "Auto-entrepreneur acompanhado de ponta a ponta pela nossa equipe.",
-    monthly: "99 € – 199 €",
-    annual: "79 € – 159 €",
-    discount: 20,
-    points: [
-      "Tudo da oferta Business",
-      "Declarações Urssaf preparadas e revisadas",
-      "Conselheiro humano dedicado",
-      "Acompanhamento contábil mensal"
-    ]
-  },
-  {
-    key: "btp",
-    name: "Gestão completa para BTP",
-    subtitle: "Solução completa para o setor da construção (BTP).",
-    monthly: "199 € – 299 €",
-    annual: "159 € – 239 €",
-    discount: 20,
-    points: [
-      "Tudo da Gestão completa para AE",
-      "Gestão de canteiros e situações de obra",
-      "Faturamento e retenções específicas do BTP",
-      "Conselheiro especializado em BTP"
-    ]
-  }
-];
 
 const faqs = [
   {
@@ -392,56 +351,38 @@ export function OffresClient({ currentPlan, publicMode = false }: { currentPlan:
         })}
       </div>
 
-      {/* Gestão completa (braços Business) */}
+      {/* Gestão completa — delegar para a equipe */}
       <div className="mt-14">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-ink">Gestão completa, feita pela nossa equipe</h2>
           <p className="mx-auto mt-2 max-w-2xl text-sm text-muted">
-            Prefere delegar? Nossos especialistas cuidam de tudo por você — do faturamento à declaração.
+            Prefere delegar? Nossos especialistas cuidam de tudo por você, do faturamento à declaração.
           </p>
         </div>
 
-        <BillingToggle discountLabel="-20%" onChange={setBilling} value={billing} />
-
-        <div className="mx-auto mt-8 grid max-w-4xl gap-5 md:grid-cols-2">
-          {completePlans.map((plan) => (
-            <div className="flex flex-col rounded-3xl bg-white p-6 shadow-sm ring-1 ring-black/5" key={plan.key}>
-              <Badge className="bg-fuchsia-500 text-white" label="Business" />
-              <h3 className="mt-3 min-h-[3.5rem] text-lg font-bold text-ink">{plan.name}</h3>
-              <p className="mt-1 min-h-[3rem] text-sm leading-6 text-muted">{plan.subtitle}</p>
-              {billing === "anual" ? (
-                <p className="mt-4 flex items-center gap-2 text-sm">
-                  <span className="rounded bg-rose-500 px-1.5 py-0.5 text-[11px] font-bold text-white">
-                    -{plan.discount}%
-                  </span>
-                  <span className="text-slate-400 line-through">{plan.monthly}</span>
-                </p>
-              ) : null}
-              <p className={`${billing === "anual" ? "mt-1" : "mt-4"} flex items-baseline gap-1`}>
-                <span className="text-2xl font-bold tabular-nums text-ink">
-                  {billing === "anual" ? plan.annual : plan.monthly}
-                </span>
-                <span className="text-sm text-muted">/mês, sem IVA</span>
-              </p>
-              <p className="text-xs text-muted">
-                {billing === "anual" ? "cobrado anualmente" : "conforme o pacote escolhido"}
-              </p>
-              <Link
-                className="mt-5 inline-flex h-11 w-full items-center justify-center rounded-full bg-brand px-4 text-sm font-semibold text-white shadow-sm ring-1 ring-[#002D72]/20 transition hover:bg-[#003a94] active:bg-[#001F4D]"
-                href={publicMode ? "/cadastro" : "/conselheiro"}
-              >
-                Falar com a equipe
-              </Link>
-              <ul className="mt-6 space-y-2.5 border-t border-line pt-5">
-                {plan.points.map((point) => (
-                  <li className="flex gap-2 text-sm text-slate-700" key={point}>
-                    <CheckIcon />
-                    {point}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+        <div className="mx-auto mt-8 grid max-w-5xl items-center gap-8 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-black/5 md:grid-cols-2 md:p-8">
+          {/* Foto placeholder até a imagem da ProFrance entrar. */}
+          <div aria-hidden className="aspect-[4/3] overflow-hidden rounded-2xl bg-gradient-to-br from-[#0A2352] via-[#122C6E] to-[#2B1F5B]" />
+          <div>
+            <h3 className="text-xl font-bold leading-tight text-ink">Fique tranquilo, seu negócio em boas mãos</h3>
+            <p className="mt-3 text-sm leading-6 text-muted">
+              Da emissão das faturas à declaração da Urssaf, nossa equipe cuida da parte administrativa para você focar no que importa: seus clientes.
+            </p>
+            <ul className="mt-5 space-y-3">
+              {["Declarações Urssaf preparadas e revisadas", "Conselheiro humano dedicado ao seu negócio", "Acompanhamento contábil mensal"].map((p) => (
+                <li className="flex items-start gap-2 text-sm text-slate-700" key={p}>
+                  <CheckIcon tone="emerald" />
+                  {p}
+                </li>
+              ))}
+            </ul>
+            <Link
+              className="mt-6 inline-flex h-12 items-center justify-center rounded-full bg-brand px-6 text-sm font-semibold text-white shadow-sm ring-1 ring-[#002D72]/20 transition hover:bg-[#003a94] active:bg-[#001F4D]"
+              href="/gestao-completa"
+            >
+              Falar com especialistas
+            </Link>
+          </div>
         </div>
       </div>
 
