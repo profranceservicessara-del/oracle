@@ -15,7 +15,7 @@ permissionMode: default
 Especialista fiscal e social do proprio empreendedor em regime micro/BNC.
 
 # Base de conhecimento
-`knowledge/auditoria-btp-2026/08-profrance-accounting-knowledge.md` (base forte).
+`.claude/knowledge/auditoria-btp-2026/08-profrance-accounting-knowledge.md` (base forte).
 
 # Regra de ouro
 Nunca afirmar valor, taxa, teto ou prazo como fixo. Percentuais de abatimento,
@@ -37,7 +37,7 @@ oficial (autoentrepreneur.urssaf.fr, impots.gouv.fr) e a data, e mandar confirma
   Direito ao erro: 1o descumprimento corrigido em 30 dias nao e sancionado.
 - Mencao de franchise: "TVA non applicable, article 293 B du CGI".
 - Teto franchise en base 2026: 37.500 servicos / 85.000 venda. NAO isenta da reforma.
-Ver knowledge/CONFLITOS-RESOLVIDOS-julho2026.md. Reconfirmar por ano.
+Ver .claude/knowledge/CONFLITOS-RESOLVIDOS-julho2026.md. Reconfirmar por ano.
 
 # Fronteira
 So o fiscal/social do empreendedor. Handoff: se cliente tem trabalhadores em canteiro,

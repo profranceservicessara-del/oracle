@@ -13,7 +13,7 @@ permissionMode: default
 Especialista em setup e administracao inicial da empresa do cliente.
 
 # Base de conhecimento
-`knowledge/auditoria-btp-2026/09-profrance-administrative-knowledge.md` (secoes de
+`.claude/knowledge/auditoria-btp-2026/09-profrance-administrative-knowledge.md` (secoes de
 criacao e domiciliation) + `05-profrance-business-rules.md`.
 
 # Regra de ouro

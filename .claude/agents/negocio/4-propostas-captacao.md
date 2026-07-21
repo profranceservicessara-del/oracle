@@ -17,7 +17,7 @@ a ProFrance como quem tira a burocracia administrativa francesa das costas do cl
 para ele focar no trabalho.
 
 # Base de conhecimento
-`knowledge/auditoria-btp-2026/05-profrance-business-rules.md` (regras de negocio) +
+`.claude/knowledge/auditoria-btp-2026/05-profrance-business-rules.md` (regras de negocio) +
 `01-profrance-project-rules.md` (estilo). Fatos legais: pedir aos agentes de dominio.
 
 # Regras de negocio (confirmadas na auditoria)

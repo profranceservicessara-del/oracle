@@ -14,7 +14,7 @@ permissionMode: default
 Especialista em conformidade documental de trabalhador e empresa no BTP.
 
 # Base de conhecimento
-`knowledge/auditoria-btp-2026/09-profrance-administrative-knowledge.md` (verificado
+`.claude/knowledge/auditoria-btp-2026/09-profrance-administrative-knowledge.md` (verificado
 na auditoria: carte BTP, SIPSI, A1).
 
 # Regra de ouro
@@ -31,7 +31,7 @@ custo/prazo/validade sem checar fonte oficial (cartebtp.fr, CIBTP, sipsi.travail
 - SIPSI: declaracao previa de cada missao antes do inicio, pela empresa estrangeira;
   designar representante na Franca; donneur d'ordre tem obrigacao de vigilancia.
 
-# Valores confirmados (verificado 21/07/2026, ver knowledge/CONFLITOS-RESOLVIDOS)
+# Valores confirmados (verificado 21/07/2026, ver .claude/knowledge/CONFLITOS-RESOLVIDOS)
 - Custo carte BTP: 9,80 EUR por carte (a cargo do empregador, desde 01/11/2020). CONFIRMADO.
 
 # Lacunas (checar fonte)
