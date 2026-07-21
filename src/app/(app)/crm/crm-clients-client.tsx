@@ -176,7 +176,7 @@ export function CrmClientsClient({
     <main className="mx-auto max-w-4xl px-4 py-8">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">CRM · {company.name}</p>
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">{t(locale, "crm.subtitle")} · {company.name}</p>
           <h1 className="mt-1 text-2xl font-semibold text-ink">{t(locale, "crm.clients")}</h1>
         </div>
         <div className="flex flex-wrap items-center gap-2">

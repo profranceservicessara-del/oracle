@@ -3,8 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import type { ContractTemplate } from "@/lib/types";
 import { ModelosClient } from "./modelos-client";
 
-// Gestão > Modelos de contrato — biblioteca real (persistida em
-// contract_templates, RLS por usuário) + geração de PDF com placeholders.
+// Gestão > Modelos de contrato — biblioteca somente leitura para consulta e
+// download dos modelos disponibilizados.
 export default async function ModelosContratoPage() {
   const supabase = createClient();
   const {
@@ -21,5 +21,5 @@ export default async function ModelosContratoPage() {
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
-  return <ModelosClient initialTemplates={(data ?? []) as ContractTemplate[]} userId={user.id} />;
+  return <ModelosClient initialTemplates={(data ?? []) as ContractTemplate[]} />;
 }

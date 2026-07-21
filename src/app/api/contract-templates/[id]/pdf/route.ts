@@ -72,11 +72,12 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   try {
     const pdf = await renderHtmlToPdf(html);
     const filename = `${tpl.title.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 60) || "contrato"}.pdf`;
+    const disposition = request.nextUrl.searchParams.get("download") === "1" ? "attachment" : "inline";
     return new NextResponse(Buffer.from(pdf), {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `inline; filename="${filename}"`
+        "Content-Disposition": `${disposition}; filename="${filename}"`
       }
     });
   } catch {

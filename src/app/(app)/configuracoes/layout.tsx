@@ -42,7 +42,7 @@ const groups: Group[] = [
     key: "contabilidade",
     label: "Contabilidade",
     children: [
-      { href: "/documents", label: "Visão geral" },
+      { href: "/declaracoes/fiscais", label: "Declarações fiscais" },
       { href: null, label: "Exportações" }
     ]
   }

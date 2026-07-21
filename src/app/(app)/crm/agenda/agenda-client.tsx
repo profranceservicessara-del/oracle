@@ -9,7 +9,7 @@ import type { CrmAppointmentColor, CrmAppointmentKind } from "@/lib/crm/types";
 import type { Locale } from "@/lib/i18n/dictionaries";
 
 // ---------------------------------------------------------------------------
-// Diário (Agenda) — registro de atividades: Eventos, Tarefas, Notas e Chamadas.
+// Agenda — registro de atividades: Eventos, Tarefas, Notas e Chamadas.
 // Views: Calendário (Mês/Semana/Dia) + listas por tipo. Categorias coloridas,
 // faturável e duração. Tudo em crm_appointments (RLS por company). Reusa
 // clientes do CRM nas conexões.
@@ -178,7 +178,7 @@ export function AgendaClient({
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <Link className="text-xs font-semibold text-muted transition hover:text-ink" href="/crm">← Clientes</Link>
-          <h1 className="text-2xl font-semibold text-ink">Diário</h1>
+          <h1 className="text-2xl font-semibold text-ink">Agenda</h1>
         </div>
         <div className="relative">
           <button

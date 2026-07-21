@@ -366,7 +366,7 @@ export function PipelineClient({
             <Input className="mt-2" onChange={(event) => setForm((c) => ({ ...c, title: event.target.value }))} required value={form.title} />
           </label>
           <label className="text-sm font-medium text-ink">
-            Cliente CRM
+            Cliente comercial
             <Select className="mt-2" onChange={(event) => setForm((c) => ({ ...c, client_id: event.target.value }))} value={form.client_id}>
               <option value="">—</option>
               {clients.map((client) => (

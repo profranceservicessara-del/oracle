@@ -47,9 +47,9 @@ function AnnualChart({ ca, dep }: { ca: number[]; dep: number[] }) {
           </g>
         );
       })}
-      <polyline fill="none" points={line} stroke="#0F172A" strokeWidth="1.5" />
+      <polyline fill="none" points={line} stroke="#7C3AED" strokeWidth="1.5" />
       {result.map((v, i) => (
-        <circle cx={PADX + slot * i + slot / 2} cy={y(v)} fill="#fff" key={i} r="3.5" stroke="#0F172A" strokeWidth="1.5" />
+        <circle cx={PADX + slot * i + slot / 2} cy={y(v)} fill="#A78BFA" key={i} r="3.5" stroke="#7C3AED" strokeWidth="1.5" />
       ))}
     </svg>
   );
@@ -186,7 +186,7 @@ export function AnaliseClient({
               <p className="mt-0.5 text-lg font-semibold tabular-nums text-ink lg:text-xl">{euro.format(depTotal)}</p>
             </div>
             <div>
-              <p className="flex items-center gap-1.5 text-xs text-muted"><span className="h-2.5 w-2.5 rounded-full ring-1 ring-inset ring-slate-400" /> Resultado</p>
+              <p className="flex items-center gap-1.5 text-xs text-muted"><span className="h-2.5 w-2.5 rounded-full bg-[#A78BFA] ring-1 ring-inset ring-[#7C3AED]" /> Resultado</p>
               <p className={`mt-0.5 text-lg font-semibold tabular-nums lg:text-xl ${resultado >= 0 ? "text-ink" : "text-rose-600"}`}>{euro.format(resultado)}</p>
             </div>
           </div>

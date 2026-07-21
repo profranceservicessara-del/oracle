@@ -20,9 +20,9 @@ export default async function CrmPage() {
   if (isGated(profile, "pro")) {
     return (
       <UpgradeState
-        description="O CRM completo (clientes, contatos, dossiês, tarefas, documentos) está disponível a partir do plano Pro."
+        description="A área Comercial completa (clientes, contatos, dossiês, tarefas, documentos) está disponível a partir do plano Pro."
         requiredPlan="pro"
-        title="CRM é um recurso Pro"
+        title="Comercial é um recurso Pro"
       />
     );
   }

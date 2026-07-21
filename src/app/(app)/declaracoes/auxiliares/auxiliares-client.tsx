@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { DeclarationsNav } from "@/components/app/declarations-nav";
 import { Select } from "@/components/ui/select";
 
 const euro = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "EUR" });
@@ -75,6 +76,8 @@ export function AuxiliaresClient({
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-8">
+      <DeclarationsNav active="auxiliares" />
+
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Contabilidade</p>
