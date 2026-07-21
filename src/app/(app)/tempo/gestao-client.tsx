@@ -99,7 +99,7 @@ export function GestaoTempoClient({
   return (
     <main className="mx-auto max-w-[100rem] px-4 py-6">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold text-ink">Gestão do tempo</h1>
+        <h1 className="text-2xl font-semibold text-ink">Gestão de Tempo</h1>
         <button className="inline-flex h-10 items-center gap-1.5 rounded-full bg-brand px-4 text-sm font-semibold text-white shadow-sm ring-1 ring-[#002D72]/20 transition hover:bg-[#003a94]" onClick={() => setCreating({ date: iso(today) })} type="button">
           <svg fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeWidth="2" viewBox="0 0 24 24" width="16"><path d="M12 5v14M5 12h14" /></svg>
           Novo horário
@@ -107,9 +107,9 @@ export function GestaoTempoClient({
       </div>
 
       <div className="mb-4 flex gap-5 border-b border-line text-sm font-semibold">
+        <span className="border-b-2 border-brand pb-2 text-brand">Gestão de Tempo</span>
         <a className="border-b-2 border-transparent pb-2 text-slate-500 transition hover:text-ink" href="/tempo/meus">Meus tempos</a>
         <a className="border-b-2 border-transparent pb-2 text-slate-500 transition hover:text-ink" href="/tempo/todos">Todos os momentos</a>
-        <span className="border-b-2 border-brand pb-2 text-brand">Gestão do tempo</span>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[1fr_20rem]">

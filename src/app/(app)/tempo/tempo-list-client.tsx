@@ -89,9 +89,9 @@ export function TempoListClient({
       </div>
 
       <div className="mb-4 flex gap-5 border-b border-line text-sm font-semibold">
+        <Tab active={false} href="/tempo" label="Gestão de Tempo" />
         <Tab active={activeTab === "meus"} href="/tempo/meus" label="Meus tempos" />
         <Tab active={activeTab === "todos"} href="/tempo/todos" label="Todos os momentos" />
-        <Tab active={false} href="/tempo" label="Gestão do tempo" />
       </div>
 
       {/* Totais */}
