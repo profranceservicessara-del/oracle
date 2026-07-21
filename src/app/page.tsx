@@ -63,10 +63,10 @@ export default async function HomePage() {
           <div className="overflow-hidden rounded-3xl bg-gradient-to-br from-[#001F4D] via-[#002D72] to-[#2B1F5B] px-6 py-16 text-center shadow-lg ring-1 ring-white/10 sm:px-12">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-white/60">Faturação para auto-entrepreneurs</p>
             <h1 className="mx-auto mt-4 max-w-3xl text-3xl font-semibold leading-tight text-white sm:text-5xl">
-              Sua gestão fiscal francesa, simples e com suporte em português
+              A solução completa para gerenciar seu negócio.
             </h1>
             <p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-white/70 sm:text-base">
-              Emita devis e faturas conformes, acompanhe seu livre de recettes e seus seuils — tudo num painel claro, feito para a comunidade lusófona na França.
+              Faturação eletrônica, CRM e pagamentos, tudo em uma única ferramenta para gerenciar seu negócio de forma simples e em conformidade com a lei. Concentre-se no que realmente importa: seus clientes.
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Link
