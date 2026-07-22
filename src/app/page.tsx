@@ -196,8 +196,8 @@ export default async function HomePage() {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
           <p className="text-lg font-semibold text-ink">Oracle</p>
           <nav className="hidden items-center gap-6 text-sm text-muted sm:flex">
-            <a className="transition hover:text-ink" href="#recursos">Recursos</a>
             <a className="transition hover:text-ink" href="#solucoes">Soluções</a>
+            <a className="transition hover:text-ink" href="#recursos">Recursos</a>
             <a className="transition hover:text-ink" href="#planos">Planos</a>
           </nav>
           <div className="flex items-center gap-2">
