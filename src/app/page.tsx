@@ -176,9 +176,9 @@ const trustChips = [
 // Resumo de preços (espelha os planos reais de /planos). Preço mensal, sem IVA.
 const planSummary = [
   { name: "Básico", price: "Grátis", popular: false },
-  { name: "Start", price: "11 €", popular: false },
-  { name: "Pro", price: "19 €", popular: true },
-  { name: "Business", price: "39 €", popular: false }
+  { name: "Start", price: "19 €", popular: false },
+  { name: "Pro", price: "29 €", popular: true },
+  { name: "Business", price: "49 €", popular: false }
 ];
 
 // Footer grande (ref: Sellsy). Links "#" são placeholders a preencher; os

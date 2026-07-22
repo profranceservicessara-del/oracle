@@ -41,7 +41,7 @@ const plans: Plan[] = [
     tagline: "Para começar",
     subtitle: "Dê destaque ao seu negócio.",
     badge: { label: "Start", className: "bg-brand text-white" },
-    monthly: 11,
+    monthly: 19,
     annual: 9,
     checkoutPlan: "pro",
     software: [
@@ -62,7 +62,7 @@ const plans: Plan[] = [
     tagline: "Mestre",
     subtitle: "Trabalhe com tranquilidade graças a um ambiente completo e integrado.",
     badge: { label: "Pro", className: "bg-amber-400 text-ink" },
-    monthly: 19,
+    monthly: 29,
     annual: 15,
     highlighted: true,
     checkoutPlan: "premium",
@@ -82,7 +82,7 @@ const plans: Plan[] = [
     tagline: "Indo além",
     subtitle: "Use a ProFrance sem limites para garantir o crescimento do seu negócio.",
     badge: { label: "Business", className: "bg-fuchsia-500 text-white" },
-    monthly: 39,
+    monthly: 49,
     annual: 33,
     inherits: "Tudo da oferta Pro",
     software: [
