@@ -221,7 +221,11 @@ const footerCols = [
   },
   {
     title: "Linguagem",
-    links: [{ label: "Português", href: "#" }]
+    links: [
+      { label: "Português", href: "#" },
+      { label: "Francês", href: "#" },
+      { label: "Espanhol", href: "#" }
+    ]
   }
 ];
 
