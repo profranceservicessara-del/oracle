@@ -334,7 +334,7 @@ export default async function HomePage() {
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {features.map((feature) => (
-              <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5" key={feature.title}>
+              <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:ring-brand/25" key={feature.title}>
                 <h3 className="text-base font-semibold text-ink">{feature.title}</h3>
                 <p className="mt-2 text-sm leading-6 text-muted">{feature.description}</p>
               </div>
@@ -353,7 +353,7 @@ export default async function HomePage() {
           </div>
           <div className="grid gap-5 md:grid-cols-3">
             {segments.map((segment) => (
-              <div className="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5" key={segment.title}>
+              <div className="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:ring-brand/25" key={segment.title}>
                 {/* Placeholder de foto — trocar por <Image> da ProFrance. */}
                 <div className={`relative flex aspect-[4/3] items-start justify-start bg-gradient-to-br ${segment.gradient} p-4`}>
                   <span className="rounded-full bg-white/95 px-3 py-1 text-xs font-medium text-ink shadow-sm">{segment.badge}</span>
@@ -385,7 +385,7 @@ export default async function HomePage() {
           </div>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {pillars.map((pillar) => (
-              <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5" key={pillar.title}>
+              <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:ring-brand/25" key={pillar.title}>
                 <span className={`inline-flex h-11 w-11 items-center justify-center rounded-xl ${pillar.tint}`}>{pillar.icon}</span>
                 <h3 className="mt-4 text-base font-semibold text-ink">{pillar.title}</h3>
                 <p className="mt-2 text-sm leading-6 text-muted">{pillar.description}</p>
@@ -407,7 +407,7 @@ export default async function HomePage() {
           </div>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {toolCards.map((card) => (
-              <div className="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5" key={card.title}>
+              <div className="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:ring-brand/25" key={card.title}>
                 {/* Imagem placeholder até os screenshots da ProFrance entrarem. */}
                 <div aria-hidden className={`h-40 bg-gradient-to-br ${card.gradient}`} />
                 <div className="flex flex-1 flex-col p-6">
@@ -438,7 +438,7 @@ export default async function HomePage() {
           </h2>
           <div className="mt-8 grid gap-5 md:grid-cols-3">
             {trustCards.map((card) => (
-              <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5" key={card.title}>
+              <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:ring-brand/25" key={card.title}>
                 <span className={`inline-flex h-11 w-11 items-center justify-center rounded-xl ${card.tint}`}>{card.icon}</span>
                 <h3 className="mt-4 text-lg font-bold leading-snug text-ink">{card.title}</h3>
                 <p className="mt-2 text-sm leading-6 text-muted">{card.description}</p>
