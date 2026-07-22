@@ -251,7 +251,7 @@ export default async function HomePage() {
             <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-white/60">
               <span className="inline-flex items-center gap-1.5">
                 <svg fill="currentColor" height="14" viewBox="0 0 24 24" width="14" className="text-amber-300"><path d="M13 2 4 14h6l-1 8 9-12h-6z" /></svg>
-                Teste grátis por 15 dias
+                Teste grátis por 14 dias
               </span>
               <span className="inline-flex items-center gap-1.5">
                 <svg fill="none" height="14" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" viewBox="0 0 24 24" width="14" className="text-emerald-300"><path d="M20 6 9 17l-5-5" /></svg>
@@ -450,7 +450,7 @@ export default async function HomePage() {
               Pronto para converter seus potenciais clientes em clientes reais com mais eficiência?
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-sm text-white/70">
-              Teste grátis por 15 dias · Sem compromisso · Sem necessidade de cartão de crédito
+              Teste grátis por 14 dias · Sem compromisso · Sem necessidade de cartão de crédito
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Link

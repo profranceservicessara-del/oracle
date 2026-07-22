@@ -263,7 +263,7 @@ export function OffresClient({ currentPlan, publicMode = false }: { currentPlan:
               <div className="mt-5">
                 {publicMode ? (
                   <Link
-                    className={`inline-flex h-11 w-full items-center justify-center rounded-full px-4 text-sm font-semibold shadow-sm transition ${
+                    className={`inline-flex h-11 w-full items-center justify-center rounded-2xl px-4 text-sm font-semibold shadow-sm transition ${
                       isFree
                         ? "bg-white text-ink ring-1 ring-black/10 hover:bg-slate-50"
                         : "bg-brand text-white ring-1 ring-[#002D72]/20 hover:bg-[#003a94] active:bg-[#001F4D]"
@@ -274,7 +274,7 @@ export function OffresClient({ currentPlan, publicMode = false }: { currentPlan:
                   </Link>
                 ) : isCurrent ? (
                   <button
-                    className="inline-flex h-11 w-full cursor-not-allowed items-center justify-center rounded-full bg-slate-100 px-4 text-sm font-semibold text-slate-400"
+                    className="inline-flex h-11 w-full cursor-not-allowed items-center justify-center rounded-2xl bg-slate-100 px-4 text-sm font-semibold text-slate-400"
                     disabled
                     type="button"
                   >
@@ -282,7 +282,7 @@ export function OffresClient({ currentPlan, publicMode = false }: { currentPlan:
                   </button>
                 ) : plan.checkoutPlan ? (
                   <PlanCta
-                    className={`inline-flex h-11 w-full items-center justify-center rounded-full px-4 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
+                    className={`inline-flex h-11 w-full items-center justify-center rounded-2xl px-4 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
                       plan.highlighted
                         ? "bg-brand text-white shadow-sm ring-1 ring-[#002D72]/20 hover:bg-[#003a94] active:bg-[#001F4D]"
                         : "bg-brand text-white shadow-sm ring-1 ring-[#002D72]/20 hover:bg-[#003a94] active:bg-[#001F4D]"
@@ -292,14 +292,14 @@ export function OffresClient({ currentPlan, publicMode = false }: { currentPlan:
                   />
                 ) : plan.key === "business" ? (
                   <Link
-                    className="inline-flex h-11 w-full items-center justify-center rounded-full bg-brand px-4 text-sm font-semibold text-white shadow-sm ring-1 ring-[#002D72]/20 transition hover:bg-[#003a94] active:bg-[#001F4D]"
+                    className="inline-flex h-11 w-full items-center justify-center rounded-2xl bg-brand px-4 text-sm font-semibold text-white shadow-sm ring-1 ring-[#002D72]/20 transition hover:bg-[#003a94] active:bg-[#001F4D]"
                     href="/conselheiro"
                   >
                     Assine agora
                   </Link>
                 ) : (
                   <button
-                    className="inline-flex h-11 w-full cursor-not-allowed items-center justify-center rounded-full bg-slate-100 px-4 text-sm font-semibold text-slate-400"
+                    className="inline-flex h-11 w-full cursor-not-allowed items-center justify-center rounded-2xl bg-slate-100 px-4 text-sm font-semibold text-slate-400"
                     disabled
                     type="button"
                   >
@@ -377,7 +377,7 @@ export function OffresClient({ currentPlan, publicMode = false }: { currentPlan:
               ))}
             </ul>
             <Link
-              className="mt-6 inline-flex h-12 items-center justify-center rounded-full bg-brand px-6 text-sm font-semibold text-white shadow-sm ring-1 ring-[#002D72]/20 transition hover:bg-[#003a94] active:bg-[#001F4D]"
+              className="mt-6 inline-flex h-12 items-center justify-center rounded-2xl bg-brand px-6 text-sm font-semibold text-white shadow-sm ring-1 ring-[#002D72]/20 transition hover:bg-[#003a94] active:bg-[#001F4D]"
               href="/gestao-completa"
             >
               Falar com especialistas

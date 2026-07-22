@@ -22,7 +22,7 @@ export function Button({ className = "", variant = "primary", ...props }: Button
 
   return (
     <button
-      className={`inline-flex h-11 items-center justify-center gap-2 rounded-full px-4 text-sm font-semibold transition-all duration-150 will-change-transform focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60 disabled:translate-y-0 disabled:shadow-none ${variantClasses} ${className}`}
+      className={`inline-flex h-11 items-center justify-center gap-2 rounded-2xl px-4 text-sm font-semibold transition-all duration-150 will-change-transform focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60 disabled:translate-y-0 disabled:shadow-none ${variantClasses} ${className}`}
       {...props}
     />
   );

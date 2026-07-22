@@ -226,14 +226,14 @@ export function FinanceiroClient({
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <button
-            className="inline-flex h-10 items-center gap-1 rounded-full border border-emerald-200 bg-white px-4 text-sm font-semibold text-emerald-700 shadow-sm transition hover:bg-emerald-50 active:scale-[0.98]"
+            className="inline-flex h-10 items-center gap-1 rounded-2xl border border-emerald-200 bg-white px-4 text-sm font-semibold text-emerald-700 shadow-sm transition hover:bg-emerald-50 active:scale-[0.98]"
             onClick={() => { setEntradaForm(emptyEntrada); setEntradaErrors({}); setIsEntradaOpen(true); }}
             type="button"
           >
             <span className="text-base leading-none">+</span> Entrada
           </button>
           <button
-            className="inline-flex h-10 items-center gap-1 rounded-full border border-rose-200 bg-white px-4 text-sm font-semibold text-rose-700 shadow-sm transition hover:bg-rose-50 active:scale-[0.98]"
+            className="inline-flex h-10 items-center gap-1 rounded-2xl border border-rose-200 bg-white px-4 text-sm font-semibold text-rose-700 shadow-sm transition hover:bg-rose-50 active:scale-[0.98]"
             onClick={() => { setForm(emptyForm); setErrors({}); setIsOpen(true); }}
             type="button"
           >

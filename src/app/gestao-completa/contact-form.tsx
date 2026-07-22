@@ -99,7 +99,7 @@ export function ContactForm({ initialTipo }: { initialTipo: "ae" | "btp" }) {
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
         <button
-          className="h-12 w-full rounded-full bg-brand text-sm font-semibold text-white shadow-sm ring-1 ring-[#002D72]/20 transition hover:bg-[#003a94] active:bg-[#001F4D] disabled:opacity-60"
+          className="h-12 w-full rounded-2xl bg-brand text-sm font-semibold text-white shadow-sm ring-1 ring-[#002D72]/20 transition hover:bg-[#003a94] active:bg-[#001F4D] disabled:opacity-60"
           disabled={status === "sending"}
           type="submit"
         >
