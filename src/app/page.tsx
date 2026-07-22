@@ -173,6 +173,14 @@ const trustChips = [
   "Sistema todo em português"
 ];
 
+// Resumo de preços (espelha os planos reais de /planos). Preço mensal, sem IVA.
+const planSummary = [
+  { name: "Básico", price: "Grátis", popular: false },
+  { name: "Start", price: "11 €", popular: false },
+  { name: "Pro", price: "19 €", popular: true },
+  { name: "Business", price: "39 €", popular: false }
+];
+
 function ArrowIcon() {
   return (
     <svg fill="none" height="18" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" width="18"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
@@ -382,6 +390,51 @@ export default async function HomePage() {
                 {chip}
               </div>
             ))}
+          </div>
+        </section>
+
+        {/* Resumo de preços — apoia o crescimento (ref: Sellsy). */}
+        <section className="bg-[#ECEAFB]">
+          <div className="mx-auto max-w-5xl px-4 py-12">
+            <h2 className="text-center text-2xl font-semibold leading-tight text-ink sm:text-3xl">
+              A ProFrance apoia <span className="border-b-4 border-brand/40 pb-0.5">todo o seu crescimento</span>
+            </h2>
+
+            <div className="mt-8 overflow-x-auto">
+              <div className="min-w-[640px] overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
+                {/* Cabeçalho: nomes dos planos */}
+                <div className="grid grid-cols-5 items-center border-b border-line px-2 py-5">
+                  <div />
+                  {planSummary.map((p) => (
+                    <div className="px-2 text-center" key={p.name}>
+                      <span className="inline-flex items-center gap-2 text-lg font-bold text-ink">
+                        {p.name}
+                        {p.popular ? (
+                          <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">O mais popular</span>
+                        ) : null}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                {/* Linha de oferta: preços */}
+                <div className="grid grid-cols-5 items-center bg-slate-50/60 px-2 py-6">
+                  <div className="px-2 text-sm font-semibold text-ink">Oferta</div>
+                  {planSummary.map((p) => (
+                    <div className="px-2 text-center" key={p.name}>
+                      <span className="text-base font-bold tabular-nums text-ink">{p.price}</span>
+                      {p.price !== "Grátis" ? <span className="block text-xs text-muted">por mês, sem IVA</span> : null}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8 text-center">
+              <Link className="inline-flex items-center gap-1 text-sm font-semibold text-brand hover:text-[#003a94]" href="/planos">
+                Veja os preços detalhados
+                <svg fill="none" height="14" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" width="14"><path d="m9 6 6 6-6 6" /></svg>
+              </Link>
+            </div>
           </div>
         </section>
 
