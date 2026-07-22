@@ -46,3 +46,9 @@ a {
 html {
   scroll-behavior: smooth;
 }
+
+/* Âncoras (Preços, Características, Soluções, Produtos): compensa o header
+   fixo para a rolagem parar logo no começo da seção, com o título visível. */
+section[id] {
+  scroll-margin-top: 5rem;
+}
