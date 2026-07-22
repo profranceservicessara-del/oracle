@@ -397,7 +397,7 @@ export default async function HomePage() {
         <section className="bg-[#ECEAFB]">
           <div className="mx-auto max-w-5xl px-4 py-12">
             <h2 className="text-center text-2xl font-semibold leading-tight text-ink sm:text-3xl">
-              A ProFrance apoia <span className="border-b-4 border-brand/40 pb-0.5">todo o seu crescimento</span>
+              A ProFrance apoia <span className="bg-gradient-to-r from-[#4361FF] to-[#B14BF4] bg-[length:100%_4px] bg-bottom bg-no-repeat pb-1">todo o seu crescimento</span>
             </h2>
 
             <div className="mt-8 overflow-x-auto">
