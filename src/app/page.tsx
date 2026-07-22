@@ -260,7 +260,7 @@ export default async function HomePage() {
           <p className="text-lg font-semibold text-ink">Oracle</p>
           <nav className="hidden items-center gap-6 text-sm text-muted sm:flex">
             <a className="transition hover:text-ink" href="#solucoes">Soluções</a>
-            <a className="transition hover:text-ink" href="#recursos">Recursos</a>
+            <a className="transition hover:text-ink" href="#recursos">Produtos</a>
             <Link className="transition hover:text-ink" href="/planos">Planos</Link>
           </nav>
           <div className="flex items-center gap-2">
@@ -319,7 +319,7 @@ export default async function HomePage() {
 
         <section className="mx-auto max-w-6xl px-4 py-12" id="recursos">
           <div className="mb-8 text-center">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Recursos</p>
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Produtos</p>
             <h2 className="mt-2 text-2xl font-semibold text-ink">Tudo que o micro-entrepreneur precisa</h2>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
