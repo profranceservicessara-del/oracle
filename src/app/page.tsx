@@ -438,18 +438,34 @@ export default async function HomePage() {
           </div>
         </section>
 
+        {/* CTA final (ref: Sellsy). Formas decorativas sem amarelo. */}
         <section className="mx-auto max-w-6xl px-4 py-12">
-          <div className="flex flex-col items-center justify-between gap-6 rounded-2xl bg-white p-8 text-center shadow-sm ring-1 ring-black/5 sm:flex-row sm:text-left">
-            <div>
-              <h2 className="text-xl font-semibold text-ink">Pronto para emitir sua primeira fatura?</h2>
-              <p className="mt-2 text-sm text-muted">Crie sua conta em minutos e mantenha sua contabilidade francesa em dia.</p>
+          <div className="overflow-hidden rounded-3xl bg-gradient-to-br from-[#1B1B5B] via-[#26236B] to-[#2B1F5B] px-6 py-14 text-center shadow-lg ring-1 ring-white/10 sm:px-12">
+            <div className="flex items-center justify-center gap-4">
+              <span aria-hidden className="h-9 w-9 rounded-full bg-[#F2A08A]" />
+              <span aria-hidden className="h-0 w-0 border-x-[16px] border-b-[28px] border-x-transparent border-b-[#3B5BFF]" />
+              <svg aria-hidden fill="#A78BFA" height="34" viewBox="0 0 24 24" width="34"><path d="M12 1l2 6 6-2-4 5 4 5-6-2-2 6-2-6-6 2 4-5-4-5 6 2z" /></svg>
             </div>
-            <Link
-              className="inline-flex h-12 shrink-0 items-center justify-center rounded-2xl bg-brand px-6 text-sm font-semibold text-white shadow-sm ring-1 ring-[#002D72]/20 transition hover:bg-[#003a94] active:bg-[#001F4D]"
-              href="/cadastro"
-            >
-              Experimente gratuitamente
-            </Link>
+            <h2 className="mx-auto mt-8 max-w-2xl text-2xl font-semibold leading-tight text-white sm:text-4xl">
+              Pronto para converter seus potenciais clientes em clientes reais com mais eficiência?
+            </h2>
+            <p className="mx-auto mt-4 max-w-xl text-sm text-white/70">
+              Teste grátis por 15 dias · Sem compromisso · Sem necessidade de cartão de crédito
+            </p>
+            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <Link
+                className="inline-flex h-12 w-full items-center justify-center rounded-2xl bg-white px-6 text-sm font-semibold text-[#1B1B5B] shadow-sm transition hover:bg-white/90 sm:w-auto"
+                href="/gestao-completa"
+              >
+                Solicite uma demonstração
+              </Link>
+              <Link
+                className="inline-flex h-12 w-full items-center justify-center rounded-2xl bg-[#6D5FBF] px-6 text-sm font-semibold text-white shadow-sm transition hover:bg-[#5d51a8] sm:w-auto"
+                href="/cadastro"
+              >
+                Experimente gratuitamente
+              </Link>
+            </div>
           </div>
         </section>
       </main>
