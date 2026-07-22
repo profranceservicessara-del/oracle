@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { OffresClient } from "@/app/(app)/offres/offres-client";
 import { createClient } from "@/lib/supabase/server";
 
 const features = [
@@ -198,7 +197,7 @@ export default async function HomePage() {
           <nav className="hidden items-center gap-6 text-sm text-muted sm:flex">
             <a className="transition hover:text-ink" href="#solucoes">Soluções</a>
             <a className="transition hover:text-ink" href="#recursos">Recursos</a>
-            <a className="transition hover:text-ink" href="#planos">Planos</a>
+            <Link className="transition hover:text-ink" href="/planos">Planos</Link>
           </nav>
           <div className="flex items-center gap-2">
             <Link
@@ -234,12 +233,12 @@ export default async function HomePage() {
               >
                 Experimente gratuitamente
               </Link>
-              <a
+              <Link
                 className="inline-flex h-12 w-full items-center justify-center rounded-2xl px-6 text-sm font-semibold text-white ring-1 ring-white/25 transition hover:bg-white/10 sm:w-auto"
-                href="#planos"
+                href="/planos"
               >
                 Ver planos
-              </a>
+              </Link>
             </div>
             <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-white/60">
               <span className="inline-flex items-center gap-1.5">
@@ -383,18 +382,6 @@ export default async function HomePage() {
                 {chip}
               </div>
             ))}
-          </div>
-        </section>
-
-        {/* Planos — mesma vitrine de /offres (fonte única), em modo público. */}
-        <section className="bg-[#ECEAFB]" id="planos">
-          <div className="mx-auto max-w-6xl px-4 py-12">
-          <div className="mb-2 text-center">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Planos</p>
-            <h2 className="mt-2 text-2xl font-semibold text-ink">O plano de gestão mais adequado ao seu negócio</h2>
-            <p className="mx-auto mt-2 max-w-md text-sm text-muted">Escolha entre cobrança mensal ou anual. Cancele quando quiser.</p>
-          </div>
-          <OffresClient currentPlan="free" publicMode />
           </div>
         </section>
 

@@ -20,7 +20,7 @@ export default function GestaoCompletaPage({ searchParams }: { searchParams: { t
       <header className="border-b border-black/5 bg-white/80 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
           <Link className="text-lg font-semibold text-ink" href="/">Oracle</Link>
-          <Link className="text-sm font-medium text-muted transition hover:text-ink" href="/offres">Ver planos</Link>
+          <Link className="text-sm font-medium text-muted transition hover:text-ink" href="/planos">Ver planos</Link>
         </div>
       </header>
 
