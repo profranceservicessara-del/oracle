@@ -283,7 +283,7 @@ export default async function HomePage() {
       <main>
         <section className="mx-auto max-w-6xl px-4 pb-10 pt-16 sm:pt-24">
           <div className="overflow-hidden rounded-3xl bg-gradient-to-br from-[#001F4D] via-[#002D72] to-[#2B1F5B] px-6 py-16 text-center shadow-lg ring-1 ring-white/10 sm:px-12">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-white/60">Faturação para auto-entrepreneurs</p>
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-white/60">Software de gestão empresarial para microempresas e PMEs</p>
             <h1 className="mx-auto mt-4 max-w-3xl text-3xl font-semibold leading-tight text-white sm:text-5xl">
               A solução completa para gerenciar seu negócio.
             </h1>
