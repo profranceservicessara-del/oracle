@@ -181,6 +181,58 @@ const planSummary = [
   { name: "Business", price: "39 €", popular: false }
 ];
 
+// Footer grande (ref: Sellsy). Links "#" são placeholders a preencher; os
+// demais apontam para páginas públicas reais.
+const footerCols = [
+  {
+    title: "Bom saber",
+    links: [
+      { label: "O que é um auto-entrepreneur?", href: "#" },
+      { label: "Guia de faturamento eletrônico", href: "#" },
+      { label: "URSSAF na prática", href: "#" }
+    ]
+  },
+  {
+    title: "Nossas soluções",
+    links: [
+      { label: "Oferta", href: "#" },
+      { label: "Cobrança", href: "#" },
+      { label: "Produtividade", href: "#" },
+      { label: "Tesouraria", href: "#" }
+    ]
+  },
+  {
+    title: "Características",
+    links: [
+      { label: "Faturação em formato legal francês", href: "#" },
+      { label: "Livro de receitas automático", href: "#" },
+      { label: "CRM e pipeline", href: "#" },
+      { label: "Fluxo de caixa", href: "#" }
+    ]
+  },
+  {
+    title: "Sobre",
+    links: [
+      { label: "Contate-nos", href: "/gestao-completa" },
+      { label: "Planos", href: "/planos" },
+      { label: "Criar conta", href: "/cadastro" },
+      { label: "Entrar", href: "/login" }
+    ]
+  },
+  {
+    title: "Linguagem",
+    links: [{ label: "Português", href: "#" }]
+  }
+];
+
+const footerLegal = [
+  { label: "Termos e condições gerais", href: "/cgu-cgv" },
+  { label: "Aviso legal", href: "/mentions-legales" },
+  { label: "Privacidade de dados", href: "/politique-de-confidentialite" },
+  { label: "Confidencialidade", href: "/politique-de-confidentialite" },
+  { label: "Segurança de dados", href: "#" }
+];
+
 function ArrowIcon() {
   return (
     <svg fill="none" height="18" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" width="18"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
@@ -470,15 +522,39 @@ export default async function HomePage() {
         </section>
       </main>
 
-      <footer className="border-t border-black/5 bg-white">
-        <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-8 text-sm text-muted sm:flex-row sm:items-center sm:justify-between">
-          <p className="font-semibold text-ink">Oracle</p>
-          <nav className="flex flex-wrap gap-4">
-            <Link className="transition hover:text-ink" href="/cgu-cgv">CGU / CGV</Link>
-            <Link className="transition hover:text-ink" href="/mentions-legales">Mentions légales</Link>
-            <Link className="transition hover:text-ink" href="/politique-de-confidentialite">Confidentialité</Link>
-          </nav>
-          <p className="text-xs text-slate-400">© {new Date().getFullYear()} Oracle</p>
+      <footer className="bg-[#0A1B3D] text-white">
+        <div className="mx-auto max-w-6xl px-4 py-14">
+          <p className="text-xl font-semibold tracking-tight">Oracle</p>
+
+          <div className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-5">
+            {footerCols.map((col) => (
+              <div key={col.title}>
+                <p className="text-sm font-semibold text-[#93ACFF]">{col.title}</p>
+                <ul className="mt-4 space-y-2.5">
+                  {col.links.map((link) => (
+                    <li key={link.label}>
+                      <Link className="text-sm text-white/70 transition hover:text-white" href={link.href}>
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-12 border-t border-white/10 pt-6">
+            <nav className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-xs text-white/60">
+              {footerLegal.map((link) => (
+                <Link className="transition hover:text-white" href={link.href} key={link.label}>
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+            <p className="mt-5 text-center text-xs text-white/45">
+              Oracle © {new Date().getFullYear()}. Todos os direitos reservados.
+            </p>
+          </div>
         </div>
       </footer>
     </div>
