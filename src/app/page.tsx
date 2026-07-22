@@ -315,6 +315,16 @@ export default async function HomePage() {
               </span>
             </div>
           </div>
+
+          {/* Atalhos que rolam até as seções. */}
+          <div className="mt-6 flex items-center justify-center gap-8">
+            <a className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink transition hover:text-brand" href="#precos">
+              Preços <span className="text-brand">+</span>
+            </a>
+            <a className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink transition hover:text-brand" href="#caracteristicas">
+              Características <span className="text-brand">+</span>
+            </a>
+          </div>
         </section>
 
         <section className="mx-auto max-w-6xl px-4 py-12" id="recursos">
@@ -366,7 +376,7 @@ export default async function HomePage() {
         </section>
 
         {/* Para quê — pilares do produto (ref: Sellsy). Texto provisório. */}
-        <section className="mx-auto max-w-6xl px-4 py-12">
+        <section className="mx-auto max-w-6xl px-4 py-12" id="caracteristicas">
           <div className="mb-8 text-center">
             <span className="inline-flex rounded-full bg-white px-3 py-1 text-xs font-medium text-muted ring-1 ring-black/5">Para quê?</span>
             <h2 className="mx-auto mt-4 max-w-2xl text-2xl font-semibold leading-tight text-ink sm:text-3xl">
@@ -450,7 +460,7 @@ export default async function HomePage() {
         </section>
 
         {/* Resumo de preços — apoia o crescimento (ref: Sellsy). */}
-        <section className="bg-[#ECEAFB]">
+        <section className="bg-[#ECEAFB]" id="precos">
           <div className="mx-auto max-w-5xl px-4 py-12">
             <h2 className="text-center text-2xl font-semibold leading-tight text-ink sm:text-3xl">
               A ProFrance apoia <span className="bg-gradient-to-r from-[#4361FF] to-[#B14BF4] bg-[length:100%_4px] bg-bottom bg-no-repeat pb-1">todo o seu crescimento</span>
