@@ -387,13 +387,15 @@ export default async function HomePage() {
         </section>
 
         {/* Planos — mesma vitrine de /offres (fonte única), em modo público. */}
-        <section className="mx-auto max-w-6xl px-4 py-12" id="planos">
+        <section className="bg-[#ECEAFB]" id="planos">
+          <div className="mx-auto max-w-6xl px-4 py-12">
           <div className="mb-2 text-center">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Planos</p>
             <h2 className="mt-2 text-2xl font-semibold text-ink">O plano de gestão mais adequado ao seu negócio</h2>
             <p className="mx-auto mt-2 max-w-md text-sm text-muted">Escolha entre cobrança mensal ou anual. Cancele quando quiser.</p>
           </div>
           <OffresClient currentPlan="free" publicMode />
+          </div>
         </section>
 
         <section className="mx-auto max-w-6xl px-4 py-12">
