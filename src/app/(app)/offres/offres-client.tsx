@@ -42,7 +42,7 @@ const plans: Plan[] = [
     subtitle: "Dê destaque ao seu negócio.",
     badge: { label: "Start", className: "bg-brand text-white" },
     monthly: 19,
-    annual: 9,
+    annual: 15,
     checkoutPlan: "pro",
     software: [
       "Crie faturas",
@@ -63,7 +63,7 @@ const plans: Plan[] = [
     subtitle: "Trabalhe com tranquilidade graças a um ambiente completo e integrado.",
     badge: { label: "Pro", className: "bg-amber-400 text-ink" },
     monthly: 29,
-    annual: 15,
+    annual: 23,
     highlighted: true,
     checkoutPlan: "premium",
     inherits: "Tudo da oferta Start",
@@ -83,7 +83,7 @@ const plans: Plan[] = [
     subtitle: "Use a ProFrance sem limites para garantir o crescimento do seu negócio.",
     badge: { label: "Business", className: "bg-fuchsia-500 text-white" },
     monthly: 49,
-    annual: 33,
+    annual: 39,
     inherits: "Tudo da oferta Pro",
     software: [
       "Gestão de estoque",
@@ -204,7 +204,7 @@ export function OffresClient({ currentPlan, publicMode = false }: { currentPlan:
   return (
     <div>
       {/* Toggle Mensal / Anual */}
-      <BillingToggle discountLabel="-35%" onChange={setBilling} value={billing} />
+      <BillingToggle discountLabel="-20%" onChange={setBilling} value={billing} />
 
       {/* Cards */}
       <div className="mt-8 grid items-start gap-5 lg:grid-cols-4">
