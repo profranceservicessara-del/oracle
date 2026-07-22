@@ -526,6 +526,19 @@ export default async function HomePage() {
         <div className="mx-auto max-w-6xl px-4 py-14">
           <p className="text-xl font-semibold tracking-tight">Oracle</p>
 
+          {/* Redes sociais (URLs placeholder até você passar os perfis). */}
+          <div className="mt-5 flex items-center gap-3">
+            <a aria-label="Instagram" className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 text-white transition hover:bg-white/20" href="#">
+              <svg fill="none" height="18" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" width="18"><rect height="18" rx="5" width="18" x="3" y="3" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" fill="currentColor" r="1" stroke="none" /></svg>
+            </a>
+            <a aria-label="Facebook" className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 text-white transition hover:bg-white/20" href="#">
+              <svg fill="currentColor" height="18" viewBox="0 0 24 24" width="18"><path d="M14 9h3V6h-3c-2.2 0-4 1.8-4 4v2H7v3h3v6h3v-6h3l1-3h-4v-2c0-.6.4-1 1-1z" /></svg>
+            </a>
+            <a aria-label="LinkedIn" className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 text-white transition hover:bg-white/20" href="#">
+              <svg fill="currentColor" height="18" viewBox="0 0 24 24" width="18"><path d="M4.98 3.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM3 9h4v12H3zM9 9h3.8v1.7h.05c.53-1 1.8-2.05 3.7-2.05 4 0 4.7 2.6 4.7 6V21h-4v-5.3c0-1.3 0-2.9-1.8-2.9s-2 1.4-2 2.8V21H9z" /></svg>
+            </a>
+          </div>
+
           <div className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-5">
             {footerCols.map((col) => (
               <div key={col.title}>
@@ -552,7 +565,7 @@ export default async function HomePage() {
               ))}
             </nav>
             <p className="mt-5 text-center text-xs text-white/45">
-              Oracle © {new Date().getFullYear()}. Todos os direitos reservados.
+              ProFrance © {new Date().getFullYear()}. Todos os direitos reservados.
             </p>
           </div>
         </div>
