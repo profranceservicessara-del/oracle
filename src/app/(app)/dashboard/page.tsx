@@ -232,7 +232,7 @@ export default async function DashboardPage() {
 
   return (
     <main className="mx-auto max-w-6xl space-y-6 px-4 py-8">
-      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#020D2C] via-[#0A2352] to-[#122C6E] px-6 py-7 shadow-[0_22px_55px_-26px_rgba(2,10,35,0.85)] ring-1 ring-inset ring-white/12 [box-shadow:inset_0_1px_0_rgba(255,255,255,0.10)]">
+      <section className="relative overflow-hidden rounded bg-gradient-to-br from-[#020D2C] via-[#0A2352] to-[#122C6E] px-6 py-7 shadow-[0_22px_55px_-26px_rgba(2,10,35,0.85)] ring-1 ring-inset ring-white/12 [box-shadow:inset_0_1px_0_rgba(255,255,255,0.10)]">
         {/* Soft circular light spots behind content (non-interactive) */}
         <div aria-hidden className="pointer-events-none absolute -right-16 -top-24 h-96 w-96 rounded-full bg-[#4F6BE0]/25 blur-[80px]" />
         <div aria-hidden className="pointer-events-none absolute -bottom-20 right-8 h-64 w-64 rounded-full bg-[#3A5AC0]/20 blur-[70px]" />

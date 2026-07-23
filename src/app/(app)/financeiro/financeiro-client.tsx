@@ -273,7 +273,7 @@ export function FinanceiroClient({
       </div>
 
       {/* Hero — Saldo atual */}
-      <div className="mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-[#071a3f] via-[#0b2350] to-[#1a2f5e] p-6 shadow-lg ring-1 ring-white/10">
+      <div className="mb-6 overflow-hidden rounded bg-gradient-to-br from-[#071a3f] via-[#0b2350] to-[#1a2f5e] p-6 shadow-lg ring-1 ring-white/10">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-white/50">
