@@ -39,8 +39,8 @@ const plans: PlanCard[] = [
     badge: { label: "Start", className: "bg-brand text-white" },
     name: "Para começar",
     tagline: "Dê destaque ao seu negócio.",
-    monthly: 11,
-    annual: 9,
+    monthly: 19,
+    annual: 15,
     recommended: false,
     features: [
       "Faturas e orçamentos",
@@ -54,8 +54,8 @@ const plans: PlanCard[] = [
     badge: { label: "Pro", className: "bg-amber-400 text-ink" },
     name: "Mestre",
     tagline: "Ambiente completo e integrado.",
-    monthly: 19,
-    annual: 15,
+    monthly: 29,
+    annual: 23,
     recommended: true,
     features: [
       "Tudo da oferta Start",
@@ -70,8 +70,8 @@ const plans: PlanCard[] = [
     badge: { label: "Business", className: "bg-fuchsia-500 text-white" },
     name: "Indo além",
     tagline: "Sem limites para crescer.",
-    monthly: 39,
-    annual: 33,
+    monthly: 49,
+    annual: 39,
     recommended: false,
     external: true,
     features: ["Tudo da oferta Pro", "Gestão de estoque", "Cobrança automática recorrente", "Atendimento prioritário"]
@@ -309,7 +309,7 @@ export default function PagamentosPage() {
                 type="button"
               >
                 {option}
-                {option === "anual" ? <span className="ml-1 text-xs font-bold text-emerald-500">-35%</span> : null}
+                {option === "anual" ? <span className="ml-1 text-xs font-bold text-emerald-500">-20%</span> : null}
               </button>
             ))}
           </div>
