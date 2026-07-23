@@ -21,7 +21,7 @@ type Article = {
 };
 
 const topics: Array<{ key: TopicKey; label: string }> = [
-  { key: "generalidades", label: "Generalidades" },
+  { key: "generalidades", label: "Gerais" },
   { key: "receita", label: "Receita" },
   { key: "contribuicoes", label: "Contribuições e impostos" },
   { key: "protecao", label: "Proteção social" },
@@ -382,7 +382,7 @@ export function AcademiaClient() {
               </span>
               <input
                 aria-label="Pesquisar na Academia"
-                className="h-12 w-full rounded-xl border border-emerald-100 bg-white px-4 pl-10 text-sm text-ink shadow-sm outline-none placeholder:text-slate-400 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100"
+                className="h-12 w-full rounded-2xl border border-emerald-100 bg-white px-4 pl-10 text-sm text-ink shadow-sm outline-none placeholder:text-slate-400 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100"
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Pesquisar artigos"
                 type="search"
@@ -404,14 +404,14 @@ export function AcademiaClient() {
               Antes de começar, entenda vantagens, limites, receitas, contribuições, proteção social e contabilidade.
             </p>
 
-            <div className="mt-5 overflow-hidden rounded-xl ring-1 ring-inset ring-line">
+            <div className="mt-5 overflow-hidden rounded-2xl ring-1 ring-inset ring-line">
               {topics.map((topic) => {
                 const active = topic.key === activeTopic;
                 const count = articles.filter((article) => article.topic === topic.key).length;
                 return (
                   <button
                     className={`flex w-full items-center justify-between gap-3 border-b border-line px-4 py-3 text-left text-sm transition last:border-b-0 ${
-                      active ? "bg-[#002D72] font-semibold text-white" : "bg-white text-slate-700 hover:bg-slate-50 hover:text-ink"
+                      active ? "bg-[#001030] font-semibold text-white" : "bg-white text-slate-700 hover:bg-slate-50 hover:text-ink"
                     }`}
                     key={topic.key}
                     onClick={() => chooseTopic(topic.key)}
@@ -440,7 +440,7 @@ export function AcademiaClient() {
             </div>
 
             {visibleArticles.length === 0 ? (
-              <div className="rounded-xl bg-slate-50 px-5 py-10 text-center text-sm text-muted ring-1 ring-inset ring-line">
+              <div className="rounded-2xl bg-white px-5 py-10 text-center text-sm text-muted shadow-sm ring-1 ring-black/5">
                 Nenhum artigo encontrado neste assunto.
               </div>
             ) : (
@@ -449,14 +449,14 @@ export function AcademiaClient() {
                   const active = article.id === selectedArticle.id;
                   return (
                     <button
-                      className={`grid gap-4 rounded-xl p-4 text-left transition sm:grid-cols-[140px_1fr] ${
-                        active ? "bg-[#EAF0FF] ring-1 ring-inset ring-[#BFD2FF]" : "bg-slate-50 ring-1 ring-inset ring-line hover:bg-white"
+                      className={`grid gap-4 rounded-2xl p-4 text-left shadow-sm transition sm:grid-cols-[140px_1fr] ${
+                        active ? "bg-[#EAF0FF] ring-1 ring-inset ring-[#BFD2FF]" : "bg-white ring-1 ring-black/5 hover:bg-slate-50"
                       }`}
                       key={article.id}
                       onClick={() => setSelectedArticleId(article.id)}
                       type="button"
                     >
-                      <Image alt="" className="h-24 w-full rounded-lg object-cover" height={96} src={article.image} width={160} />
+                      <Image alt="" className="h-24 w-full rounded object-cover" height={96} src={article.image} width={160} />
                       <span className="min-w-0">
                         <span className="block text-base font-semibold leading-snug text-ink">{article.title}</span>
                         <span className="mt-1 block text-sm leading-5 text-muted">{article.description}</span>
@@ -500,7 +500,7 @@ export function AcademiaClient() {
                   </ul>
                 ) : null}
                 {section.note ? (
-                  <div className={`mt-5 rounded-xl p-4 text-sm leading-6 ring-1 ring-inset ${
+                  <div className={`mt-5 rounded-2xl p-4 text-sm leading-6 ring-1 ring-inset ${
                     section.note.tone === "warning" ? "bg-rose-50 text-rose-900 ring-rose-200" : "bg-sky-50 text-sky-900 ring-sky-200"
                   }`}>
                     <p className="font-semibold">{section.note.title}</p>
@@ -511,7 +511,7 @@ export function AcademiaClient() {
             ))}
           </div>
 
-          <div className="mt-8 rounded-xl bg-slate-50 p-4 text-xs leading-5 text-slate-500 ring-1 ring-inset ring-line">
+          <div className="mt-8 rounded-2xl bg-slate-50 p-4 text-xs leading-5 text-slate-500 ring-1 ring-inset ring-line">
             Conteúdo educativo. Para números oficiais e regras atualizadas, confira os portais da administração francesa antes de declarar ou tomar decisões fiscais.
           </div>
         </div>
