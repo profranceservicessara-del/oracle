@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { useToast } from "@/components/ui/toast";
 import { createClient } from "@/lib/supabase/client";
+import { ThirdForm, emptyThirdFull, toThirdFull, type ThirdFull } from "./third-form";
 
 export type Third = {
   id: string;
@@ -108,7 +109,6 @@ const addLabel: Record<TabKey, string> = {
   contatos: "Adicionar contato"
 };
 
-const emptyThird = { name: "", third_type: "client", entity_kind: "company", email: "", phone: "" };
 const emptyPerson = { first_name: "", last_name: "", role: "", email: "", phone: "" };
 
 const COLS_KEY = "contatos.columns.v1";
@@ -142,8 +142,9 @@ export function ContatosClient({
     contatos: Object.fromEntries(PERSON_COLS.map((c) => [c.key, true]))
   });
 
-  const [thirdOpen, setThirdOpen] = useState(false);
-  const [thirdForm, setThirdForm] = useState(emptyThird);
+  const [formOpen, setFormOpen] = useState(false);
+  const [formMode, setFormMode] = useState<"create" | "edit">("create");
+  const [formValue, setFormValue] = useState<ThirdFull>(emptyThirdFull);
   const [personOpen, setPersonOpen] = useState(false);
   const [personForm, setPersonForm] = useState(emptyPerson);
   const [saving, setSaving] = useState(false);
@@ -278,51 +279,27 @@ export function ContatosClient({
     setPage(1);
   }
 
-  async function saveThird() {
-    setErr("");
-    if (!thirdForm.name.trim()) {
-      setErr("Informe o nome.");
-      return;
+  function handleSaved(saved: Third, mode: "create" | "edit") {
+    if (mode === "create") {
+      setThirds((cur) => [saved, ...cur]);
+    } else {
+      setThirds((cur) => cur.map((t) => (t.id === saved.id ? { ...saved, contactsCount: t.contactsCount } : t)));
     }
-    setSaving(true);
-    const { data, error } = await supabase
-      .from("contact_thirds")
-      .insert({
-        user_id: userId,
-        name: thirdForm.name.trim(),
-        third_type: thirdForm.third_type,
-        entity_kind: thirdForm.entity_kind,
-        email: thirdForm.email || null,
-        phone: thirdForm.phone || null
-      })
-      .select("id, entity_kind, third_type, name, email, phone, mobile, website, linkedin, business_sector")
-      .single();
-    setSaving(false);
-    if (error || !data) {
-      showToast("Não foi possível criar.", "error");
-      return;
-    }
-    const r = data as Record<string, unknown>;
-    setThirds((cur) => [
-      {
-        id: r.id as string,
-        entityKind: r.entity_kind as Third["entityKind"],
-        thirdType: r.third_type as Third["thirdType"],
-        name: r.name as string,
-        email: (r.email as string) ?? null,
-        phone: (r.phone as string) ?? null,
-        mobile: null,
-        website: null,
-        linkedin: null,
-        businessSector: null,
-        billingAddress: null,
-        contactsCount: 0
-      },
-      ...cur
+    setFormOpen(false);
+  }
+
+  async function openEdit(id: string) {
+    const [{ data: row }, { data: addr }] = await Promise.all([
+      supabase.from("contact_thirds").select("*").eq("id", id).single(),
+      supabase.from("contact_addresses").select("*").eq("third_id", id).eq("kind", "billing").maybeSingle()
     ]);
-    setThirdForm(emptyThird);
-    setThirdOpen(false);
-    showToast("Registro criado.", "success");
+    if (!row) {
+      showToast("Não foi possível abrir o registro.", "error");
+      return;
+    }
+    setFormValue(toThirdFull(row as Record<string, unknown>, (addr as Record<string, unknown>) ?? null));
+    setFormMode("edit");
+    setFormOpen(true);
   }
 
   async function savePerson() {
@@ -375,8 +352,9 @@ export function ContatosClient({
       setPersonOpen(true);
     } else {
       const preset = tab === "perspectivas" ? "prospect" : tab === "fornecedores" ? "supplier" : "client";
-      setThirdForm({ ...emptyThird, third_type: preset, entity_kind: tab === "individuos" ? "individual" : "company" });
-      setThirdOpen(true);
+      setFormValue({ ...emptyThirdFull, third_type: preset, entity_kind: tab === "individuos" ? "individual" : "company" });
+      setFormMode("create");
+      setFormOpen(true);
     }
   }
 
@@ -404,7 +382,7 @@ export function ContatosClient({
     if (col.key === "contactsCount") return <span className="tabular-nums text-slate-600">{t.contactsCount || ""}</span>;
     if (col.key === "website")
       return t.website ? (
-        <a className="text-brand hover:underline" href={t.website} rel="noopener" target="_blank">
+        <a className="text-brand hover:underline" href={t.website} onClick={(e) => e.stopPropagation()} rel="noopener" target="_blank">
           {t.website.replace(/^https?:\/\//, "")}
         </a>
       ) : (
@@ -622,8 +600,12 @@ export function ContatosClient({
                   {pageRows.map((raw) => {
                     const id = (raw as { id: string }).id;
                     return (
-                      <tr className="hover:bg-slate-50/50" key={id}>
-                        <td className="px-4 py-3">
+                      <tr
+                        className={`hover:bg-slate-50/50 ${isContatos ? "" : "cursor-pointer"}`}
+                        key={id}
+                        onClick={isContatos ? undefined : () => void openEdit(id)}
+                      >
+                        <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                           <input checked={selected.has(id)} onChange={() => toggleRow(id)} type="checkbox" />
                         </td>
                         {visibleCols.map((c) => (
@@ -658,47 +640,15 @@ export function ContatosClient({
         </section>
       </div>
 
-      {/* Modal criar terceiro (mínimo — Fase 4 traz o formulário completo) */}
-      <FormModal description="Formulário completo virá na Fase 4." isOpen={thirdOpen} onClose={() => setThirdOpen(false)} title="Novo registro">
-        <form className="grid gap-4" onSubmit={(e) => { e.preventDefault(); void saveThird(); }}>
-          <label className="text-sm font-medium text-ink">
-            Nome *
-            <Input className="mt-2" onChange={(e) => setThirdForm((c) => ({ ...c, name: e.target.value }))} value={thirdForm.name} />
-          </label>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="text-sm font-medium text-ink">
-              Tipo
-              <Select className="mt-2" onChange={(e) => setThirdForm((c) => ({ ...c, third_type: e.target.value }))} value={thirdForm.third_type}>
-                <option value="client">Cliente</option>
-                <option value="prospect">Perspectiva</option>
-                <option value="supplier">Fornecedor</option>
-              </Select>
-            </label>
-            <label className="text-sm font-medium text-ink">
-              Categoria
-              <Select className="mt-2" onChange={(e) => setThirdForm((c) => ({ ...c, entity_kind: e.target.value }))} value={thirdForm.entity_kind}>
-                <option value="company">Empresa</option>
-                <option value="individual">Indivíduo</option>
-              </Select>
-            </label>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="text-sm font-medium text-ink">
-              E-mail
-              <Input className="mt-2" onChange={(e) => setThirdForm((c) => ({ ...c, email: e.target.value }))} type="email" value={thirdForm.email} />
-            </label>
-            <label className="text-sm font-medium text-ink">
-              Telefone
-              <Input className="mt-2" onChange={(e) => setThirdForm((c) => ({ ...c, phone: e.target.value }))} value={thirdForm.phone} />
-            </label>
-          </div>
-          {err ? <p className="text-sm text-red-600">{err}</p> : null}
-          <div className="flex justify-end gap-2">
-            <Button onClick={() => setThirdOpen(false)} type="button" variant="secondary">Cancelar</Button>
-            <Button disabled={saving} type="submit">{saving ? "Salvando…" : "Salvar"}</Button>
-          </div>
-        </form>
-      </FormModal>
+      {/* Formulário completo do Third (criar/editar) */}
+      <ThirdForm
+        isOpen={formOpen}
+        mode={formMode}
+        onClose={() => setFormOpen(false)}
+        onSaved={handleSaved}
+        userId={userId}
+        value={formValue}
+      />
 
       {/* Modal criar contato (pessoa) */}
       <FormModal description="Vincular a uma empresa virá na Fase 5." isOpen={personOpen} onClose={() => setPersonOpen(false)} title="Novo contato">
