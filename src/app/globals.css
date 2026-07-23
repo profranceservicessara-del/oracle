@@ -44,14 +44,35 @@ a {
   text-decoration: none;
 }
 
+/* Scrollbar global: fina e discreta, trilho invisível. Vale para o conteúdo
+   claro; a sidebar sobrescreve abaixo com o thumb translúcido claro. */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(23, 32, 51, 0.2) transparent;
+}
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(23, 32, 51, 0.2);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(23, 32, 51, 0.34);
+}
+
 /* Scrollbar glass: fina e translúcida. Na sidebar (fundo navy escuro) o
    trilho fica invisível e o thumb é um branco translúcido, efeito vidro. */
 .sidebar-scroll {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+  scrollbar-color: rgba(255, 255, 255, 0.16) transparent;
 }
 .sidebar-scroll::-webkit-scrollbar {
-  width: 6px;
+  width: 4px;
 }
 .sidebar-scroll::-webkit-scrollbar-track {
   background: transparent;

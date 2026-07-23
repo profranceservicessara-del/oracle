@@ -287,7 +287,11 @@ function NavList({ onNavigate, collapsed, onExpand, onCollapse }: { onNavigate?:
     top: number;
   } | null>(null);
   const flyoutTop = flyout ? Math.max(16, Math.min(flyout.top, 520)) : 16;
-  const flyoutLeft = collapsed ? "left-[3.875rem]" : "left-[15rem]";
+  // A janela encosta 4px "por dentro" da borda direita das linhas: como o item
+  // aberto tem a mesma cor do painel, a sobreposição é invisível e garante que
+  // não sobre nenhum filete de fundo entre o botão e a janela (nem quando a
+  // barra de rolagem aparece e encurta as linhas).
+  const flyoutLeft = collapsed ? "left-[3.875rem]" : "left-[14.75rem]";
 
   // Projetos recentes (dados reais do CRM, RLS por company) anexados como
   // sub-itens dinâmicos do grupo Projetos. Sem hardcode de nomes.
@@ -407,7 +411,7 @@ function NavList({ onNavigate, collapsed, onExpand, onCollapse }: { onNavigate?:
 
   return (
     <div className="relative flex min-h-0 flex-1" onMouseLeave={() => setFlyout(null)}>
-      <nav className="flex flex-1 flex-col gap-1 overflow-y-auto pr-0.5 sidebar-scroll">
+      <nav className="flex flex-1 flex-col gap-1 overflow-y-auto sidebar-scroll">
         {navRender.map((item) =>
           item.kind === "link" ? (
             <Link
