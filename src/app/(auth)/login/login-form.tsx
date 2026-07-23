@@ -38,7 +38,7 @@ function loginErrorMessage(err: AuthError) {
   return "Não foi possível entrar. Verifique seu email e senha.";
 }
 
-// Mensagem para os fluxos que disparam email (redefinição e link mágico).
+// Mensagem para os fluxos que disparam email (redefinição de senha).
 function emailFlowErrorMessage(err: AuthError, fallback: string) {
   if (err.status === 429) {
     return "Muitos emails enviados agora. Aguarde alguns minutos e tente de novo.";
