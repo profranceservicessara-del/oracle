@@ -94,6 +94,7 @@ const nav: NavItem[] = [
       { href: "/financeiro", label: "Fluxo de Caixa", icon: icons.receitasDespesas },
       { href: "/crm/agenda", label: "Agenda", icon: icons.agenda },
       { href: "/clientes", label: "Clientes", icon: icons.clientesLeaf },
+      { href: "/contatos", label: "Contatos", icon: icons.clientesLeaf },
       { href: "/banco", label: "Contas bancárias", icon: icons.banco, premium: true },
       { href: "/conselheiro", label: "Meu Conselheiro", icon: icons.conselheiro }
     ]
@@ -117,7 +118,6 @@ const nav: NavItem[] = [
     icon: icons.produtividade,
     children: [
       { href: "/crm", label: "CRM", icon: icons.crm },
-      { href: "/contatos", label: "Contatos", icon: icons.clientesLeaf },
       { href: "/crm/pipeline", label: "Pipeline", icon: icons.pipeline },
       { href: "/tarefas", label: "Tarefas", icon: icons.tarefas },
       { href: "/tempo", label: "Gestão de Tempo", icon: icons.pipeline }
