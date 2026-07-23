@@ -116,27 +116,6 @@ export function LoginForm() {
     setMessage("Enviamos um link para redefinir sua senha. Confira seu email.");
   }
 
-  async function sendMagicLink() {
-    setError("");
-    setMessage("");
-    const parsed = emailSchema.safeParse({ email });
-    if (!parsed.success) {
-      setError("Digite seu email acima para receber o link mágico.");
-      return;
-    }
-    setBusy("magic");
-    const { error: authError } = await supabase.auth.signInWithOtp({
-      email: parsed.data.email,
-      options: { emailRedirectTo: callbackUrl() }
-    });
-    setBusy(null);
-    if (authError) {
-      setError(emailFlowErrorMessage(authError, "Não foi possível enviar o link mágico. Tente novamente."));
-      return;
-    }
-    setMessage("Enviamos um link mágico para o seu email.");
-  }
-
   const disabled = busy !== null;
 
   return (
@@ -232,12 +211,6 @@ export function LoginForm() {
         <Link className="font-semibold text-brand underline underline-offset-4 hover:text-[#003a94]" href="/cadastro">
           Criar minha conta
         </Link>
-      </p>
-      <p className="mt-2 text-center text-xs text-muted">
-        Prefere entrar sem senha?{" "}
-        <button className="font-medium text-brand hover:underline disabled:opacity-60" disabled={disabled} onClick={() => void sendMagicLink()} type="button">
-          {busy === "magic" ? "Enviando…" : "Receber link mágico"}
-        </button>
       </p>
     </div>
   );
