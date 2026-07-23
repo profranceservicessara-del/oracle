@@ -246,7 +246,7 @@ export function FinanceiroClient({
       <div className="mb-6 grid grid-cols-2 gap-1 rounded-2xl bg-slate-100 p-1">
         {(["geral", "fluxo"] as const).map((t) => (
           <button
-            className={`rounded-xl py-2.5 text-sm font-semibold transition ${tab === t ? "bg-white text-ink shadow-sm ring-1 ring-black/5" : "text-slate-500 hover:text-ink"}`}
+            className={`rounded-sm py-2.5 text-sm font-semibold transition ${tab === t ? "bg-white text-ink shadow-sm ring-1 ring-black/5" : "text-slate-500 hover:text-ink"}`}
             key={t}
             onClick={() => setTab(t)}
             type="button"

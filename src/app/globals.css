@@ -25,13 +25,17 @@ body {
   .ring-1.ring-black\/5 {
     --tw-ring-color: rgb(204 204 209 / 0.9);
   }
-  .rounded-2xl.ring-black\/5 {
-    border-radius: 0.25rem;
-  }
   .shadow-sm.ring-black\/5 {
     --tw-shadow: 0 0 #0000;
     --tw-shadow-colored: 0 0 #0000;
   }
+}
+
+/* Raio uniforme: todo card e controle (rounded-2xl) usa o mesmo canto curto de
+   4px. Badges, pills e avatares usam rounded-full e não são afetados. Fica fora
+   do @layer, depois das utilitárias, para vencer a classe do Tailwind. */
+.rounded-2xl {
+  border-radius: 0.25rem;
 }
 
 a {
