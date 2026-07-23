@@ -31,10 +31,11 @@ body {
   }
 }
 
-/* Raio uniforme: todo card e controle (rounded-2xl) usa o mesmo canto curto de
-   4px. Badges, pills e avatares usam rounded-full e não são afetados. Fica fora
-   do @layer, depois das utilitárias, para vencer a classe do Tailwind. */
-.rounded-2xl {
+/* Raio uniforme: todo card e controle (rounded-2xl e rounded-3xl) usa o mesmo
+   canto curto de 4px. Badges, pills e avatares usam rounded-full e não são
+   afetados. Fica fora do @layer, depois das utilitárias, para vencer o Tailwind. */
+.rounded-2xl,
+.rounded-3xl {
   border-radius: 0.25rem;
 }
 
