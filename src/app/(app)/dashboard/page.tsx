@@ -230,6 +230,20 @@ export default async function DashboardPage() {
     { count: profileFields.length, label: `Perfil incompleto: ${profileFields.join(", ")}` }
   ].filter((item) => item.count > 0);
 
+  // Nome de saudação: perfil primeiro, depois metadados do cadastro, por fim o
+  // começo do e-mail (ex: bruna.dsp@... -> Bruna). Sempre mostra algum nome.
+  const meta = (user.user_metadata ?? {}) as Record<string, string | undefined>;
+  const profileName =
+    typedProfile?.prenom?.trim() ||
+    typedProfile?.nome?.trim() ||
+    meta.prenom?.trim() ||
+    meta.nome?.trim() ||
+    meta.full_name?.trim() ||
+    meta.name?.trim() ||
+    "";
+  const emailName = user.email ? user.email.split("@")[0].split(/[._+-]/)[0] : "";
+  const greetingName = profileName || (emailName ? emailName.charAt(0).toUpperCase() + emailName.slice(1) : "");
+
   return (
     <main className="mx-auto max-w-6xl space-y-6 px-4 py-8">
       <section className="relative overflow-hidden rounded bg-gradient-to-br from-[#020D2C] via-[#0A2352] to-[#122C6E] px-6 py-7 shadow-[0_22px_55px_-26px_rgba(2,10,35,0.85)] ring-1 ring-inset ring-white/12 [box-shadow:inset_0_1px_0_rgba(255,255,255,0.10)]">
@@ -240,7 +254,7 @@ export default async function DashboardPage() {
         <div aria-hidden className="pointer-events-none absolute -bottom-24 -left-20 h-72 w-72 rounded-full bg-[#061A46]/70 blur-[80px]" />
         <div className="relative z-10">
         <h1 className="text-2xl font-medium text-white">
-          Bienvenue{typedProfile?.prenom || typedProfile?.nome ? `, ${typedProfile?.prenom || typedProfile?.nome}` : ""} ! 👋
+          Bienvenue{greetingName ? `, ${greetingName}` : ""} ! 👋
         </h1>
         <p className="mt-1.5 max-w-xl text-sm text-white/75">
           Aqui está o seu painel de controle. Acompanhe suas atividades.
