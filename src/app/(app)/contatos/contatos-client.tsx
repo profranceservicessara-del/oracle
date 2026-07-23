@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { useToast } from "@/components/ui/toast";
 import { createClient } from "@/lib/supabase/client";
 import { ThirdForm, emptyThirdFull, toThirdFull, type ThirdFull } from "./third-form";
 import { PersonForm, emptyPersonFull, personToFull, type PersonFull } from "./person-form";
+import { PERSON_ALIASES, THIRD_ALIASES, downloadBlob, normalizeThirdType, recordsFromCsv } from "./io";
 
 export type Third = {
   id: string;
@@ -128,7 +130,11 @@ export function ContatosClient({
   userId: string;
 }) {
   const supabase = useMemo(() => createClient(), []);
+  const router = useRouter();
   const { showToast } = useToast();
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [actionsOpen, setActionsOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
   const [thirds, setThirds] = useState(initialThirds);
   const [people, setPeople] = useState(initialPeople);
   const [tab, setTab] = useState<TabKey>("clientes");
@@ -349,6 +355,142 @@ export function ContatosClient({
     [thirds]
   );
 
+  // Valor em texto puro de uma célula (para export CSV/PDF).
+  function plainCell(col: ColDef, raw: Record<string, unknown>): string {
+    if (!isContatos && col.key === "thirdType") return typeBadge[(raw as unknown as Third).thirdType].label;
+    if (col.key === "contactsCount") return String((raw as unknown as Third).contactsCount || "");
+    const v = raw[col.key];
+    return v == null ? "" : String(v);
+  }
+
+  async function exportRows(format: "csv" | "pdf", onlySelected: boolean) {
+    const src = onlySelected ? sorted.filter((r) => selected.has((r as { id: string }).id)) : sorted;
+    if (src.length === 0) {
+      showToast("Nada para exportar.", "error");
+      return;
+    }
+    const columns = visibleCols.map((c) => ({ key: c.key, label: c.label }));
+    const rows = src.map((r) => Object.fromEntries(visibleCols.map((c) => [c.key, plainCell(c, r)])));
+    setActionsOpen(false);
+    setBusy(true);
+    try {
+      const res = await fetch("/api/contatos/export", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ format, filename: `contatos-${tab}`, title: `Contatos · ${TABS.find((t) => t.key === tab)?.label}`, columns, rows })
+      });
+      if (!res.ok) {
+        showToast("Falha ao exportar.", "error");
+        return;
+      }
+      downloadBlob(await res.blob(), `contatos-${tab}.${format}`);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function archiveSelected() {
+    const ids = [...selected];
+    if (ids.length === 0) return;
+    setActionsOpen(false);
+    setBusy(true);
+    const { error } = await supabase.from("contact_thirds").update({ archived: true }).in("id", ids);
+    setBusy(false);
+    if (error) {
+      showToast("Não foi possível arquivar.", "error");
+      return;
+    }
+    setThirds((cur) => cur.filter((t) => !selected.has(t.id)));
+    setSelected(new Set());
+    showToast(`${ids.length} arquivado(s).`, "success");
+  }
+
+  async function deleteSelected() {
+    const ids = [...selected];
+    if (ids.length === 0) return;
+    if (!window.confirm(`Excluir ${ids.length} registro(s)? Esta ação não pode ser desfeita.`)) return;
+    setActionsOpen(false);
+    setBusy(true);
+    if (isContatos) {
+      const { error } = await supabase.from("contact_people").delete().in("id", ids);
+      setBusy(false);
+      if (error) {
+        showToast("Não foi possível excluir.", "error");
+        return;
+      }
+      const dec = new Map<string, number>();
+      for (const p of people) {
+        if (selected.has(p.id) && p.thirdId) dec.set(p.thirdId, (dec.get(p.thirdId) ?? 0) + 1);
+      }
+      setPeople((cur) => cur.filter((p) => !selected.has(p.id)));
+      if (dec.size > 0) {
+        setThirds((cur) => cur.map((t) => (dec.has(t.id) ? { ...t, contactsCount: Math.max(0, t.contactsCount - (dec.get(t.id) ?? 0)) } : t)));
+      }
+    } else {
+      const { error } = await supabase.from("contact_thirds").delete().in("id", ids);
+      setBusy(false);
+      if (error) {
+        showToast("Não foi possível excluir.", "error");
+        return;
+      }
+      setThirds((cur) => cur.filter((t) => !selected.has(t.id)));
+      // Pessoas ficam órfãs (FK on delete set null): reflete localmente.
+      setPeople((cur) => cur.map((p) => (p.thirdId && selected.has(p.thirdId) ? { ...p, thirdId: null, thirdName: null } : p)));
+    }
+    setSelected(new Set());
+    showToast(`${ids.length} excluído(s).`, "success");
+  }
+
+  async function importCsv(file: File) {
+    const text = await file.text();
+    const recs = recordsFromCsv(text, isContatos ? PERSON_ALIASES : THIRD_ALIASES);
+    const rowsToInsert = isContatos
+      ? recs.filter((r) => r.first_name || r.last_name)
+      : recs.filter((r) => r.name);
+    if (rowsToInsert.length === 0) {
+      showToast("Nenhuma linha válida. Confira o cabeçalho (ex: nome, email, telefone).", "error");
+      return;
+    }
+    setActionsOpen(false);
+    setBusy(true);
+    let error;
+    if (isContatos) {
+      const payload = rowsToInsert.map((r) => ({
+        user_id: userId,
+        first_name: r.first_name || null,
+        last_name: r.last_name || null,
+        role: r.role || null,
+        email: r.email || null,
+        phone: r.phone || null,
+        mobile: r.mobile || null
+      }));
+      ({ error } = await supabase.from("contact_people").insert(payload));
+    } else {
+      const payload = rowsToInsert.map((r) => ({
+        user_id: userId,
+        name: r.name,
+        third_type: r.third_type ? normalizeThirdType(r.third_type) : "client",
+        email: r.email || null,
+        phone: r.phone || null,
+        mobile: r.mobile || null,
+        website: r.website || null,
+        business_sector: r.business_sector || null,
+        siret: r.siret || null,
+        siren: r.siren || null,
+        legal_status: r.legal_status || null,
+        reference: r.reference || null
+      }));
+      ({ error } = await supabase.from("contact_thirds").insert(payload));
+    }
+    setBusy(false);
+    if (error) {
+      showToast("Não foi possível importar.", "error");
+      return;
+    }
+    showToast(`${rowsToInsert.length} importado(s). Importar o mesmo arquivo duas vezes duplica.`, "success");
+    router.refresh();
+  }
+
   const th = "px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-400";
   const Sortable = ({ col, label }: { col: string; label: string }) => (
     <button className="inline-flex items-center gap-1 hover:text-ink" onClick={() => toggleSort(col)} type="button">
@@ -397,10 +539,46 @@ export function ContatosClient({
           <h1 className="mt-1 text-2xl font-semibold text-ink">Contatos</h1>
         </div>
         <div className="flex items-center gap-2">
-          <button className="inline-flex h-10 items-center gap-1.5 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50" title="Em breve (Fase 6)" type="button">
-            Ações
-            <svg fill="none" height="14" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" width="14"><path d="m6 9 6 6 6-6" /></svg>
-          </button>
+          <div className="relative">
+            <button
+              className="inline-flex h-10 items-center gap-1.5 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
+              disabled={busy}
+              onClick={() => setActionsOpen((o) => !o)}
+              type="button"
+            >
+              {busy ? "Processando…" : "Ações"}
+              <svg fill="none" height="14" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" width="14"><path d="m6 9 6 6 6-6" /></svg>
+            </button>
+            {actionsOpen ? (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setActionsOpen(false)} />
+                <div className="absolute right-0 top-full z-20 mt-2 w-64 rounded-xl bg-white p-1.5 text-sm shadow-lg ring-1 ring-black/10">
+                  {selected.size > 0 ? (
+                    <>
+                      <p className="px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-400">{selected.size} selecionado(s)</p>
+                      <button className="block w-full rounded-lg px-2.5 py-2 text-left text-slate-700 hover:bg-slate-50" onClick={() => void exportRows("csv", true)} type="button">Exportar selecionados (CSV)</button>
+                      <button className="block w-full rounded-lg px-2.5 py-2 text-left text-slate-700 hover:bg-slate-50" onClick={() => void exportRows("pdf", true)} type="button">Exportar selecionados (PDF)</button>
+                      {!isContatos ? (
+                        <button className="block w-full rounded-lg px-2.5 py-2 text-left text-slate-700 hover:bg-slate-50" onClick={() => void archiveSelected()} type="button">Arquivar selecionados</button>
+                      ) : null}
+                      <button className="block w-full rounded-lg px-2.5 py-2 text-left text-red-600 hover:bg-red-50" onClick={() => void deleteSelected()} type="button">Excluir selecionados</button>
+                      <div className="my-1 border-t border-line" />
+                    </>
+                  ) : null}
+                  <button className="block w-full rounded-lg px-2.5 py-2 text-left text-slate-700 hover:bg-slate-50" onClick={() => void exportRows("csv", false)} type="button">Exportar lista (CSV)</button>
+                  <button className="block w-full rounded-lg px-2.5 py-2 text-left text-slate-700 hover:bg-slate-50" onClick={() => void exportRows("pdf", false)} type="button">Exportar lista (PDF)</button>
+                  <button className="block w-full rounded-lg px-2.5 py-2 text-left text-slate-700 hover:bg-slate-50" onClick={() => { setActionsOpen(false); fileRef.current?.click(); }} type="button">Importar CSV…</button>
+                </div>
+              </>
+            ) : null}
+          </div>
+          <input
+            accept=".csv,text/csv"
+            className="hidden"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) void importCsv(f); e.target.value = ""; }}
+            ref={fileRef}
+            type="file"
+          />
           <Button onClick={openAdd} type="button">+ {addLabel[tab]}</Button>
         </div>
       </div>
