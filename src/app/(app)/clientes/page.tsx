@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import type { Client } from "@/lib/types";
-import { ClientesClient } from "./clientes-client";
+import { ContatosClient } from "../contatos/contatos-client";
+import { fetchContatosData } from "../contatos/data";
 
 export default async function ClientesPage() {
   const supabase = createClient();
@@ -13,10 +13,7 @@ export default async function ClientesPage() {
     redirect("/login");
   }
 
-  const { data: clients } = await supabase
-    .from("clients")
-    .select("*")
-    .order("created_at", { ascending: false });
+  const { people, thirds } = await fetchContatosData(supabase);
 
-  return <ClientesClient initialClients={(clients ?? []) as Client[]} userId={user.id} />;
+  return <ContatosClient initialPeople={people} initialThirds={thirds} userId={user.id} />;
 }
