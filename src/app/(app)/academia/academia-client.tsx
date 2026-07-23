@@ -370,7 +370,7 @@ export function AcademiaClient() {
         <div className="p-6 md:p-8">
           <div className="min-w-0">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-700">Academia</p>
-            <h1 className="mt-2 text-2xl font-semibold leading-tight text-ink sm:text-3xl">
+            <h1 className="mt-2 text-2xl font-semibold leading-tight text-[#4A63C8] sm:text-3xl">
               Academia para Empreendedores Autônomos
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-700">
@@ -397,10 +397,10 @@ export function AcademiaClient() {
         <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Primeiros passos</p>
-            <h2 className="mt-2 text-xl font-semibold leading-snug text-ink">
+            <h2 className="mt-2 text-xl font-semibold leading-snug text-[#4A63C8]">
               Informações que você precisa saber sobre o status de trabalhador autônomo.
             </h2>
-            <p className="mt-2 text-sm leading-5 text-muted">
+            <p className="mt-2 text-sm leading-5 text-[#4A63C8]/80">
               Antes de começar, entenda vantagens, limites, receitas, contribuições, proteção social e contabilidade.
             </p>
 
@@ -432,7 +432,7 @@ export function AcademiaClient() {
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Artigos</p>
-                <h2 className="mt-1 text-xl font-semibold text-ink">{topics.find((topic) => topic.key === activeTopic)?.label}</h2>
+                <h2 className="mt-1 text-xl font-semibold text-[#4A63C8]">{topics.find((topic) => topic.key === activeTopic)?.label}</h2>
               </div>
               <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
                 {visibleArticles.length} artigo(s)
@@ -480,13 +480,13 @@ export function AcademiaClient() {
             <span>Academia</span>
             <span>{selectedArticle.readTime}</span>
           </div>
-          <h2 className="mt-3 text-2xl font-semibold leading-tight text-ink">{selectedArticle.title}</h2>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-muted">{selectedArticle.description}</p>
+          <h2 className="mt-3 text-2xl font-semibold leading-tight text-[#4A63C8]">{selectedArticle.title}</h2>
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-[#4A63C8]/80">{selectedArticle.description}</p>
 
           <div className="mt-6 border-t border-line pt-6">
             {selectedArticle.sections.map((section) => (
               <section className="mb-8 last:mb-0" key={section.title}>
-                <h3 className="text-lg font-semibold text-ink">{section.title}</h3>
+                <h3 className="text-lg font-semibold text-[#4A63C8]">{section.title}</h3>
                 {section.paragraphs?.map((paragraph) => (
                   <p className="mt-4 text-sm leading-7 text-slate-700" key={paragraph}>
                     {paragraph}
