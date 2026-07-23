@@ -171,7 +171,7 @@ const activeCard =
 // already rounded-xl), subtle blue fill + backdrop blur, border highlight, soft
 // depth shadow, and a gentle lift. Applied to every menu item for consistency.
 const idleRow =
-  "text-white hover:-translate-y-px hover:bg-[#7EA0FF]/10 hover:backdrop-blur-sm hover:ring-1 hover:ring-inset hover:ring-white/10 hover:shadow-[0_6px_16px_-8px_rgba(0,0,0,0.55)]";
+  "text-white/80 hover:-translate-y-px hover:bg-[#7EA0FF]/10 hover:backdrop-blur-sm hover:ring-1 hover:ring-inset hover:ring-white/10 hover:shadow-[0_6px_16px_-8px_rgba(0,0,0,0.55)]";
 
 // All destination hrefs, used to resolve the single best (most-specific) match so
 // a parent path like /facturation never stays "active" on /facturation/devis.
@@ -211,7 +211,7 @@ function LeafRow({ leaf, active, onNavigate }: { leaf: Leaf; active: boolean; on
   return (
     <Link
       aria-current={active ? "page" : undefined}
-      className={`group/leaf relative flex items-center gap-2.5 rounded-xl py-2 pl-3 pr-3 text-[13px] font-medium transition-all duration-200 ${
+      className={`group/leaf relative flex items-center gap-2.5 rounded-xl py-2 pl-3 pr-3 text-[13px] font-normal transition-all duration-200 ${
         active ? activeCard : idleRow
       }`}
       href={leaf.href}
@@ -251,7 +251,7 @@ function GroupRow({
     <div>
       <button
         aria-expanded={open}
-        className={`group/row flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ${idleRow}`}
+        className={`group/row flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-normal transition-all duration-200 ${idleRow}`}
         onClick={onToggle}
         type="button"
       >
@@ -383,7 +383,7 @@ function NavList({ onNavigate, collapsed, onExpand, onCollapse }: { onNavigate?:
         item.kind === "link" ? (
           <Link
             aria-current={item.href === activeHref ? "page" : undefined}
-            className={`group/row flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
+            className={`group/row flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-normal transition-all duration-200 ${
               item.href === activeHref ? activeCard : idleRow
             }`}
             href={item.href}
