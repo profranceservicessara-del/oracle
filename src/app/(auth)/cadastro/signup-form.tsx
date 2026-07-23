@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/client";
 import type { AuthError } from "@supabase/supabase-js";
-import { AppleIcon, GoogleIcon, oauthButtonClass, SHOW_SOCIAL_LOGIN, startOAuth } from "../oauth";
+import { AppleIcon, GoogleIcon, oauthButtonClass, SHOW_APPLE_LOGIN, SHOW_SOCIAL_LOGIN, startOAuth } from "../oauth";
 
 const signupSchema = z.object({
   email: z.string().trim().email("Informe um email válido."),
@@ -110,10 +110,12 @@ export function SignupForm() {
               <GoogleIcon />
               {busy === "google" ? "Redirecionando…" : "Cadastre-se com o Google"}
             </button>
-            <button className={oauthButtonClass} disabled={disabled} onClick={() => void signUpWithProvider("apple")} type="button">
-              <AppleIcon />
-              {busy === "apple" ? "Redirecionando…" : "Cadastre-se com a Apple"}
-            </button>
+            {SHOW_APPLE_LOGIN ? (
+              <button className={oauthButtonClass} disabled={disabled} onClick={() => void signUpWithProvider("apple")} type="button">
+                <AppleIcon />
+                {busy === "apple" ? "Redirecionando…" : "Cadastre-se com a Apple"}
+              </button>
+            ) : null}
           </div>
 
           {/* Divisor */}
