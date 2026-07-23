@@ -175,6 +175,11 @@ const activeCard =
 const idleRow =
   "text-white/80 hover:-translate-y-px hover:bg-gradient-to-br hover:from-[#2E2B5C] hover:via-[#252349] hover:to-[#1D1B3B] hover:text-white hover:backdrop-blur-sm hover:ring-1 hover:ring-inset hover:ring-[#D7E3FF]/35 hover:shadow-[0_6px_16px_-8px_rgba(0,0,0,0.65)]";
 
+// OPEN row — item cuja janela lateral está aberta. Assume a cor exata do painel,
+// sem anel e sem canto à direita, para os dois formarem uma superfície só (sem
+// linha de separação entre o botão e a janela).
+const openCard = "relative bg-[#2E2B5C] text-white";
+
 // All destination hrefs, used to resolve the single best (most-specific) match so
 // a parent path like /facturation never stays "active" on /facturation/devis.
 const allHrefs = nav.flatMap((item) => (item.kind === "link" ? [item.href] : item.children.map((child) => child.href)));
@@ -250,7 +255,7 @@ function GroupRow({
     <div>
       <button
         className={`group/row flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-normal transition-all duration-200 ${
-          highlighted ? activeCard : idleRow
+          isOpen ? openCard : highlighted ? activeCard : idleRow
         } ${isOpen ? "rounded-r-none" : ""}`}
         onClick={(event) => onOpen(item, event.currentTarget.getBoundingClientRect().top)}
         onFocus={(event) => onOpen(item, event.currentTarget.getBoundingClientRect().top)}
@@ -364,7 +369,7 @@ function NavList({ onNavigate, collapsed, onExpand, onCollapse }: { onNavigate?:
 
         {flyout ? (
           <div
-            className={`fixed ${flyoutLeft} z-40 w-72 max-w-[calc(100vw-6rem)] overflow-hidden rounded-r bg-[#252349] py-1.5 shadow-2xl ring-1 ring-[#D7E3FF]/35`}
+            className={`fixed ${flyoutLeft} z-40 w-72 max-w-[calc(100vw-6rem)] overflow-hidden rounded-r bg-[#2E2B5C] py-1.5 shadow-2xl`}
             onMouseEnter={() => setFlyout(flyout)}
             style={{ top: flyoutTop }}
           >
@@ -374,8 +379,8 @@ function NavList({ onNavigate, collapsed, onExpand, onCollapse }: { onNavigate?:
                   aria-current={child.href === activeHref ? "page" : undefined}
                   className={`flex min-h-9 items-center gap-3 px-4 py-2 text-sm transition ${
                     child.href === activeHref
-                      ? "bg-gradient-to-r from-[#3A3673] via-[#322F63] to-[#2A2753] text-white"
-                      : "text-white/80 hover:bg-gradient-to-r hover:from-[#3A3673] hover:via-[#322F63] hover:to-[#2A2753] hover:text-white"
+                      ? "bg-gradient-to-r from-[#454080] via-[#3C3873] to-[#353167] text-white"
+                      : "text-white/80 hover:bg-gradient-to-r hover:from-[#454080] hover:via-[#3C3873] hover:to-[#353167] hover:text-white"
                   }`}
                   href={child.href}
                   key={child.href}
@@ -437,7 +442,7 @@ function NavList({ onNavigate, collapsed, onExpand, onCollapse }: { onNavigate?:
 
       {flyout ? (
         <div
-          className={`fixed ${flyoutLeft} z-40 w-72 max-w-[calc(100vw-17rem)] overflow-hidden rounded-r bg-[#252349] py-1.5 shadow-2xl ring-1 ring-[#D7E3FF]/35`}
+          className={`fixed ${flyoutLeft} z-40 w-72 max-w-[calc(100vw-17rem)] overflow-hidden rounded-r bg-[#2E2B5C] py-1.5 shadow-2xl`}
           onMouseEnter={() => setFlyout(flyout)}
           style={{ top: flyoutTop }}
         >
@@ -447,8 +452,8 @@ function NavList({ onNavigate, collapsed, onExpand, onCollapse }: { onNavigate?:
                 aria-current={child.href === activeHref ? "page" : undefined}
                 className={`flex min-h-9 items-center gap-3 px-4 py-2 text-sm transition ${
                   child.href === activeHref
-                    ? "bg-gradient-to-r from-[#3A3673] via-[#322F63] to-[#2A2753] text-white"
-                    : "text-white/80 hover:bg-gradient-to-r hover:from-[#3A3673] hover:via-[#322F63] hover:to-[#2A2753] hover:text-white"
+                    ? "bg-gradient-to-r from-[#454080] via-[#3C3873] to-[#353167] text-white"
+                    : "text-white/80 hover:bg-gradient-to-r hover:from-[#454080] hover:via-[#3C3873] hover:to-[#353167] hover:text-white"
                 }`}
                 href={child.href}
                 key={child.href}
