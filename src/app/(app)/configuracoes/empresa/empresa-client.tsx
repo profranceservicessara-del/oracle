@@ -180,7 +180,7 @@ export function EmpresaClient({ initialProfile, userId }: { initialProfile: Prof
       </div>
 
       <section className="relative mb-6 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
-        <div className="h-24 bg-gradient-to-br from-[#001F4D] via-[#002D72] to-[#2B1F5B]" />
+        <div className="h-24 bg-[#00153A]" />
         <div className="px-6 pb-6">
           <div className="-mt-10 flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl bg-white ring-1 ring-black/5">
             {logoSignedUrl ? (

@@ -62,7 +62,7 @@ export default function RecomendarPage() {
 
       <div className="grid gap-4 md:grid-cols-2">
         {/* Hero */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#00153A] via-[#08276A] to-[#1E3A8A] p-6 text-white shadow-sm">
+        <div className="relative overflow-hidden rounded-2xl bg-[#00153A] p-6 text-white shadow-sm">
           <span className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10" />
           <span className="pointer-events-none absolute -bottom-12 right-6 h-28 w-28 rounded-full bg-[#F97316]/30" />
           <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold ring-1 ring-white/20">

@@ -362,7 +362,7 @@ export function OffresClient({ currentPlan, publicMode = false }: { currentPlan:
 
         <div className="mx-auto mt-8 grid max-w-5xl items-center gap-8 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-black/5 md:grid-cols-2 md:p-8">
           {/* Foto placeholder até a imagem da ProFrance entrar. */}
-          <div aria-hidden className="aspect-[4/3] overflow-hidden rounded-2xl bg-gradient-to-br from-[#0A2352] via-[#122C6E] to-[#2B1F5B]" />
+          <div aria-hidden className="aspect-[4/3] overflow-hidden rounded-2xl bg-[#00153A]" />
           <div>
             <h3 className="text-xl font-bold leading-tight text-ink">Fique tranquilo, seu negócio em boas mãos</h3>
             <p className="mt-3 text-sm leading-6 text-muted">
