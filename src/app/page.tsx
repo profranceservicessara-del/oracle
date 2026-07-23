@@ -460,8 +460,8 @@ export default async function HomePage() {
         </section>
 
         {/* Resumo de preços — apoia o crescimento (ref: Sellsy). */}
-        <section className="bg-[#F3F4F6]" id="precos">
-          <div className="mx-auto max-w-5xl px-4 py-12">
+        <section className="bg-[#ECEAFB]" id="precos">
+          <div className="mx-auto max-w-5xl px-4 py-20 sm:py-24">
             <h2 className="text-center text-2xl font-semibold leading-tight text-ink sm:text-3xl">
               A ProFrance apoia <span className="bg-gradient-to-r from-[#4361FF] to-[#B14BF4] bg-[length:100%_4px] bg-bottom bg-no-repeat pb-1">todo o seu crescimento</span>
             </h2>
