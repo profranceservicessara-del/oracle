@@ -865,7 +865,7 @@ function SidebarBody({ email, locale, avatarUrl, name, onNavigate, collapsed, on
   const initials = ((email.split("@")[0] ?? "").replace(/[^a-zA-Z]/g, "").slice(0, 2) || "PF").toUpperCase();
 
   return (
-    <div className={`flex h-full flex-col gap-5 bg-[#001030] ${collapsed ? "px-2 py-4" : "p-4"}`}>
+    <div className={`sidebar-shell flex h-full flex-col gap-5 bg-[#001030] ${collapsed ? "px-2 py-4" : "p-4"}`}>
       <div className={`flex gap-2 ${collapsed ? "flex-col items-center" : "items-center"}`}>
         <Link
           aria-label={collapsed ? "Expandir menu" : "Ir para Análise"}

@@ -35,8 +35,19 @@ body {
    canto curto de 4px. Badges, pills e avatares usam rounded-full e não são
    afetados. Fica fora do @layer, depois das utilitárias, para vencer o Tailwind. */
 .rounded-2xl,
-.rounded-3xl {
+.rounded-3xl,
+.rounded-xl,
+.rounded-lg {
   border-radius: 0.25rem;
+}
+
+/* Exceção: a sidebar é uma superfície própria e mantém o canto de pill dos
+   itens e da janela lateral. Sem isso a regra acima achataria o menu. */
+.sidebar-shell .rounded-xl {
+  border-radius: 0.75rem;
+}
+.sidebar-shell .rounded-lg {
+  border-radius: 0.5rem;
 }
 
 a {
