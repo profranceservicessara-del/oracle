@@ -131,6 +131,16 @@ export function toThirdFull(row: Record<string, unknown>, addr: Record<string, u
 
 const th = "border-b border-line pb-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-400";
 
+type DirHit = {
+  siren: string;
+  siret: string;
+  name: string;
+  naf_code: string;
+  addr_line1: string;
+  addr_zip_code: string;
+  addr_city: string;
+};
+
 // Campo de texto rotulado. Fica no escopo do módulo (não dentro do form) para
 // não remontar a cada tecla, o que faria o input perder o foco.
 function TextField({
@@ -175,16 +185,66 @@ export function ThirdForm({
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState("");
 
+  const [dirQuery, setDirQuery] = useState("");
+  const [dirResults, setDirResults] = useState<DirHit[]>([]);
+  const [dirLoading, setDirLoading] = useState(false);
+  const [dirDone, setDirDone] = useState(false);
+
   // Recarrega o form sempre que abre com outro registro.
   useEffect(() => {
     if (isOpen) {
       setForm(value);
       setErr("");
+      setDirQuery("");
+      setDirResults([]);
+      setDirDone(false);
     }
   }, [isOpen, value]);
 
   function set<K extends keyof ThirdFull>(k: K, v: ThirdFull[K]) {
     setForm((f) => ({ ...f, [k]: v }));
+  }
+
+  async function searchDirectory() {
+    const q = dirQuery.trim();
+    if (q.length < 3) return;
+    setDirLoading(true);
+    setDirDone(false);
+    try {
+      const res = await fetch(`/api/contatos/siret?q=${encodeURIComponent(q)}`);
+      const data = (await res.json()) as { results?: DirHit[]; error?: string };
+      if (!res.ok) {
+        showToast(data.error ?? "Diretório indisponível.", "error");
+        setDirResults([]);
+      } else {
+        setDirResults(data.results ?? []);
+      }
+    } catch {
+      showToast("Diretório indisponível.", "error");
+      setDirResults([]);
+    } finally {
+      setDirLoading(false);
+      setDirDone(true);
+    }
+  }
+
+  // Autopreenche os campos a partir de um resultado do diretório.
+  function applyHit(h: DirHit) {
+    setForm((f) => ({
+      ...f,
+      entity_kind: "company",
+      name: h.name || f.name,
+      siret: h.siret || f.siret,
+      siren: h.siren || f.siren,
+      naf_code: h.naf_code || f.naf_code,
+      addr_line1: h.addr_line1 || f.addr_line1,
+      addr_zip_code: h.addr_zip_code || f.addr_zip_code,
+      addr_city: h.addr_city || f.addr_city,
+      addr_country: f.addr_country || "France"
+    }));
+    setDirResults([]);
+    setDirDone(false);
+    showToast("Dados preenchidos do diretório. Confira antes de salvar.", "success");
   }
 
   async function save() {
@@ -297,6 +357,40 @@ export function ThirdForm({
       title={mode === "edit" ? "Editar registro" : "Novo registro"}
     >
       <form className="grid gap-6" onSubmit={(e) => { e.preventDefault(); void save(); }}>
+        {/* Busca no diretório oficial (SIRET/SIREN) */}
+        <div className="grid gap-3 rounded-2xl bg-slate-50 p-4 ring-1 ring-black/5">
+          <p className="text-sm font-semibold text-ink">Buscar no diretório (SIRET/SIREN)</p>
+          <div className="flex gap-2">
+            <Input
+              onChange={(e) => setDirQuery(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); void searchDirectory(); } }}
+              placeholder="Nome da empresa ou SIREN/SIRET"
+              value={dirQuery}
+            />
+            <Button disabled={dirLoading || dirQuery.trim().length < 3} onClick={() => void searchDirectory()} type="button" variant="secondary">
+              {dirLoading ? "Buscando…" : "Buscar"}
+            </Button>
+          </div>
+          {dirResults.length > 0 ? (
+            <ul className="divide-y divide-line overflow-hidden rounded-xl bg-white ring-1 ring-black/5">
+              {dirResults.map((h) => (
+                <li key={`${h.siret || h.siren}-${h.name}`}>
+                  <button className="block w-full px-3 py-2.5 text-left transition hover:bg-slate-50" onClick={() => applyHit(h)} type="button">
+                    <span className="block text-sm font-medium text-ink">{h.name || "Sem nome"}</span>
+                    <span className="block text-xs text-slate-500">
+                      {[h.siret || h.siren, [h.addr_zip_code, h.addr_city].filter(Boolean).join(" ")].filter(Boolean).join(" · ")}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : dirDone && !dirLoading ? (
+            <p className="text-xs text-slate-500">Nenhuma empresa encontrada. Você pode preencher manualmente.</p>
+          ) : (
+            <p className="text-xs text-slate-500">Dados públicos do INSEE. Confira sempre antes de salvar.</p>
+          )}
+        </div>
+
         {/* Identidade */}
         <div className="grid gap-4">
           <p className={th}>Identidade</p>
