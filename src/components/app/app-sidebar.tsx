@@ -141,6 +141,7 @@ const nav: NavItem[] = [
     icon: icons.contabilidade,
     children: [
       { href: "/livre-de-recettes", label: "Livros contábeis", icon: icons.declaracoes },
+      { href: "/vencimentos", label: "Vencimentos", icon: icons.declaracoes },
       { href: "/declaracoes/fiscais", label: "Declarações fiscais", icon: icons.declaracoes },
       { href: "/assistente", label: "Assistente de Declarações", icon: icons.conselheiro, premium: true }
     ]
