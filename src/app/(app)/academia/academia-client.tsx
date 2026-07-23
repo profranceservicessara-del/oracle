@@ -411,7 +411,7 @@ export function AcademiaClient() {
                 return (
                   <button
                     className={`flex w-full items-center justify-between gap-3 border-b border-line px-4 py-3 text-left text-sm transition last:border-b-0 ${
-                      active ? "bg-[#001030] font-semibold text-white" : "bg-white text-slate-700 hover:bg-slate-50 hover:text-ink"
+                      active ? "bg-[#2E2B5C] font-semibold text-white" : "bg-white text-slate-700 hover:bg-slate-50 hover:text-ink"
                     }`}
                     key={topic.key}
                     onClick={() => chooseTopic(topic.key)}

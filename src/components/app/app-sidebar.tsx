@@ -174,14 +174,14 @@ const nav: NavItem[] = [
 // soft inner top highlight, depth shadow, and a white vertical accent stroke on
 // the left (matching the "Clientes" reference).
 const activeCard =
-  "relative bg-gradient-to-br from-[#2E2B5C] via-[#252349] to-[#1D1B3B] text-white backdrop-blur-md ring-1 ring-inset ring-[#D7E3FF]/45 " +
+  "relative bg-[#2E2B5C] text-white backdrop-blur-md ring-1 ring-inset ring-[#D7E3FF]/45 " +
   "shadow-[0_12px_28px_-12px_rgba(2,10,40,0.82),inset_0_1px_0_rgba(255,255,255,0.18)]";
 
 // IDLE row — white text + premium glass-blue hover: rounded surface (rows are
 // already rounded-xl), subtle blue fill + backdrop blur, border highlight, soft
 // depth shadow, and a gentle lift. Applied to every menu item for consistency.
 const idleRow =
-  "text-white/80 hover:-translate-y-px hover:bg-gradient-to-br hover:from-[#2E2B5C] hover:via-[#252349] hover:to-[#1D1B3B] hover:text-white hover:backdrop-blur-sm hover:ring-1 hover:ring-inset hover:ring-[#D7E3FF]/35 hover:shadow-[0_6px_16px_-8px_rgba(0,0,0,0.65)]";
+  "text-white/80 hover:-translate-y-px hover:bg-[#2E2B5C] hover:text-white hover:backdrop-blur-sm hover:ring-1 hover:ring-inset hover:ring-[#D7E3FF]/35 hover:shadow-[0_6px_16px_-8px_rgba(0,0,0,0.65)]";
 
 // OPEN row — item cuja janela lateral está aberta. Assume a cor exata do painel,
 // sem anel e sem canto à direita, para os dois formarem uma superfície só (sem
@@ -393,8 +393,8 @@ function NavList({ onNavigate, collapsed, onExpand, onCollapse }: { onNavigate?:
                   aria-current={child.href === activeHref ? "page" : undefined}
                   className={`flex min-h-9 items-center gap-3 px-4 py-2 text-sm transition ${
                     child.href === activeHref
-                      ? "bg-gradient-to-r from-[#454080] via-[#3C3873] to-[#353167] text-white"
-                      : "text-white/80 hover:bg-gradient-to-r hover:from-[#454080] hover:via-[#3C3873] hover:to-[#353167] hover:text-white"
+                      ? "bg-[#3C3873] text-white"
+                      : "text-white/80 hover:bg-[#3C3873] hover:text-white"
                   }`}
                   href={child.href}
                   key={child.href}
@@ -466,8 +466,8 @@ function NavList({ onNavigate, collapsed, onExpand, onCollapse }: { onNavigate?:
                 aria-current={child.href === activeHref ? "page" : undefined}
                 className={`flex min-h-9 items-center gap-3 px-4 py-2 text-sm transition ${
                   child.href === activeHref
-                    ? "bg-gradient-to-r from-[#454080] via-[#3C3873] to-[#353167] text-white"
-                    : "text-white/80 hover:bg-gradient-to-r hover:from-[#454080] hover:via-[#3C3873] hover:to-[#353167] hover:text-white"
+                    ? "bg-[#3C3873] text-white"
+                    : "text-white/80 hover:bg-[#3C3873] hover:text-white"
                 }`}
                 href={child.href}
                 key={child.href}
