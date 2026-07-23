@@ -22,7 +22,7 @@ export default async function ContatosPage() {
       .order("name", { ascending: true }),
     supabase
       .from("contact_people")
-      .select("id, third_id, first_name, last_name, role, email, phone, mobile")
+      .select("id, third_id, civility, first_name, last_name, role, email, phone, mobile, fax, birth_date")
       .order("last_name", { ascending: true }),
     supabase.from("contact_addresses").select("third_id, kind, line1, city").eq("kind", "billing")
   ]);
@@ -36,6 +36,11 @@ export default async function ContatosPage() {
   const countByThird = new Map<string, number>();
   for (const p of (peopleRes.data ?? []) as Array<{ third_id: string | null }>) {
     if (p.third_id) countByThird.set(p.third_id, (countByThird.get(p.third_id) ?? 0) + 1);
+  }
+
+  const nameByThird = new Map<string, string>();
+  for (const r of (thirdsRes.data ?? []) as Array<{ id: string; name: string | null }>) {
+    nameByThird.set(r.id, r.name ?? "");
   }
 
   const thirds: Third[] = ((thirdsRes.data ?? []) as Array<Record<string, unknown>>).map((r) => ({
@@ -56,14 +61,21 @@ export default async function ContatosPage() {
   const people: Person[] = ((peopleRes.data ?? []) as Array<Record<string, unknown>>).map((r) => {
     const first = (r.first_name as string) ?? "";
     const last = (r.last_name as string) ?? "";
+    const thirdId = (r.third_id as string) ?? null;
     return {
       id: r.id as string,
-      thirdId: (r.third_id as string) ?? null,
+      thirdId,
+      thirdName: thirdId ? nameByThird.get(thirdId) ?? null : null,
+      civility: (r.civility as string) ?? null,
+      firstName: first || null,
+      lastName: last || null,
       fullName: `${first} ${last}`.trim() || "Sem nome",
       role: (r.role as string) ?? null,
       email: (r.email as string) ?? null,
       phone: (r.phone as string) ?? null,
-      mobile: (r.mobile as string) ?? null
+      mobile: (r.mobile as string) ?? null,
+      fax: (r.fax as string) ?? null,
+      birthDate: (r.birth_date as string) ?? null
     };
   });
 

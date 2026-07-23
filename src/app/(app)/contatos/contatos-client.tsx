@@ -2,12 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { FormModal } from "@/components/ui/form-modal";
-import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { useToast } from "@/components/ui/toast";
 import { createClient } from "@/lib/supabase/client";
 import { ThirdForm, emptyThirdFull, toThirdFull, type ThirdFull } from "./third-form";
+import { PersonForm, emptyPersonFull, personToFull, type PersonFull } from "./person-form";
 
 export type Third = {
   id: string;
@@ -27,11 +26,17 @@ export type Third = {
 export type Person = {
   id: string;
   thirdId: string | null;
+  thirdName: string | null;
+  civility: string | null;
+  firstName: string | null;
+  lastName: string | null;
   fullName: string;
   role: string | null;
   email: string | null;
   phone: string | null;
   mobile: string | null;
+  fax: string | null;
+  birthDate: string | null;
 };
 
 type TabKey = "clientes" | "perspectivas" | "fornecedores" | "empresas" | "individuos" | "contatos";
@@ -66,6 +71,7 @@ const THIRD_COLS: ColDef[] = [
 const PERSON_COLS: ColDef[] = [
   { key: "fullName", label: "Nome completo", locked: true },
   { key: "role", label: "Função" },
+  { key: "thirdName", label: "Empresa" },
   { key: "email", label: "E-mail" },
   { key: "phone", label: "Telefone" },
   { key: "mobile", label: "Móvel" }
@@ -95,6 +101,7 @@ const THIRD_FILTERS: FilterDef[] = [
 const PERSON_FILTERS: FilterDef[] = [
   { key: "fullName", label: "Nome completo", kind: "text" },
   { key: "role", label: "Função", kind: "text" },
+  { key: "thirdName", label: "Empresa", kind: "text" },
   { key: "email", label: "E-mail", kind: "text" },
   { key: "phone", label: "Telefone", kind: "text" },
   { key: "mobile", label: "Móvel", kind: "text" }
@@ -108,8 +115,6 @@ const addLabel: Record<TabKey, string> = {
   individuos: "Adicionar",
   contatos: "Adicionar contato"
 };
-
-const emptyPerson = { first_name: "", last_name: "", role: "", email: "", phone: "" };
 
 const COLS_KEY = "contatos.columns.v1";
 
@@ -146,9 +151,8 @@ export function ContatosClient({
   const [formMode, setFormMode] = useState<"create" | "edit">("create");
   const [formValue, setFormValue] = useState<ThirdFull>(emptyThirdFull);
   const [personOpen, setPersonOpen] = useState(false);
-  const [personForm, setPersonForm] = useState(emptyPerson);
-  const [saving, setSaving] = useState(false);
-  const [err, setErr] = useState("");
+  const [personMode, setPersonMode] = useState<"create" | "edit">("create");
+  const [personValue, setPersonValue] = useState<PersonFull>(emptyPersonFull);
 
   const isContatos = tab === "contatos";
   const view = isContatos ? "contatos" : "thirds";
@@ -302,53 +306,34 @@ export function ContatosClient({
     setFormOpen(true);
   }
 
-  async function savePerson() {
-    setErr("");
-    if (!personForm.first_name.trim() && !personForm.last_name.trim()) {
-      setErr("Informe ao menos o nome ou sobrenome.");
-      return;
+  // Vincular/desvincular ajusta a contagem "Contatos" do Third na hora.
+  function handlePersonSaved(saved: Person, mode: "create" | "edit") {
+    const prevThirdId = mode === "edit" ? people.find((p) => p.id === saved.id)?.thirdId ?? null : null;
+    setPeople((cur) => (mode === "create" ? [saved, ...cur] : cur.map((p) => (p.id === saved.id ? saved : p))));
+    if (prevThirdId !== saved.thirdId) {
+      setThirds((cur) =>
+        cur.map((t) => {
+          if (t.id === prevThirdId) return { ...t, contactsCount: Math.max(0, t.contactsCount - 1) };
+          if (t.id === saved.thirdId) return { ...t, contactsCount: t.contactsCount + 1 };
+          return t;
+        })
+      );
     }
-    setSaving(true);
-    const { data, error } = await supabase
-      .from("contact_people")
-      .insert({
-        user_id: userId,
-        first_name: personForm.first_name || null,
-        last_name: personForm.last_name || null,
-        role: personForm.role || null,
-        email: personForm.email || null,
-        phone: personForm.phone || null
-      })
-      .select("id, third_id, first_name, last_name, role, email, phone, mobile")
-      .single();
-    setSaving(false);
-    if (error || !data) {
-      showToast("Não foi possível criar o contato.", "error");
-      return;
-    }
-    const r = data as Record<string, unknown>;
-    const full = `${(r.first_name as string) ?? ""} ${(r.last_name as string) ?? ""}`.trim() || "Sem nome";
-    setPeople((cur) => [
-      {
-        id: r.id as string,
-        thirdId: (r.third_id as string) ?? null,
-        fullName: full,
-        role: (r.role as string) ?? null,
-        email: (r.email as string) ?? null,
-        phone: (r.phone as string) ?? null,
-        mobile: (r.mobile as string) ?? null
-      },
-      ...cur
-    ]);
-    setPersonForm(emptyPerson);
     setPersonOpen(false);
-    showToast("Contato criado.", "success");
+  }
+
+  function openEditPerson(id: string) {
+    const p = people.find((x) => x.id === id);
+    if (!p) return;
+    setPersonValue(personToFull(p));
+    setPersonMode("edit");
+    setPersonOpen(true);
   }
 
   function openAdd() {
-    setErr("");
     if (isContatos) {
-      setPersonForm(emptyPerson);
+      setPersonValue(emptyPersonFull);
+      setPersonMode("create");
       setPersonOpen(true);
     } else {
       const preset = tab === "perspectivas" ? "prospect" : tab === "fornecedores" ? "supplier" : "client";
@@ -357,6 +342,12 @@ export function ContatosClient({
       setFormOpen(true);
     }
   }
+
+  // Opções de empresa para vincular uma pessoa (todos os thirds carregados).
+  const thirdOptions = useMemo(
+    () => [...thirds].sort((a, b) => a.name.localeCompare(b.name)).map((t) => ({ id: t.id, name: t.name })),
+    [thirds]
+  );
 
   const th = "px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-400";
   const Sortable = ({ col, label }: { col: string; label: string }) => (
@@ -601,9 +592,9 @@ export function ContatosClient({
                     const id = (raw as { id: string }).id;
                     return (
                       <tr
-                        className={`hover:bg-slate-50/50 ${isContatos ? "" : "cursor-pointer"}`}
+                        className="cursor-pointer hover:bg-slate-50/50"
                         key={id}
-                        onClick={isContatos ? undefined : () => void openEdit(id)}
+                        onClick={isContatos ? () => openEditPerson(id) : () => void openEdit(id)}
                       >
                         <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                           <input checked={selected.has(id)} onChange={() => toggleRow(id)} type="checkbox" />
@@ -650,40 +641,16 @@ export function ContatosClient({
         value={formValue}
       />
 
-      {/* Modal criar contato (pessoa) */}
-      <FormModal description="Vincular a uma empresa virá na Fase 5." isOpen={personOpen} onClose={() => setPersonOpen(false)} title="Novo contato">
-        <form className="grid gap-4" onSubmit={(e) => { e.preventDefault(); void savePerson(); }}>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="text-sm font-medium text-ink">
-              Primeiro nome
-              <Input className="mt-2" onChange={(e) => setPersonForm((c) => ({ ...c, first_name: e.target.value }))} value={personForm.first_name} />
-            </label>
-            <label className="text-sm font-medium text-ink">
-              Nome
-              <Input className="mt-2" onChange={(e) => setPersonForm((c) => ({ ...c, last_name: e.target.value }))} value={personForm.last_name} />
-            </label>
-          </div>
-          <label className="text-sm font-medium text-ink">
-            Função
-            <Input className="mt-2" onChange={(e) => setPersonForm((c) => ({ ...c, role: e.target.value }))} value={personForm.role} />
-          </label>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="text-sm font-medium text-ink">
-              E-mail
-              <Input className="mt-2" onChange={(e) => setPersonForm((c) => ({ ...c, email: e.target.value }))} type="email" value={personForm.email} />
-            </label>
-            <label className="text-sm font-medium text-ink">
-              Telefone
-              <Input className="mt-2" onChange={(e) => setPersonForm((c) => ({ ...c, phone: e.target.value }))} value={personForm.phone} />
-            </label>
-          </div>
-          {err ? <p className="text-sm text-red-600">{err}</p> : null}
-          <div className="flex justify-end gap-2">
-            <Button onClick={() => setPersonOpen(false)} type="button" variant="secondary">Cancelar</Button>
-            <Button disabled={saving} type="submit">{saving ? "Salvando…" : "Salvar"}</Button>
-          </div>
-        </form>
-      </FormModal>
+      {/* Formulário completo da pessoa (criar/editar + vínculo) */}
+      <PersonForm
+        isOpen={personOpen}
+        mode={personMode}
+        onClose={() => setPersonOpen(false)}
+        onSaved={handlePersonSaved}
+        thirds={thirdOptions}
+        userId={userId}
+        value={personValue}
+      />
     </main>
   );
 }
