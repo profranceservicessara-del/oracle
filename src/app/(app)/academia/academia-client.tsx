@@ -481,26 +481,26 @@ export function AcademiaClient() {
             <span>{selectedArticle.readTime}</span>
           </div>
           <h2 className="mt-3 text-2xl font-semibold leading-tight text-[#4A63C8]">{selectedArticle.title}</h2>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-[#4A63C8]/80">{selectedArticle.description}</p>
+          <p className="mt-3 max-w-3xl text-base leading-7 text-[#4A63C8]/80">{selectedArticle.description}</p>
 
           <div className="mt-6 border-t border-line pt-6">
             {selectedArticle.sections.map((section) => (
               <section className="mb-8 last:mb-0" key={section.title}>
                 <h3 className="text-lg font-semibold text-[#4A63C8]">{section.title}</h3>
                 {section.paragraphs?.map((paragraph) => (
-                  <p className="mt-4 text-sm leading-7 text-slate-700" key={paragraph}>
+                  <p className="mt-4 text-base leading-7 text-slate-700" key={paragraph}>
                     {paragraph}
                   </p>
                 ))}
                 {section.bullets ? (
-                  <ul className="mt-4 space-y-2 pl-5 text-sm leading-7 text-slate-700">
+                  <ul className="mt-4 space-y-2 pl-5 text-base leading-7 text-slate-700">
                     {section.bullets.map((bullet) => (
                       <li className="list-disc" key={bullet}>{bullet}</li>
                     ))}
                   </ul>
                 ) : null}
                 {section.note ? (
-                  <div className={`mt-5 rounded-2xl p-4 text-sm leading-6 ring-1 ring-inset ${
+                  <div className={`mt-5 rounded-2xl p-4 text-[15px] leading-7 ring-1 ring-inset ${
                     section.note.tone === "warning" ? "bg-rose-50 text-rose-900 ring-rose-200" : "bg-sky-50 text-sky-900 ring-sky-200"
                   }`}>
                     <p className="font-semibold">{section.note.title}</p>

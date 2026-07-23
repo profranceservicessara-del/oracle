@@ -318,11 +318,11 @@ export default async function HomePage() {
 
           {/* Atalhos que rolam até as seções. */}
           <div className="mt-6 flex items-center justify-start gap-8">
-            <a className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink transition hover:text-brand" href="#precos">
-              Preços <span className="text-brand">+</span>
+            <a className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#5B3F8E] transition hover:text-[#7B5BB0]" href="#precos">
+              Preços <span aria-hidden>+</span>
             </a>
-            <a className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink transition hover:text-brand" href="#caracteristicas">
-              Produtos <span className="text-brand">+</span>
+            <a className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#5B3F8E] transition hover:text-[#7B5BB0]" href="#caracteristicas">
+              Produtos <span aria-hidden>+</span>
             </a>
           </div>
         </section>
