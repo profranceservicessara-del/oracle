@@ -1,0 +1,23 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "overused-font",
+        "value": "lato",
+        "createdAt": "2026-07-23T10:48:39.638Z",
+        "reason": "Lato é a fonte do efeito papel soft (padrão Sellsy) confirmada pela usuária"
+      },
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "src/components/app/app-sidebar.tsx"
+        ],
+        "createdAt": "2026-07-23T21:40:31.273Z",
+        "reason": "BrandBadge usa <img> com src real (/illustrations/oracle.png), alt, onError com fallback para iniciais e useEffect que cobre falha antes da hidratacao"
+      }
+    ]
+  }
+}

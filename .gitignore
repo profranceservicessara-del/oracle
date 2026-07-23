@@ -11,3 +11,7 @@ build
 .DS_Store
 .vercel
 supabase/.temp
+
+# impeccable: config compartilhada é versionada; cache e override local não
+.impeccable/hook.cache.json
+.impeccable/config.local.json
