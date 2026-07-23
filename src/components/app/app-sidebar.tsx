@@ -165,9 +165,7 @@ const nav: NavItem[] = [
 // the left (matching the "Clientes" reference).
 const activeCard =
   "relative bg-gradient-to-br from-[#2E2B5C] via-[#252349] to-[#1D1B3B] text-white backdrop-blur-md ring-1 ring-inset ring-[#D7E3FF]/45 " +
-  "shadow-[0_12px_28px_-12px_rgba(2,10,40,0.82),inset_0_1px_0_rgba(255,255,255,0.18)] " +
-  "before:absolute before:left-1 before:top-1/2 before:h-5 before:w-[3px] before:-translate-y-1/2 " +
-  "before:rounded-full before:bg-white before:shadow-[0_0_8px_rgba(255,255,255,0.5)] before:content-['']";
+  "shadow-[0_12px_28px_-12px_rgba(2,10,40,0.82),inset_0_1px_0_rgba(255,255,255,0.18)]";
 
 // IDLE row — white text + premium glass-blue hover: rounded surface (rows are
 // already rounded-xl), subtle blue fill + backdrop blur, border highlight, soft
@@ -178,7 +176,9 @@ const idleRow =
 // OPEN row — item cuja janela lateral está aberta. Assume a cor exata do painel,
 // sem anel e sem canto à direita, para os dois formarem uma superfície só (sem
 // linha de separação entre o botão e a janela).
-const openCard = "relative bg-[#2E2B5C] text-white";
+const openCard =
+  "relative bg-[#2E2B5C] text-white backdrop-blur-md border-y border-l border-[#D7E3FF]/45 " +
+  "shadow-[0_12px_28px_-12px_rgba(2,10,40,0.82),inset_0_1px_0_rgba(255,255,255,0.18)]";
 
 // All destination hrefs, used to resolve the single best (most-specific) match so
 // a parent path like /facturation never stays "active" on /facturation/devis.
@@ -373,7 +373,7 @@ function NavList({ onNavigate, collapsed, onExpand, onCollapse }: { onNavigate?:
 
         {flyout ? (
           <div
-            className={`fixed ${flyoutLeft} z-40 w-72 max-w-[calc(100vw-6rem)] overflow-hidden rounded-r bg-[#2E2B5C] py-1.5 shadow-2xl`}
+            className={`fixed ${flyoutLeft} z-40 w-72 max-w-[calc(100vw-6rem)] overflow-hidden rounded-r bg-[#2E2B5C] py-1.5 border-y border-r border-[#D7E3FF]/45 shadow-[0_12px_28px_-12px_rgba(2,10,40,0.82),inset_0_1px_0_rgba(255,255,255,0.18)]`}
             onMouseEnter={() => setFlyout(flyout)}
             style={{ top: flyoutTop }}
           >
@@ -446,7 +446,7 @@ function NavList({ onNavigate, collapsed, onExpand, onCollapse }: { onNavigate?:
 
       {flyout ? (
         <div
-          className={`fixed ${flyoutLeft} z-40 w-72 max-w-[calc(100vw-17rem)] overflow-hidden rounded-r bg-[#2E2B5C] py-1.5 shadow-2xl`}
+          className={`fixed ${flyoutLeft} z-40 w-72 max-w-[calc(100vw-17rem)] overflow-hidden rounded-r bg-[#2E2B5C] py-1.5 border-y border-r border-[#D7E3FF]/45 shadow-[0_12px_28px_-12px_rgba(2,10,40,0.82),inset_0_1px_0_rgba(255,255,255,0.18)]`}
           onMouseEnter={() => setFlyout(flyout)}
           style={{ top: flyoutTop }}
         >
