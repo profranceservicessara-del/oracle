@@ -174,7 +174,7 @@ export function LoginForm() {
       >
         <input
           autoComplete="email"
-          className="h-12 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-ink outline-none transition placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20"
+          className="h-12 w-full rounded border border-slate-300 bg-white px-4 text-sm text-ink outline-none transition placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20"
           name="email"
           onChange={(event) => setEmail(event.target.value)}
           placeholder="E-mail"
@@ -184,7 +184,7 @@ export function LoginForm() {
         <div className="relative">
           <input
             autoComplete="current-password"
-            className="h-12 w-full rounded-xl border border-slate-300 bg-white px-4 pr-11 text-sm text-ink outline-none transition placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20"
+            className="h-12 w-full rounded border border-slate-300 bg-white px-4 pr-11 text-sm text-ink outline-none transition placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20"
             name="password"
             onChange={(event) => setPassword(event.target.value)}
             placeholder="Senha"
@@ -209,14 +209,14 @@ export function LoginForm() {
         {message ? <p className="text-sm text-emerald-700">{message}</p> : null}
 
         <button
-          className="h-12 w-full rounded-full bg-brand text-sm font-semibold text-white shadow-sm ring-1 ring-[#002D72]/20 transition hover:bg-[#003a94] active:bg-[#001F4D] disabled:opacity-60"
+          className="h-12 w-full rounded bg-brand text-sm font-semibold text-white shadow-sm ring-1 ring-[#002D72]/20 transition hover:bg-[#003a94] active:bg-[#001F4D] disabled:opacity-60"
           disabled={disabled}
           type="submit"
         >
           {busy === "password" ? "Entrando…" : "Conecte-se"}
         </button>
         <button
-          className="h-12 w-full rounded-full bg-slate-100 text-sm font-semibold text-slate-600 transition hover:bg-slate-200 disabled:opacity-60"
+          className="h-12 w-full rounded bg-slate-100 text-sm font-semibold text-slate-600 transition hover:bg-slate-200 disabled:opacity-60"
           disabled={disabled}
           onClick={() => void forgotPassword()}
           type="button"

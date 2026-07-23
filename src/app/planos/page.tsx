@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 
 export default function PlanosPage() {
   return (
-    <div className="min-h-screen bg-[#ECEAFB] text-ink">
+    <div className="min-h-screen bg-[#F3F4F6] text-ink">
       <header className="border-b border-black/5 bg-white/80 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
           <Link className="text-lg font-semibold text-ink" href="/">Oracle</Link>

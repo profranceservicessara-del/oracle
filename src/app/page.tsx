@@ -343,7 +343,7 @@ export default async function HomePage() {
         </section>
 
         {/* Nossas soluções — segmentos por porte do negócio (ref: Sellsy). */}
-        <section className="bg-[#ECEAFB]" id="solucoes">
+        <section className="bg-[#F3F4F6]" id="solucoes">
           <div className="mx-auto max-w-6xl px-4 py-12">
           <div className="mb-8 text-center">
             <span className="inline-flex rounded-full bg-white px-3 py-1 text-xs font-medium text-muted ring-1 ring-black/5">Nossas soluções</span>
@@ -395,7 +395,7 @@ export default async function HomePage() {
         </section>
 
         {/* Uma única ferramenta — áreas do produto (ref: Sellsy). */}
-        <section className="bg-[#ECEAFB]">
+        <section className="bg-[#F3F4F6]">
           <div className="mx-auto max-w-6xl px-4 py-12">
           <div className="mb-10 text-center">
             <h2 className="mx-auto max-w-3xl text-2xl font-semibold leading-tight text-ink sm:text-3xl">
@@ -460,7 +460,7 @@ export default async function HomePage() {
         </section>
 
         {/* Resumo de preços — apoia o crescimento (ref: Sellsy). */}
-        <section className="bg-[#ECEAFB]" id="precos">
+        <section className="bg-[#F3F4F6]" id="precos">
           <div className="mx-auto max-w-5xl px-4 py-12">
             <h2 className="text-center text-2xl font-semibold leading-tight text-ink sm:text-3xl">
               A ProFrance apoia <span className="bg-gradient-to-r from-[#4361FF] to-[#B14BF4] bg-[length:100%_4px] bg-bottom bg-no-repeat pb-1">todo o seu crescimento</span>
