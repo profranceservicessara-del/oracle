@@ -246,12 +246,11 @@ export default async function DashboardPage() {
 
   return (
     <main className="mx-auto max-w-6xl space-y-6 px-4 py-8">
-      <section className="relative overflow-hidden rounded bg-[#00153A] px-6 py-7 shadow-[0_22px_55px_-26px_rgba(2,10,35,0.85)] ring-1 ring-inset ring-white/12 [box-shadow:inset_0_1px_0_rgba(255,255,255,0.10)]">
-        {/* Soft circular light spots behind content (non-interactive) */}
-        <div aria-hidden className="pointer-events-none absolute -right-16 -top-24 h-96 w-96 rounded-full bg-[#4F6BE0]/25 blur-[80px]" />
-        <div aria-hidden className="pointer-events-none absolute -bottom-20 right-8 h-64 w-64 rounded-full bg-[#3A5AC0]/20 blur-[70px]" />
-        <div aria-hidden className="pointer-events-none absolute -bottom-24 right-24 h-56 w-56 rounded-full bg-[#5B3FA0]/16 blur-[90px]" />
-        <div aria-hidden className="pointer-events-none absolute -bottom-24 -left-20 h-72 w-72 rounded-full bg-[#061A46]/70 blur-[80px]" />
+      <section className="relative overflow-hidden rounded bg-gradient-to-br from-[#001F4D] via-[#002D72] to-[#2B1F5B] px-6 py-7 shadow-[0_22px_55px_-26px_rgba(2,10,35,0.85)] ring-1 ring-inset ring-white/12 [box-shadow:inset_0_1px_0_rgba(255,255,255,0.10)]">
+        {/* Orbes decorativos: círculos translúcidos que dão profundidade */}
+        <span aria-hidden className="pointer-events-none absolute -right-16 -top-16 h-72 w-72 rounded-full bg-white/[0.04]" />
+        <span aria-hidden className="pointer-events-none absolute -bottom-12 left-4 h-52 w-52 rounded-full bg-white/[0.03]" />
+        <span aria-hidden className="pointer-events-none absolute right-16 bottom-4 h-24 w-24 rounded-full bg-white/[0.03]" />
         <div className="relative z-10">
         <h1 className="text-2xl font-medium text-white">
           Bienvenue{greetingName ? `, ${greetingName}` : ""} ! 👋
