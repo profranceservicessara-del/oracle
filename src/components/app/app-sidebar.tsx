@@ -55,6 +55,7 @@ const icons = {
   crm: (<svg {...s16}><rect height="7" rx="1" width="7" x="3" y="3" /><rect height="7" rx="1" width="7" x="14" y="3" /><rect height="7" rx="1" width="7" x="14" y="14" /><rect height="7" rx="1" width="7" x="3" y="14" /></svg>),
   pipeline: (<svg {...s16}><path d="M3 3v18h18" /><rect height="6" rx="1" width="4" x="7" y="11" /><rect height="10" rx="1" width="4" x="13" y="7" /></svg>),
   agenda: (<svg {...s16}><rect height="18" rx="2" width="18" x="3" y="4" /><line x1="16" x2="16" y1="2" y2="6" /><line x1="8" x2="8" y1="2" y2="6" /><line x1="3" x2="21" y1="10" y2="10" /></svg>),
+  diario: (<svg {...s16}><rect height="18" rx="2" width="18" x="3" y="4" /><line x1="16" x2="16" y1="2" y2="6" /><line x1="8" x2="8" y1="2" y2="6" /><line x1="3" x2="21" y1="10" y2="10" /><circle cx="12" cy="15" r="2.6" /><path d="M12 13.7V15l.9.9" /></svg>),
   clientesLeaf: (<svg {...s16}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /></svg>),
   perfil: (<svg {...s16}><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></svg>),
   dados: (<svg {...s16}><ellipse cx="12" cy="5" rx="8" ry="3" /><path d="M4 5v6c0 1.66 3.58 3 8 3s8-1.34 8-3V5" /><path d="M4 11v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6" /></svg>),
@@ -93,6 +94,7 @@ const nav: NavItem[] = [
     children: [
       { href: "/financeiro", label: "Fluxo de Caixa", icon: icons.receitasDespesas },
       { href: "/crm/agenda", label: "Agenda", icon: icons.agenda },
+      { href: "/diario", label: "Diário", icon: icons.diario },
       { href: "/clientes", label: "Clientes", icon: icons.clientesLeaf },
       { href: "/contatos", label: "Contatos", icon: icons.clientesLeaf },
       { href: "/banco", label: "Contas bancárias", icon: icons.banco, premium: true },
