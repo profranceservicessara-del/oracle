@@ -119,6 +119,96 @@ function monthlyBody(total: number) {
   return `Bonjour,\n\nRésumé mensuel Oracle: le CA encaissé du mois précédent enregistré dans votre livre de recettes est de ${euroFormatter.format(total)}.\n\nCe message est informatif et ne constitue pas un conseil fiscal.\n\nCordialement.`;
 }
 
+// Lembrete de evento do Diário. Data formatada no fuso de Paris (mercado francês).
+const eventDateFormatter = new Intl.DateTimeFormat("pt-BR", {
+  dateStyle: "full",
+  timeStyle: "short",
+  timeZone: "Europe/Paris"
+});
+const eventDayFormatter = new Intl.DateTimeFormat("pt-BR", {
+  dateStyle: "full",
+  timeZone: "Europe/Paris"
+});
+
+function eventReminderBody(title: string, startsAt: string, allDay: boolean, location: string | null) {
+  const when = allDay
+    ? eventDayFormatter.format(new Date(startsAt))
+    : eventDateFormatter.format(new Date(startsAt));
+  const locationLine = location ? `\nLocal: ${location}.` : "";
+  return `Olá,\n\nLembrete do seu Diário no Oracle: "${title}" ${allDay ? "é" : "começa"} em ${when}.${locationLine}\n\nEste é um lembrete automático do seu calendário.`;
+}
+
+type EventReminderRow = {
+  id: string;
+  offset_kind: string;
+  event: {
+    id: string;
+    title: string;
+    starts_at: string;
+    all_day: boolean;
+    location: string | null;
+    user_id: string;
+  } | null;
+};
+
+// Processa a fila de lembretes de evento vencidos e ainda não enviados. Usa o
+// mesmo Resend dos lembretes fiscais. O flag `sent` garante idempotência entre
+// execuções do cron (a cada 5 min).
+async function processEventReminders(
+  supabase: ReturnType<typeof adminClient>,
+  emailsByUserId: Map<string, string>,
+  now: Date
+): Promise<{ sent: string[]; failed: Array<{ id: string; error: string }> }> {
+  const sent: string[] = [];
+  const failed: Array<{ id: string; error: string }> = [];
+
+  const { data, error } = await supabase
+    .from("event_reminders")
+    .select("id, offset_kind, event:events(id, title, starts_at, all_day, location, user_id)")
+    .eq("sent", false)
+    .eq("channel", "email")
+    .lte("scheduled_for", now.toISOString())
+    .limit(200);
+
+  if (error) {
+    return { sent, failed: [{ id: "query", error: error.message }] };
+  }
+
+  for (const row of (data ?? []) as unknown as EventReminderRow[]) {
+    const event = row.event;
+    if (!event) {
+      // Evento apagado: a linha some por cascade, mas se sobrar, marca enviada.
+      await supabase.from("event_reminders").update({ sent: true, sent_at: now.toISOString() }).eq("id", row.id);
+      continue;
+    }
+
+    // Evento já começou: não faz sentido lembrar de algo passado (cron atrasado).
+    if (new Date(event.starts_at).getTime() < now.getTime()) {
+      await supabase.from("event_reminders").update({ sent: true, sent_at: now.toISOString() }).eq("id", row.id);
+      continue;
+    }
+
+    const email = emailsByUserId.get(event.user_id);
+    if (!email) {
+      continue;
+    }
+
+    try {
+      await sendReminderEmail({
+        body: eventReminderBody(event.title, event.starts_at, event.all_day, event.location),
+        email,
+        subject: `Lembrete: ${event.title}`
+      });
+      await supabase.from("event_reminders").update({ sent: true, sent_at: now.toISOString() }).eq("id", row.id);
+      sent.push(row.id);
+    } catch (sendError) {
+      failed.push({ id: row.id, error: sendError instanceof Error ? sendError.message : "Unknown error" });
+    }
+  }
+
+  return { sent, failed };
+}
+
 export async function GET(request: NextRequest) {
   const expectedSecret = process.env.CRON_SECRET;
   const authorization = request.headers.get("authorization");
@@ -215,5 +305,7 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  return NextResponse.json({ failed, sent });
+  const events = await processEventReminders(supabase, emailsByUserId, now);
+
+  return NextResponse.json({ failed, sent, events });
 }
