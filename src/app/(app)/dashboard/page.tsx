@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AnaliseClient } from "@/app/(app)/analise/analise-client";
+import { DayVisionCard } from "@/components/app/day-vision-card";
 import { OnboardingCard } from "@/components/onboarding/onboarding-card";
 import { loadAnaliseData } from "@/lib/analise-data";
 import { fiscalConfig } from "@/config/fiscal";
@@ -230,6 +231,11 @@ export default async function DashboardPage() {
     { count: profileFields.length, label: `Perfil incompleto: ${profileFields.join(", ")}` }
   ].filter((item) => item.count > 0);
 
+  // Visão do dia: data por extenso + placar conforme pendências.
+  const dayVisionRaw = new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "numeric", month: "long" }).format(now);
+  const dayVisionLabel = dayVisionRaw.charAt(0).toUpperCase() + dayVisionRaw.slice(1);
+  const dayScore = lateFactures.length > 0 ? "critical" : actionItems.length > 0 ? "warning" : "good";
+
   // Nome de saudação: perfil primeiro, depois metadados do cadastro, por fim o
   // começo do e-mail (ex: bruna.dsp@... -> Bruna). Sempre mostra algum nome.
   const meta = (user.user_metadata ?? {}) as Record<string, string | undefined>;
@@ -328,6 +334,27 @@ export default async function DashboardPage() {
           </p>
         </div>
       </section>
+
+      <DayVisionCard
+        dateLabel={dayVisionLabel}
+        score={dayScore}
+        scoreLabel="Hoje"
+        stats={[
+          { label: "Faturas em aberto", value: String(pendingFactures.length), valueClass: "text-white" },
+          {
+            label: "Em atraso",
+            value: String(lateFactures.length),
+            valueClass: lateFactures.length > 0 ? "text-rose-300" : "text-white",
+            padded: true
+          },
+          {
+            label: "Ações necessárias",
+            value: String(actionItems.length),
+            valueClass: actionItems.length > 0 ? "text-amber-300" : "text-white",
+            padded: true
+          }
+        ]}
+      />
 
       <AnaliseClient
         aReceber={analiseData.aReceber}
