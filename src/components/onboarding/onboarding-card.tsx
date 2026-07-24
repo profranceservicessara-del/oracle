@@ -136,7 +136,7 @@ export function OnboardingCard({
   return (
     <>
       <section className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
-        <div className="h-1 bg-gradient-to-r from-[#1D4ED8] to-[#3B82F6]" />
+        <div className="h-0.5 bg-gradient-to-r from-[#1D4ED8] to-[#3B82F6]" />
         <div className="flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
             <div className="flex items-center gap-2.5">

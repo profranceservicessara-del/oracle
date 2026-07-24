@@ -343,7 +343,7 @@ export default async function DashboardPage() {
       <section className="space-y-4">
         {/* Ação necessária — red accent */}
         <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
-          <div className="h-1 bg-gradient-to-r from-rose-400 to-rose-500" />
+          <div className="h-0.5 bg-gradient-to-r from-rose-400 to-rose-500" />
           <div className="p-5">
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div>
@@ -356,10 +356,10 @@ export default async function DashboardPage() {
                 Ver documentos →
               </Link>
             </div>
-            <ul className="mt-3 divide-y divide-line text-sm">
+            <ul className="mt-3 divide-y divide-slate-100 text-sm">
               {actionItems.length > 0 ? (
                 actionItems.map((item) => (
-                  <li className="flex items-center justify-between gap-3 py-2.5" key={item.label}>
+                  <li className="flex items-center justify-between gap-3 -mx-2 rounded-lg px-2 py-2.5 transition-colors hover:bg-[#FAF7EE]" key={item.label}>
                     <span className="flex items-center gap-2.5 text-slate-700">
                       <span className="h-2 w-2 shrink-0 rounded-full bg-rose-500" />
                       {item.label}
@@ -378,7 +378,7 @@ export default async function DashboardPage() {
 
         {/* Atividade recente — blue accent */}
         <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
-          <div className="h-1 bg-gradient-to-r from-sky-400 to-blue-500" />
+          <div className="h-0.5 bg-gradient-to-r from-sky-400 to-blue-500" />
           <div className="p-5">
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div>
@@ -392,9 +392,9 @@ export default async function DashboardPage() {
               </Link>
             </div>
             {documents.length > 0 ? (
-              <ul className="mt-3 divide-y divide-line text-sm">
+              <ul className="mt-3 divide-y divide-slate-100 text-sm">
                 {documents.slice(0, 5).map((document) => (
-                  <li className="flex items-center justify-between gap-3 py-2.5" key={document.id}>
+                  <li className="flex items-center justify-between gap-3 -mx-2 rounded-lg px-2 py-2.5 transition-colors hover:bg-[#FAF7EE]" key={document.id}>
                     <span className="min-w-0">
                       <span className="block truncate font-medium text-ink">
                         {document.numero ?? (document.type === "facture" ? "Fatura" : "Orçamento")}
@@ -417,7 +417,7 @@ export default async function DashboardPage() {
 
         {/* Próximas 24h — green accent */}
         <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
-          <div className="h-1 bg-gradient-to-r from-emerald-400 to-teal-500" />
+          <div className="h-0.5 bg-gradient-to-r from-emerald-400 to-teal-500" />
           <div className="p-5">
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div>
@@ -431,9 +431,9 @@ export default async function DashboardPage() {
               </Link>
             </div>
             {deadlineDays <= 1 || devisExpiring.length > 0 ? (
-              <ul className="mt-3 divide-y divide-line text-sm">
+              <ul className="mt-3 divide-y divide-slate-100 text-sm">
                 {deadlineDays <= 1 ? (
-                  <li className="flex items-center justify-between gap-3 py-2.5">
+                  <li className="flex items-center justify-between gap-3 -mx-2 rounded-lg px-2 py-2.5 transition-colors hover:bg-[#FAF7EE]">
                     <span className="flex items-center gap-2.5 text-slate-700">
                       <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
                       Declaração URSSAF
@@ -442,7 +442,7 @@ export default async function DashboardPage() {
                   </li>
                 ) : null}
                 {devisExpiring.length > 0 ? (
-                  <li className="flex items-center justify-between gap-3 py-2.5">
+                  <li className="flex items-center justify-between gap-3 -mx-2 rounded-lg px-2 py-2.5 transition-colors hover:bg-[#FAF7EE]">
                     <span className="flex items-center gap-2.5 text-slate-700">
                       <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
                       Orçamentos expirando
