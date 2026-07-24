@@ -215,7 +215,7 @@ function LeafRow({ leaf, active, onNavigate }: { leaf: Leaf; active: boolean; on
     return (
       <div
         aria-disabled="true"
-        className="relative flex cursor-default items-center gap-2.5 rounded-xl py-2 pl-3 pr-3 text-[13px] font-medium text-white/35"
+        className="relative flex cursor-default items-center gap-2.5 rounded-xl py-2 pl-4 pr-4 text-[13px] font-medium text-white/35"
         title="Em breve"
       >
         <span className="shrink-0 text-white/25">{leaf.icon}</span>
@@ -230,7 +230,7 @@ function LeafRow({ leaf, active, onNavigate }: { leaf: Leaf; active: boolean; on
   return (
     <Link
       aria-current={active ? "page" : undefined}
-      className={`group/leaf relative flex items-center gap-2.5 rounded-xl py-2 pl-3 pr-3 text-[13px] font-normal transition-all duration-200 ${
+      className={`group/leaf relative flex items-center gap-2.5 rounded-xl py-2 pl-4 pr-4 text-[13px] font-normal transition-all duration-200 ${
         active ? activeCard : idleRow
       }`}
       href={leaf.href}
@@ -266,7 +266,7 @@ function GroupRow({
   return (
     <div>
       <button
-        className={`group/row flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-normal transition-all duration-200 ${
+        className={`group/row flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-normal transition-all duration-200 ${
           isOpen ? openCard : highlighted ? activeCard : idleRow
         } ${isOpen ? "rounded-r-none" : ""}`}
         onClick={(event) => onOpen(item, event.currentTarget.getBoundingClientRect().top)}
@@ -428,7 +428,7 @@ function NavList({ onNavigate, collapsed, onExpand, onCollapse }: { onNavigate?:
           item.kind === "link" ? (
             <Link
               aria-current={item.href === activeHref ? "page" : undefined}
-              className={`group/row flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-normal transition-all duration-200 ${
+              className={`group/row flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-normal transition-all duration-200 ${
                 item.href === activeHref ? activeCard : idleRow
               }`}
               href={item.href}
