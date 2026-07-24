@@ -105,7 +105,7 @@ export function AuxiliaresClient({
           <p className="mt-2 max-w-md text-sm text-muted">Registre receitas, faturas e despesas para reuni-las aqui.</p>
           <div className="mt-6 flex flex-wrap justify-center gap-2">
             {links.map((l) => (
-              <Link className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-ink ring-1 ring-inset ring-slate-200 transition hover:bg-slate-50" href={l.href} key={l.href}>
+              <Link className="rounded bg-white px-4 py-2 text-sm font-semibold text-ink ring-1 ring-inset ring-slate-200 transition hover:bg-slate-50" href={l.href} key={l.href}>
                 {l.label}
               </Link>
             ))}

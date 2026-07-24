@@ -363,7 +363,7 @@ export default function PagamentosPage() {
                 </ul>
                 {plan.external ? (
                   <Link
-                    className="mt-5 inline-flex h-11 w-full items-center justify-center rounded-full bg-white px-4 text-sm font-semibold text-ink shadow-sm ring-1 ring-black/5 transition hover:bg-slate-50"
+                    className="mt-5 inline-flex h-11 w-full items-center justify-center rounded bg-white px-4 text-sm font-semibold text-ink shadow-sm ring-1 ring-black/5 transition hover:bg-slate-50"
                     href="/offres"
                   >
                     Ver planos

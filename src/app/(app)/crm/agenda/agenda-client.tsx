@@ -182,7 +182,7 @@ export function AgendaClient({
         </div>
         <div className="relative">
           <button
-            className="inline-flex h-10 items-center gap-1.5 rounded-full bg-brand px-4 text-sm font-semibold text-white shadow-sm ring-1 ring-[#002D72]/20 transition hover:bg-[#003a94] active:bg-[#001F4D]"
+            className="inline-flex h-10 items-center gap-1.5 rounded bg-brand px-4 text-sm font-semibold text-white shadow-sm ring-1 ring-[#002D72]/20 transition hover:bg-[#003a94] active:bg-[#001F4D]"
             onClick={() => setNewMenuOpen((v) => !v)}
             type="button"
           >
@@ -235,7 +235,7 @@ export function AgendaClient({
               ))}
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <button className="inline-flex h-9 items-center rounded-full bg-white px-4 text-sm font-semibold text-ink shadow-sm ring-1 ring-black/5 transition hover:bg-slate-50" onClick={() => setAnchor(startOfDay(new Date()))} type="button">Hoje</button>
+              <button className="inline-flex h-9 items-center rounded bg-white px-4 text-sm font-semibold text-ink shadow-sm ring-1 ring-black/5 transition hover:bg-slate-50" onClick={() => setAnchor(startOfDay(new Date()))} type="button">Hoje</button>
               <div className="flex items-center rounded-full bg-white shadow-sm ring-1 ring-black/5">
                 <button aria-label="Anterior" className="flex h-9 w-9 items-center justify-center rounded-full text-slate-500 transition hover:text-ink" onClick={() => go(-1)} type="button"><svg fill="none" height="18" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" width="18"><path d="m15 18-6-6 6-6" /></svg></button>
                 <button aria-label="Próximo" className="flex h-9 w-9 items-center justify-center rounded-full text-slate-500 transition hover:text-ink" onClick={() => go(1)} type="button"><svg fill="none" height="18" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" width="18"><path d="m9 18 6-6-6-6" /></svg></button>
@@ -381,7 +381,7 @@ function ListView({ entries, kind, onNew, onOpen }: { entries: AppointmentWithCl
     return (
       <div className="rounded-2xl bg-white px-6 py-20 text-center shadow-sm ring-1 ring-black/5">
         <p className="text-sm font-medium text-ink">Nenhum(a) {meta.label.toLowerCase()} ainda.</p>
-        <button className="mt-3 inline-flex h-10 items-center gap-1.5 rounded-full bg-brand px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-[#003a94]" onClick={onNew} type="button">
+        <button className="mt-3 inline-flex h-10 items-center gap-1.5 rounded bg-brand px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-[#003a94]" onClick={onNew} type="button">
           <svg fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeWidth="2" viewBox="0 0 24 24" width="16"><path d="M12 5v14M5 12h14" /></svg>
           Criar {meta.label.toLowerCase()}
         </button>
@@ -545,8 +545,8 @@ function CreateModal({ companyId, kind, clients, initialDate, supabase, onClose,
         </div>
 
         <footer className="flex items-center justify-end gap-2 border-t border-line px-5 py-4">
-          <button className="inline-flex h-11 items-center justify-center rounded-full border border-slate-200 px-5 text-sm font-semibold text-ink transition hover:bg-slate-50" onClick={onClose} type="button">Cancelar</button>
-          <button className="inline-flex h-11 items-center justify-center rounded-full bg-brand px-5 text-sm font-semibold text-white shadow-sm ring-1 ring-[#002D72]/20 transition hover:bg-[#003a94] active:bg-[#001F4D] disabled:opacity-60" disabled={saving} onClick={() => void save()} type="button">{saving ? "Salvando…" : "Salvar"}</button>
+          <button className="inline-flex h-11 items-center justify-center rounded border border-slate-200 px-5 text-sm font-semibold text-ink transition hover:bg-slate-50" onClick={onClose} type="button">Cancelar</button>
+          <button className="inline-flex h-11 items-center justify-center rounded bg-brand px-5 text-sm font-semibold text-white shadow-sm ring-1 ring-[#002D72]/20 transition hover:bg-[#003a94] active:bg-[#001F4D] disabled:opacity-60" disabled={saving} onClick={() => void save()} type="button">{saving ? "Salvando…" : "Salvar"}</button>
         </footer>
       </div>
     </div>
@@ -582,8 +582,8 @@ function DetailModal({ entry, onClose, onDelete }: { entry: AppointmentWithClien
             {entry.note ? <Row label={kind === "note" ? "Conteúdo" : "Comentário"}>{entry.note}</Row> : null}
           </dl>
           <div className="mt-5 flex items-center justify-between">
-            <button className="inline-flex h-10 items-center gap-1.5 rounded-full px-3 text-sm font-semibold text-rose-600 transition hover:bg-rose-50" onClick={() => onDelete(entry.id)} type="button"><svg fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" width="16"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /></svg>Excluir</button>
-            <button className="inline-flex h-10 items-center justify-center rounded-full bg-slate-100 px-5 text-sm font-semibold text-ink transition hover:bg-slate-200" onClick={onClose} type="button">Fechar</button>
+            <button className="inline-flex h-10 items-center gap-1.5 rounded px-3 text-sm font-semibold text-rose-600 transition hover:bg-rose-50" onClick={() => onDelete(entry.id)} type="button"><svg fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" width="16"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /></svg>Excluir</button>
+            <button className="inline-flex h-10 items-center justify-center rounded bg-slate-100 px-5 text-sm font-semibold text-ink transition hover:bg-slate-200" onClick={onClose} type="button">Fechar</button>
           </div>
         </div>
       </div>

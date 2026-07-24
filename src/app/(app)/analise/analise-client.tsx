@@ -234,7 +234,7 @@ export function AnaliseClient({
               <p className="mt-1 text-xs text-muted">Conecte seu banco ou importe o extrato para acompanhar.</p>
             ) : null}
           </div>
-          <Link className="shrink-0 rounded-full bg-white px-4 py-2 text-sm font-semibold text-ink shadow-sm ring-1 ring-black/5 transition hover:bg-slate-50" href="/banco">
+          <Link className="shrink-0 rounded bg-white px-4 py-2 text-sm font-semibold text-ink shadow-sm ring-1 ring-black/5 transition hover:bg-slate-50" href="/banco">
             Detalhe
           </Link>
         </div>
@@ -243,7 +243,7 @@ export function AnaliseClient({
             <p className="text-xs text-muted">Faturas aguardando pagamento</p>
             <p className="mt-1 text-xl font-semibold tabular-nums text-sky-600">{euro.format(aReceber)}</p>
           </div>
-          <Link className="shrink-0 rounded-full bg-white px-4 py-2 text-sm font-semibold text-ink shadow-sm ring-1 ring-black/5 transition hover:bg-slate-50" href="/facturation">
+          <Link className="shrink-0 rounded bg-white px-4 py-2 text-sm font-semibold text-ink shadow-sm ring-1 ring-black/5 transition hover:bg-slate-50" href="/facturation">
             Detalhe
           </Link>
         </div>

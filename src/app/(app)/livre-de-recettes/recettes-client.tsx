@@ -216,13 +216,13 @@ export function LivreDeRecettesClient({
         <h1 className="text-2xl font-semibold text-ink">Livros de contabilidade</h1>
         <div className="flex flex-wrap gap-2">
           <a
-            className="inline-flex h-10 items-center justify-center rounded-full bg-white px-4 text-sm font-semibold text-ink shadow-sm ring-1 ring-black/5 transition hover:bg-slate-50"
+            className="inline-flex h-10 items-center justify-center rounded bg-white px-4 text-sm font-semibold text-ink shadow-sm ring-1 ring-black/5 transition hover:bg-slate-50"
             href={`/api/livre-de-recettes/export?format=csv&${query}`}
           >
             Export CSV
           </a>
           <a
-            className="inline-flex h-10 items-center justify-center rounded-full bg-brand px-4 text-sm font-semibold text-white shadow-sm ring-1 ring-[#002D72]/20 transition hover:bg-[#003a94]"
+            className="inline-flex h-10 items-center justify-center rounded bg-brand px-4 text-sm font-semibold text-white shadow-sm ring-1 ring-[#002D72]/20 transition hover:bg-[#003a94]"
             href={`/api/livre-de-recettes/export?format=pdf&${query}`}
           >
             Download PDF

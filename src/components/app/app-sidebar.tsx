@@ -694,14 +694,14 @@ function ShortcutsBlock({ collapsed, onNavigate, onCollapse }: { collapsed?: boo
 
             <footer className="flex items-center justify-between gap-2 border-t border-line px-5 py-4">
               <button
-                className="inline-flex h-11 items-center justify-center rounded-full border border-slate-200 px-5 text-sm font-semibold text-ink transition hover:bg-slate-50"
+                className="inline-flex h-11 items-center justify-center rounded border border-slate-200 px-5 text-sm font-semibold text-ink transition hover:bg-slate-50"
                 onClick={() => setDrawerOpen(false)}
                 type="button"
               >
                 Cancelar
               </button>
               <button
-                className="inline-flex h-11 items-center justify-center rounded-full bg-emerald-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700"
+                className="inline-flex h-11 items-center justify-center rounded bg-emerald-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700"
                 onClick={validate}
                 type="button"
               >
@@ -793,7 +793,7 @@ function UserMenu({ email, locale, avatarUrl, name, collapsed, onCollapse, onNav
           </div>
           <div className="px-3 pb-2">
             <button
-              className="w-full rounded-full border border-slate-200 px-3 py-2 text-sm font-semibold text-ink transition hover:bg-slate-50"
+              className="w-full rounded border border-slate-200 px-3 py-2 text-sm font-semibold text-ink transition hover:bg-slate-50"
               onClick={() => go("/configuracoes/pagamentos")}
               type="button"
             >

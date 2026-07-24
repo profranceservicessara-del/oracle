@@ -171,7 +171,7 @@ export function ProjectBoardClient({
               <button className={`rounded-full px-3 py-1.5 transition ${view === key ? "bg-brand text-white shadow-sm" : "text-slate-500 hover:text-ink"}`} key={key} onClick={() => setView(key)} type="button">{label}</button>
             ))}
           </div>
-          <button className="inline-flex h-10 items-center gap-1.5 rounded-full bg-brand px-4 text-sm font-semibold text-white shadow-sm ring-1 ring-[#002D72]/20 transition hover:bg-[#003a94] active:bg-[#001F4D]" onClick={() => setAdding((v) => !v)} type="button">
+          <button className="inline-flex h-10 items-center gap-1.5 rounded bg-brand px-4 text-sm font-semibold text-white shadow-sm ring-1 ring-[#002D72]/20 transition hover:bg-[#003a94] active:bg-[#001F4D]" onClick={() => setAdding((v) => !v)} type="button">
             <svg fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeWidth="2" viewBox="0 0 24 24" width="16"><path d="M12 5v14M5 12h14" /></svg>
             Nova tarefa
           </button>
@@ -200,7 +200,7 @@ export function ProjectBoardClient({
             Prazo
             <input className={`mt-1 font-normal ${inputCls}`} onChange={(e) => setNewDue(e.target.value)} type="date" value={newDue} />
           </label>
-          <button className="inline-flex h-11 items-center justify-center rounded-full bg-brand px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#003a94] disabled:opacity-60" disabled={saving || !newTitle.trim()} onClick={() => void addTask()} type="button">{saving ? "Salvando…" : "Adicionar"}</button>
+          <button className="inline-flex h-11 items-center justify-center rounded bg-brand px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#003a94] disabled:opacity-60" disabled={saving || !newTitle.trim()} onClick={() => void addTask()} type="button">{saving ? "Salvando…" : "Adicionar"}</button>
         </div>
       ) : null}
 
@@ -557,8 +557,8 @@ function TaskDetailModal({
         </div>
 
         <footer className="flex items-center justify-between border-t border-line px-5 py-3">
-          <button className="inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-sm font-semibold text-rose-600 transition hover:bg-rose-50" onClick={onDelete} type="button"><svg fill="none" height="15" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" width="15"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /></svg>Excluir tarefa</button>
-          <button className="inline-flex h-9 items-center justify-center rounded-full bg-slate-100 px-5 text-sm font-semibold text-ink transition hover:bg-slate-200" onClick={onClose} type="button">Fechar</button>
+          <button className="inline-flex h-9 items-center gap-1.5 rounded px-3 text-sm font-semibold text-rose-600 transition hover:bg-rose-50" onClick={onDelete} type="button"><svg fill="none" height="15" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" width="15"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /></svg>Excluir tarefa</button>
+          <button className="inline-flex h-9 items-center justify-center rounded bg-slate-100 px-5 text-sm font-semibold text-ink transition hover:bg-slate-200" onClick={onClose} type="button">Fechar</button>
         </footer>
       </div>
     </div>
@@ -716,8 +716,8 @@ function EditProjectModal({
           </label>
         </div>
         <footer className="flex items-center justify-end gap-2 border-t border-line px-5 py-4">
-          <button className="inline-flex h-11 items-center justify-center rounded-full border border-slate-200 px-5 text-sm font-semibold text-ink transition hover:bg-slate-50" onClick={onClose} type="button">Cancelar</button>
-          <button className="inline-flex h-11 items-center justify-center rounded-full bg-brand px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#003a94] disabled:opacity-60" disabled={saving} onClick={() => void save()} type="button">{saving ? "Salvando…" : "Salvar"}</button>
+          <button className="inline-flex h-11 items-center justify-center rounded border border-slate-200 px-5 text-sm font-semibold text-ink transition hover:bg-slate-50" onClick={onClose} type="button">Cancelar</button>
+          <button className="inline-flex h-11 items-center justify-center rounded bg-brand px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#003a94] disabled:opacity-60" disabled={saving} onClick={() => void save()} type="button">{saving ? "Salvando…" : "Salvar"}</button>
         </footer>
       </div>
     </div>

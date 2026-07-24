@@ -100,7 +100,7 @@ export function GestaoTempoClient({
     <main className="mx-auto max-w-[100rem] px-4 py-6">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold text-ink">Gestão de Tempo</h1>
-        <button className="inline-flex h-10 items-center gap-1.5 rounded-full bg-brand px-4 text-sm font-semibold text-white shadow-sm ring-1 ring-[#002D72]/20 transition hover:bg-[#003a94]" onClick={() => setCreating({ date: iso(today) })} type="button">
+        <button className="inline-flex h-10 items-center gap-1.5 rounded bg-brand px-4 text-sm font-semibold text-white shadow-sm ring-1 ring-[#002D72]/20 transition hover:bg-[#003a94]" onClick={() => setCreating({ date: iso(today) })} type="button">
           <svg fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeWidth="2" viewBox="0 0 24 24" width="16"><path d="M12 5v14M5 12h14" /></svg>
           Novo horário
         </button>
@@ -120,7 +120,7 @@ export function GestaoTempoClient({
               <button aria-label="Anterior" className="flex h-8 w-8 items-center justify-center rounded-full text-slate-500 ring-1 ring-black/5 transition hover:text-ink" onClick={() => go(-1)} type="button"><svg fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeWidth="2" viewBox="0 0 24 24" width="16"><path d="m15 18-6-6 6-6" /></svg></button>
               <span className="min-w-[10rem] text-center text-sm font-semibold capitalize text-ink">{label}</span>
               <button aria-label="Próximo" className="flex h-8 w-8 items-center justify-center rounded-full text-slate-500 ring-1 ring-black/5 transition hover:text-ink" onClick={() => go(1)} type="button"><svg fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeWidth="2" viewBox="0 0 24 24" width="16"><path d="m9 18 6-6-6-6" /></svg></button>
-              <button className="h-8 rounded-full bg-white px-3 text-sm font-semibold text-ink ring-1 ring-black/5 transition hover:bg-slate-50" onClick={() => setAnchor(startOfDay(new Date()))} type="button">Hoje</button>
+              <button className="h-8 rounded bg-white px-3 text-sm font-semibold text-ink ring-1 ring-black/5 transition hover:bg-slate-50" onClick={() => setAnchor(startOfDay(new Date()))} type="button">Hoje</button>
             </div>
             <div className="flex items-center gap-2">
               <select aria-label="Tempo real ou planejado" className="h-9 rounded-full border border-slate-300 bg-white px-3 text-sm text-ink outline-none focus:border-brand" onChange={(e) => setTimeMode(e.target.value as "both" | "actual" | "planned")} value={timeMode}>

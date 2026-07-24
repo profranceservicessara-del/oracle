@@ -78,7 +78,7 @@ export function ProjetosClient({
           <p className="mt-1 text-sm text-muted">Organize seu trabalho em projetos e acompanhe as tarefas num quadro Kanban.</p>
         </div>
         <button
-          className="inline-flex h-10 items-center gap-1.5 rounded-full bg-brand px-4 text-sm font-semibold text-white shadow-sm ring-1 ring-[#002D72]/20 transition hover:bg-[#003a94] active:bg-[#001F4D]"
+          className="inline-flex h-10 items-center gap-1.5 rounded bg-brand px-4 text-sm font-semibold text-white shadow-sm ring-1 ring-[#002D72]/20 transition hover:bg-[#003a94] active:bg-[#001F4D]"
           onClick={() => setCreating(true)}
           type="button"
         >
@@ -96,7 +96,7 @@ export function ProjetosClient({
         <div className="rounded-2xl bg-white px-6 py-20 text-center shadow-sm ring-1 ring-black/5">
           <p className="text-sm font-medium text-ink">Nenhum projeto ainda.</p>
           <p className="mt-1 text-sm text-muted">Crie seu primeiro projeto para começar a organizar as tarefas.</p>
-          <button className="mt-4 inline-flex h-10 items-center gap-1.5 rounded-full bg-brand px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-[#003a94]" onClick={() => setCreating(true)} type="button">
+          <button className="mt-4 inline-flex h-10 items-center gap-1.5 rounded bg-brand px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-[#003a94]" onClick={() => setCreating(true)} type="button">
             <svg fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeWidth="2" viewBox="0 0 24 24" width="16"><path d="M12 5v14M5 12h14" /></svg>
             Novo projeto
           </button>
@@ -263,8 +263,8 @@ function NewProjectModal({
           </div>
         </div>
         <footer className="flex items-center justify-end gap-2 border-t border-line px-5 py-4">
-          <button className="inline-flex h-11 items-center justify-center rounded-full border border-slate-200 px-5 text-sm font-semibold text-ink transition hover:bg-slate-50" onClick={onClose} type="button">Cancelar</button>
-          <button className="inline-flex h-11 items-center justify-center rounded-full bg-brand px-5 text-sm font-semibold text-white shadow-sm ring-1 ring-[#002D72]/20 transition hover:bg-[#003a94] disabled:opacity-60" disabled={saving} onClick={() => void save()} type="button">{saving ? "Criando…" : "Criar projeto"}</button>
+          <button className="inline-flex h-11 items-center justify-center rounded border border-slate-200 px-5 text-sm font-semibold text-ink transition hover:bg-slate-50" onClick={onClose} type="button">Cancelar</button>
+          <button className="inline-flex h-11 items-center justify-center rounded bg-brand px-5 text-sm font-semibold text-white shadow-sm ring-1 ring-[#002D72]/20 transition hover:bg-[#003a94] disabled:opacity-60" disabled={saving} onClick={() => void save()} type="button">{saving ? "Criando…" : "Criar projeto"}</button>
         </footer>
       </div>
     </div>

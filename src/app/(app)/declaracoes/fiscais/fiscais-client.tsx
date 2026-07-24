@@ -133,9 +133,9 @@ export function DeclaracoesFiscaisClient({
           <p className="text-lg font-semibold text-ink">Nenhuma informação fiscal encontrada para este período.</p>
           <p className="mt-2 max-w-md text-sm text-muted">Registre receitas, faturas e despesas para prepará-las aqui.</p>
           <div className="mt-6 flex flex-wrap justify-center gap-2">
-            <Link className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-ink ring-1 ring-inset ring-slate-200 transition hover:bg-slate-50" href="/financeiro">Ver financeiro</Link>
-            <Link className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-ink ring-1 ring-inset ring-slate-200 transition hover:bg-slate-50" href="/facturation">Ver faturas</Link>
-            <Link className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-ink ring-1 ring-inset ring-slate-200 transition hover:bg-slate-50" href="/comprovantes">Ver comprovantes</Link>
+            <Link className="rounded bg-white px-4 py-2 text-sm font-semibold text-ink ring-1 ring-inset ring-slate-200 transition hover:bg-slate-50" href="/financeiro">Ver financeiro</Link>
+            <Link className="rounded bg-white px-4 py-2 text-sm font-semibold text-ink ring-1 ring-inset ring-slate-200 transition hover:bg-slate-50" href="/facturation">Ver faturas</Link>
+            <Link className="rounded bg-white px-4 py-2 text-sm font-semibold text-ink ring-1 ring-inset ring-slate-200 transition hover:bg-slate-50" href="/comprovantes">Ver comprovantes</Link>
           </div>
         </div>
       ) : (

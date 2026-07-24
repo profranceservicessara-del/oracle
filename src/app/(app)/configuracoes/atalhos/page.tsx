@@ -87,7 +87,7 @@ export default function AtalhosPage() {
         <div className="flex items-center justify-end gap-2 border-t border-line px-5 py-4">
           <Button onClick={cancel} type="button" variant="secondary">Cancelar</Button>
           <button
-            className="inline-flex h-11 items-center justify-center rounded-full bg-emerald-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700"
+            className="inline-flex h-11 items-center justify-center rounded bg-emerald-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700"
             onClick={validate}
             type="button"
           >

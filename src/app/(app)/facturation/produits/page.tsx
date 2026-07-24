@@ -6,7 +6,7 @@ import { categoryLabels, type CatalogItem } from "@/lib/types";
 const euro = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
 
 const primaryButton =
-  "inline-flex h-11 items-center justify-center gap-2 rounded-full bg-brand px-4 text-sm font-semibold text-white shadow-sm ring-1 ring-[#002D72]/20 transition hover:bg-[#003a94] active:bg-[#001F4D] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand";
+  "inline-flex h-11 items-center justify-center gap-2 rounded bg-brand px-4 text-sm font-semibold text-white shadow-sm ring-1 ring-[#002D72]/20 transition hover:bg-[#003a94] active:bg-[#001F4D] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand";
 
 export default async function ProduitsPage() {
   const supabase = createClient();

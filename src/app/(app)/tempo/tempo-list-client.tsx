@@ -82,7 +82,7 @@ export function TempoListClient({
           <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Tempo e planejamento</p>
           <h1 className="mt-1 text-2xl font-semibold text-ink">{scope === "mine" ? "Meus tempos" : "Todos os momentos"}</h1>
         </div>
-        <button className="inline-flex h-10 items-center gap-1.5 rounded-full bg-brand px-4 text-sm font-semibold text-white shadow-sm ring-1 ring-[#002D72]/20 transition hover:bg-[#003a94]" onClick={() => setCreating(true)} type="button">
+        <button className="inline-flex h-10 items-center gap-1.5 rounded bg-brand px-4 text-sm font-semibold text-white shadow-sm ring-1 ring-[#002D72]/20 transition hover:bg-[#003a94]" onClick={() => setCreating(true)} type="button">
           <svg fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeWidth="2" viewBox="0 0 24 24" width="16"><path d="M12 5v14M5 12h14" /></svg>
           Novo horário
         </button>
