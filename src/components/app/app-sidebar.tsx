@@ -328,7 +328,7 @@ function GroupRow({
         </span>
       </button>
       <div
-        className={`pointer-events-none absolute left-[calc(100%+16px)] top-0 z-[70] w-72 -translate-x-2 overflow-hidden rounded-l-none rounded-r-xl bg-[var(--purple-light)] px-3 py-3 opacity-0 shadow-[inset_-1px_0_0_var(--soft-border),inset_0_1px_0_var(--soft-border),inset_0_-1px_0_var(--soft-border),0_10px_24px_-12px_rgba(2,10,40,0.8)] transition-all duration-200 ease-out ${
+        className={`pointer-events-none absolute left-full top-0 z-[70] w-72 -translate-x-1 overflow-hidden rounded-l-none rounded-r-xl bg-[var(--purple-light)] px-3 py-3 opacity-0 shadow-[inset_-1px_0_0_var(--soft-border),inset_0_1px_0_var(--soft-border),inset_0_-1px_0_var(--soft-border),0_10px_24px_-12px_rgba(2,10,40,0.8)] transition-all duration-200 ease-out ${
           isOpen ? "pointer-events-auto translate-x-0 opacity-100" : ""
         }`}
       >
@@ -389,7 +389,6 @@ function NavList({ onNavigate, collapsed, onExpand, onCollapse }: { onNavigate?:
     item: Extract<NavItem, { kind: "group" }>;
     top: number;
   } | null>(null);
-  const [openSection, setOpenSection] = useState<string | null>(() => ownerGroupKey(activeHref));
   const [hoverSection, setHoverSection] = useState<string | null>(null);
   const flyoutTop = flyout ? Math.max(16, Math.min(flyout.top, 520)) : 16;
   // A janela encosta 4px "por dentro" da borda direita das linhas: como o item
@@ -433,10 +432,6 @@ function NavList({ onNavigate, collapsed, onExpand, onCollapse }: { onNavigate?:
       ),
     [projectLeaves]
   );
-
-  useEffect(() => {
-    setOpenSection(activeGroupKey);
-  }, [activeGroupKey]);
 
   if (collapsed) {
     return (
@@ -537,7 +532,6 @@ function NavList({ onNavigate, collapsed, onExpand, onCollapse }: { onNavigate?:
               key={item.href}
               onClick={() => {
                 setHoverSection(null);
-                setOpenSection(null);
                 onCollapse?.();
                 onNavigate?.();
               }}
@@ -563,14 +557,11 @@ function NavList({ onNavigate, collapsed, onExpand, onCollapse }: { onNavigate?:
           ) : (
             <GroupRow
               activeGroupKey={activeGroupKey}
-              isOpen={hoverSection === item.key || openSection === item.key}
+              isOpen={hoverSection === item.key}
               item={item}
               key={item.key}
               onClose={() => setHoverSection(null)}
-              onOpen={(group) => {
-                setHoverSection(group.key);
-                setOpenSection(group.key);
-              }}
+              onOpen={(group) => setHoverSection(group.key)}
               onSelect={() => {
                 onCollapse?.();
                 onNavigate?.();
