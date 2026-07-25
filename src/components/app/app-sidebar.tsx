@@ -287,16 +287,18 @@ function GroupRow({
   activeGroupKey,
   pathname,
   isOpen,
-  onClose,
-  onOpen,
+  onHoverOpen,
+  onHoverClose,
+  onToggle,
   onSelect
 }: {
   item: Extract<NavItem, { kind: "group" }>;
   activeGroupKey: string | null;
   pathname: string;
   isOpen: boolean;
-  onClose: () => void;
-  onOpen: (item: Extract<NavItem, { kind: "group" }>) => void;
+  onHoverOpen: (item: Extract<NavItem, { kind: "group" }>) => void;
+  onHoverClose: () => void;
+  onToggle: (item: Extract<NavItem, { kind: "group" }>) => void;
   onSelect: () => void;
 }) {
   const hasActiveChild = item.key === activeGroupKey;
@@ -305,15 +307,15 @@ function GroupRow({
   return (
     <div
       className="relative"
-      onFocusCapture={() => onOpen(item)}
-      onMouseEnter={() => onOpen(item)}
-      onMouseLeave={onClose}
+      onFocusCapture={() => onHoverOpen(item)}
+      onMouseEnter={() => onHoverOpen(item)}
+      onMouseLeave={onHoverClose}
     >
       <button
         className={`group/row flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-[16px] font-[400] tracking-tight transition-all duration-200 ${
           isOpen ? openCard : highlighted ? activeCard : idleRow
         } ${isOpen ? "!rounded-r-none" : ""}`}
-        onClick={() => onOpen(item)}
+        onClick={() => onToggle(item)}
         type="button"
       >
         <span
@@ -345,10 +347,7 @@ function GroupRow({
                       : "text-white/80 hover:bg-[var(--flyout-item-mid)] hover:text-white"
                   }`}
                   href={child.href}
-                  onClick={() => {
-                    onClose();
-                    onSelect();
-                  }}
+                  onClick={() => onSelect()}
                 >
                   <span className={`truncate text-[15.5px] font-[400] tracking-tight ${active ? "text-white" : "text-white/80"}`}>
                     {child.label}
@@ -389,7 +388,13 @@ function NavList({ onNavigate, collapsed, onExpand, onCollapse }: { onNavigate?:
     item: Extract<NavItem, { kind: "group" }>;
     top: number;
   } | null>(null);
+  // Duas fontes de abertura: clique (fixa até clicar de novo) e hover (temporário).
+  const [pinnedSection, setPinnedSection] = useState<string | null>(null);
   const [hoverSection, setHoverSection] = useState<string | null>(null);
+  const closeAll = () => {
+    setPinnedSection(null);
+    setHoverSection(null);
+  };
   const flyoutTop = flyout ? Math.max(16, Math.min(flyout.top, 520)) : 16;
   // A janela encosta 4px "por dentro" da borda direita das linhas: como o item
   // aberto tem a mesma cor do painel, a sobreposição é invisível e garante que
@@ -531,7 +536,7 @@ function NavList({ onNavigate, collapsed, onExpand, onCollapse }: { onNavigate?:
               href={item.href}
               key={item.href}
               onClick={() => {
-                setHoverSection(null);
+                closeAll();
                 onCollapse?.();
                 onNavigate?.();
               }}
@@ -557,12 +562,14 @@ function NavList({ onNavigate, collapsed, onExpand, onCollapse }: { onNavigate?:
           ) : (
             <GroupRow
               activeGroupKey={activeGroupKey}
-              isOpen={hoverSection === item.key}
+              isOpen={(hoverSection ?? pinnedSection) === item.key}
               item={item}
               key={item.key}
-              onClose={() => setHoverSection(null)}
-              onOpen={(group) => setHoverSection(group.key)}
+              onHoverClose={() => setHoverSection(null)}
+              onHoverOpen={(group) => setHoverSection(group.key)}
+              onToggle={(group) => setPinnedSection((prev) => (prev === group.key ? null : group.key))}
               onSelect={() => {
+                closeAll();
                 onCollapse?.();
                 onNavigate?.();
               }}
