@@ -82,13 +82,15 @@ const icons = {
 type Leaf = { href: string; label: string; icon: ReactNode; soon?: boolean; premium?: boolean };
 type NavItem =
   | { kind: "link"; href: string; label: string; icon: ReactNode }
-  | { kind: "group"; key: string; label: string; icon: ReactNode; children: Leaf[] };
+  | { kind: "group"; key: string; href: string; label: string; icon: ReactNode; children: Leaf[] };
 
 const nav: NavItem[] = [
   { kind: "link", href: "/dashboard", label: "Painel de controle", icon: icons.painel },
+  { kind: "link", href: "/analise", label: "Análise", icon: icons.dashboard },
   {
     kind: "group",
     key: "gestao",
+    href: "/financeiro",
     label: "Gestão",
     icon: icons.gestao,
     children: [
@@ -104,6 +106,7 @@ const nav: NavItem[] = [
   {
     kind: "group",
     key: "faturamento",
+    href: "/facturation",
     label: "Cobrança",
     icon: icons.faturamento,
     children: [
@@ -121,12 +124,29 @@ const nav: NavItem[] = [
       { href: "/facturation/diario", label: "Diário de faturamento", icon: icons.dados },
       { href: "/facturation/produits", label: "Produtos e serviços", icon: icons.produtos },
       { href: "/catalogo", label: "Catálogo", icon: icons.catalogoLeaf },
+      { href: "/catalogo-pro/produtos", label: "Catálogo pro", icon: icons.catalogoLeaf },
       { href: "/compras", label: "Compras", icon: icons.fornecedores }
     ]
   },
   {
     kind: "group",
+    key: "compras",
+    href: "/compras",
+    label: "Compras",
+    icon: icons.fornecedores,
+    children: [
+      { href: "/compras", label: "Painel de compras", icon: icons.fornecedores },
+      { href: "/compras/inbox", label: "Caixa de entrada", icon: icons.faturasRecebidas },
+      { href: "/compras/faturas", label: "Faturas de compras", icon: icons.faturas },
+      { href: "/compras/ordens", label: "Ordens de compra", icon: icons.orcamentos },
+      { href: "/compras/entregas", label: "Entregas", icon: icons.fornecedores },
+      { href: "/compras/notas-credito", label: "Notas de crédito", icon: icons.comprovantes }
+    ]
+  },
+  {
+    kind: "group",
     key: "produtividade",
+    href: "/crm",
     label: "Produtividade",
     icon: icons.produtividade,
     children: [
@@ -139,6 +159,7 @@ const nav: NavItem[] = [
   {
     kind: "group",
     key: "projetos",
+    href: "/projetos",
     label: "Projetos",
     icon: icons.pipeline,
     children: [
@@ -149,6 +170,7 @@ const nav: NavItem[] = [
   {
     kind: "group",
     key: "contabilidade",
+    href: "/livre-de-recettes",
     label: "Contabilidade",
     icon: icons.contabilidade,
     children: [
@@ -160,7 +182,19 @@ const nav: NavItem[] = [
   },
   {
     kind: "group",
+    key: "urssaf",
+    href: "/urssaf",
+    label: "Urssaf",
+    icon: icons.urssaf,
+    children: [
+      { href: "/urssaf", label: "Declaração da Urssaf", icon: icons.urssaf },
+      { href: "/urssaf/configuracao", label: "Configuração da Urssaf", icon: icons.config }
+    ]
+  },
+  {
+    kind: "group",
     key: "documentos",
+    href: "/documentos",
     label: "Documentos",
     icon: icons.documentos,
     children: [
@@ -172,38 +206,37 @@ const nav: NavItem[] = [
   { kind: "link", href: "/academia", label: "Academia", icon: icons.academia }
 ];
 
-// ACTIVE item — premium glass: translucent fill + backdrop blur, inset ring,
-// soft inner top highlight, depth shadow, and a white vertical accent stroke on
-// the left (matching the "Clientes" reference).
 const activeCard =
-  "relative bg-[#2E2B5C] text-white backdrop-blur-md ring-1 ring-inset ring-[#D7E3FF]/45 " +
-  "shadow-[0_12px_28px_-12px_rgba(2,10,40,0.82),inset_0_1px_0_rgba(255,255,255,0.18)]";
+  "relative bg-[var(--purple-light)] text-white ring-1 ring-inset ring-[var(--soft-border)] shadow-[0_10px_24px_-12px_rgba(2,10,40,0.8)]";
 
-// IDLE row — white text + premium glass-blue hover: rounded surface (rows are
-// already rounded-xl), subtle blue fill + backdrop blur, border highlight, soft
-// depth shadow, and a gentle lift. Applied to every menu item for consistency.
 const idleRow =
-  "text-white/80 hover:-translate-y-px hover:bg-[#2E2B5C] hover:text-white hover:backdrop-blur-sm hover:ring-1 hover:ring-inset hover:ring-[#D7E3FF]/35 hover:shadow-[0_6px_16px_-8px_rgba(0,0,0,0.65)]";
+  "text-white/80 hover:-translate-y-px hover:bg-[var(--purple-light)] hover:text-white hover:ring-1 hover:ring-inset hover:ring-[var(--soft-border)] hover:shadow-[0_6px_16px_-8px_rgba(0,0,0,0.6)]";
 
-// OPEN row — item cuja janela lateral está aberta. Assume a cor exata do painel,
-// sem anel e sem canto à direita, para os dois formarem uma superfície só (sem
-// linha de separação entre o botão e a janela).
 const openCard =
-  "relative bg-[#2E2B5C] text-white backdrop-blur-md border-y border-l border-[#D7E3FF]/45 " +
-  "shadow-[0_12px_28px_-12px_rgba(2,10,40,0.82),inset_0_1px_0_rgba(255,255,255,0.18)]";
+  "relative !w-[calc(100%+16px)] -mr-4 rounded-l-xl !rounded-r-none bg-[var(--purple-light)] text-white shadow-[inset_1px_0_0_var(--soft-border),inset_0_1px_0_var(--soft-border),inset_0_-1px_0_var(--soft-border),0_10px_24px_-12px_rgba(2,10,40,0.8)]";
 
 // All destination hrefs, used to resolve the single best (most-specific) match so
 // a parent path like /facturation never stays "active" on /facturation/devis.
 const allHrefs = nav.flatMap((item) => (item.kind === "link" ? [item.href] : item.children.map((child) => child.href)));
 
+function hrefPath(href: string): string {
+  return href.split("?")[0] || href;
+}
+
+function isHrefActive(pathname: string, href: string): boolean {
+  const base = hrefPath(href);
+  return pathname === base || pathname.startsWith(`${base}/`);
+}
+
 function activeHrefFor(pathname: string): string {
-  if (pathname === "/urssaf" || pathname.startsWith("/urssaf/") || pathname === "/declaracoes/auxiliares" || pathname.startsWith("/declaracoes/auxiliares/")) {
+  if (pathname === "/declaracoes/auxiliares" || pathname.startsWith("/declaracoes/auxiliares/")) {
     return "/declaracoes/fiscais";
   }
 
   let best = "";
   for (const href of allHrefs) {
-    if ((pathname === href || pathname.startsWith(`${href}/`)) && href.length > best.length) {
+    const base = hrefPath(href);
+    if (isHrefActive(pathname, href) && base.length > hrefPath(best).length) {
       best = href;
     }
   }
@@ -215,7 +248,7 @@ function LeafRow({ leaf, active, onNavigate }: { leaf: Leaf; active: boolean; on
     return (
       <div
         aria-disabled="true"
-        className="relative flex cursor-default items-center gap-2.5 rounded-xl py-2 pl-4 pr-4 text-[13px] font-medium text-white/35"
+        className="relative flex cursor-default items-center gap-2.5 rounded-xl py-2 pl-4 pr-4 text-[13px] font-[400] text-white/35"
         title="Em breve"
       >
         <span className="shrink-0 text-white/25">{leaf.icon}</span>
@@ -230,13 +263,13 @@ function LeafRow({ leaf, active, onNavigate }: { leaf: Leaf; active: boolean; on
   return (
     <Link
       aria-current={active ? "page" : undefined}
-      className={`group/leaf relative flex items-center gap-2.5 rounded-xl py-2 pl-4 pr-4 text-[13px] font-normal transition-all duration-200 ${
+      className={`group/leaf relative flex items-center gap-2.5 rounded-xl py-2 pl-4 pr-4 text-[13px] font-[400] transition-all duration-200 ${
         active ? activeCard : idleRow
       }`}
       href={leaf.href}
       onClick={onNavigate}
     >
-      <span className={`shrink-0 transition-colors ${active ? "text-[#AFC6FF]" : "text-[#8FB2FF] group-hover/leaf:text-white"}`}>
+      <span className={`shrink-0 transition-colors ${active ? "text-[var(--icon-blue-active)]" : "text-[var(--icon-blue)] group-hover/leaf:text-white"}`}>
         {leaf.icon}
       </span>
       <span className="truncate">{leaf.label}</span>
@@ -251,53 +284,113 @@ function LeafRow({ leaf, active, onNavigate }: { leaf: Leaf; active: boolean; on
 
 function GroupRow({
   item,
-  activeHref,
+  activeGroupKey,
+  pathname,
   isOpen,
-  onOpen
+  onClose,
+  onOpen,
+  onSelect
 }: {
   item: Extract<NavItem, { kind: "group" }>;
-  activeHref: string;
+  activeGroupKey: string | null;
+  pathname: string;
   isOpen: boolean;
-  onOpen: (item: Extract<NavItem, { kind: "group" }>, top: number) => void;
+  onClose: () => void;
+  onOpen: (item: Extract<NavItem, { kind: "group" }>) => void;
+  onSelect: () => void;
 }) {
-  const hasActiveChild = item.children.some((child) => child.href === activeHref);
+  const hasActiveChild = item.key === activeGroupKey;
   const highlighted = hasActiveChild || isOpen;
 
   return (
-    <div>
+    <div
+      className="relative"
+      onFocusCapture={() => onOpen(item)}
+      onMouseEnter={() => onOpen(item)}
+      onMouseLeave={onClose}
+    >
       <button
-        className={`group/row flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-normal transition-all duration-200 ${
+        className={`group/row flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-[16px] font-[400] tracking-tight transition-all duration-200 ${
           isOpen ? openCard : highlighted ? activeCard : idleRow
-        } ${isOpen ? "rounded-r-none" : ""}`}
-        onClick={(event) => onOpen(item, event.currentTarget.getBoundingClientRect().top)}
-        onFocus={(event) => onOpen(item, event.currentTarget.getBoundingClientRect().top)}
-        onMouseEnter={(event) => onOpen(item, event.currentTarget.getBoundingClientRect().top)}
+        } ${isOpen ? "!rounded-r-none" : ""}`}
+        onClick={() => onOpen(item)}
         type="button"
       >
-        <span className={`shrink-0 transition-colors ${highlighted ? "text-[#AFC6FF]" : "text-[#8FB2FF] group-hover/row:text-white"}`}>
+        <span
+          className={`shrink-0 transition-all duration-200 ${
+            highlighted ? "text-[var(--icon-blue-active)]" : "text-[var(--icon-blue)] group-hover/row:text-[var(--icon-blue-active)] group-hover/row:drop-shadow-[0_0_8px_rgba(124,158,232,0.85)]"
+          }`}
+        >
           {item.icon}
         </span>
-        <span className="flex-1 text-left">{item.label}</span>
-        {hasActiveChild ? <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#AFC6FF]" /> : null}
+        <span className={`flex-1 truncate text-left text-[16px] font-[400] tracking-tight transition-colors ${highlighted ? "text-white" : "text-white/80"}`}>
+          {item.label}
+        </span>
       </button>
+      <div
+        className={`pointer-events-none absolute left-[calc(100%+16px)] top-0 z-[70] w-72 -translate-x-2 overflow-hidden rounded-l-none rounded-r-xl bg-[var(--purple-light)] px-3 py-3 opacity-0 shadow-[inset_-1px_0_0_var(--soft-border),inset_0_1px_0_var(--soft-border),inset_0_-1px_0_var(--soft-border),0_10px_24px_-12px_rgba(2,10,40,0.8)] transition-all duration-200 ease-out ${
+          isOpen ? "pointer-events-auto translate-x-0 opacity-100" : ""
+        }`}
+      >
+        <ul className="space-y-1">
+          {item.children.map((child) => {
+            const active = isHrefActive(pathname, child.href);
+            return (
+              <li key={child.href}>
+                <Link
+                  aria-current={active ? "page" : undefined}
+                  className={`flex min-h-10 items-center rounded-full px-4 py-2 transition ${
+                    active
+                      ? "bg-[var(--flyout-item-mid)] text-white"
+                      : "text-white/80 hover:bg-[var(--flyout-item-mid)] hover:text-white"
+                  }`}
+                  href={child.href}
+                  onClick={() => {
+                    onClose();
+                    onSelect();
+                  }}
+                >
+                  <span className={`truncate text-[15.5px] font-[400] tracking-tight ${active ? "text-white" : "text-white/80"}`}>
+                    {child.label}
+                  </span>
+                  {child.premium ? (
+                    <span className="ml-auto shrink-0 rounded-full bg-[#4F46E5]/25 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-[#C7CCFF]">
+                      Premium
+                    </span>
+                  ) : null}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
     </div>
   );
 }
 
 function ownerGroupKey(activeHref: string): string | null {
+  const matches: Array<Extract<NavItem, { kind: "group" }>> = [];
   for (const item of nav) {
-    if (item.kind === "group" && item.children.some((child) => child.href === activeHref)) return item.key;
+    if (item.kind === "group" && item.children.some((child) => child.href === activeHref)) {
+      matches.push(item);
+    }
   }
-  return null;
+  if (matches.length === 0) return null;
+
+  const routeRoot = hrefPath(activeHref).split("/").filter(Boolean)[0];
+  return matches.find((item) => item.key === routeRoot)?.key ?? matches[matches.length - 1].key;
 }
 
 function NavList({ onNavigate, collapsed, onExpand, onCollapse }: { onNavigate?: () => void; collapsed?: boolean; onExpand?: () => void; onCollapse?: () => void }) {
   const pathname = usePathname();
   const activeHref = activeHrefFor(pathname);
+  const activeGroupKey = ownerGroupKey(activeHref);
   const [flyout, setFlyout] = useState<{
     item: Extract<NavItem, { kind: "group" }>;
     top: number;
   } | null>(null);
+  const [openSection, setOpenSection] = useState<string | null>(() => ownerGroupKey(activeHref));
+  const [hoverSection, setHoverSection] = useState<string | null>(null);
   const flyoutTop = flyout ? Math.max(16, Math.min(flyout.top, 520)) : 16;
   // A janela encosta 4px "por dentro" da borda direita das linhas: como o item
   // aberto tem a mesma cor do painel, a sobreposição é invisível e garante que
@@ -341,17 +434,21 @@ function NavList({ onNavigate, collapsed, onExpand, onCollapse }: { onNavigate?:
     [projectLeaves]
   );
 
+  useEffect(() => {
+    setOpenSection(activeGroupKey);
+  }, [activeGroupKey]);
+
   if (collapsed) {
     return (
       <div className="relative flex min-h-0 flex-1" onMouseLeave={() => setFlyout(null)}>
         <nav className="flex flex-1 flex-col items-center gap-1 overflow-y-auto sidebar-scroll">
           {navRender.map((item) => {
             const active =
-              item.kind === "link" ? item.href === activeHref : item.children.some((child) => child.href === activeHref);
+              item.kind === "link" ? item.href === activeHref : item.key === activeGroupKey;
             const cls = `flex h-11 w-11 items-center justify-center rounded-xl transition-all duration-200 ${
               active ? activeCard : idleRow
             }`;
-            const iconCls = `${active ? "text-[#AFC6FF]" : "text-[#8FB2FF]"}`;
+            const iconCls = `${active ? "text-[var(--icon-blue-active)]" : "text-[var(--icon-blue)]"}`;
             return item.kind === "link" ? (
               <Link
                 aria-current={active ? "page" : undefined}
@@ -360,6 +457,7 @@ function NavList({ onNavigate, collapsed, onExpand, onCollapse }: { onNavigate?:
                 key={item.href}
                 onClick={() => {
                   setFlyout(null);
+                  onExpand?.();
                   onNavigate?.();
                 }}
                 onMouseEnter={() => setFlyout(null)}
@@ -368,24 +466,29 @@ function NavList({ onNavigate, collapsed, onExpand, onCollapse }: { onNavigate?:
                 <span className={iconCls}>{item.icon}</span>
               </Link>
             ) : (
-              <button
+              <Link
+                aria-current={active ? "page" : undefined}
                 className={cls}
+                href={item.href}
                 key={item.key}
-                onClick={(event) => setFlyout({ item, top: event.currentTarget.getBoundingClientRect().top })}
+                onClick={() => {
+                  setFlyout(null);
+                  onExpand?.();
+                  onNavigate?.();
+                }}
                 onFocus={(event) => setFlyout({ item, top: event.currentTarget.getBoundingClientRect().top })}
                 onMouseEnter={(event) => setFlyout({ item, top: event.currentTarget.getBoundingClientRect().top })}
                 title={item.label}
-                type="button"
               >
                 <span className={iconCls}>{item.icon}</span>
-              </button>
+              </Link>
             );
           })}
         </nav>
 
         {flyout ? (
           <div
-            className={`fixed ${flyoutLeft} z-40 w-72 max-w-[calc(100vw-6rem)] overflow-hidden rounded-r bg-[#2E2B5C] py-1.5 border-y border-r border-[#D7E3FF]/45 shadow-[0_12px_28px_-12px_rgba(2,10,40,0.82),inset_0_1px_0_rgba(255,255,255,0.18)]`}
+            className={`fixed ${flyoutLeft} z-40 w-72 max-w-[calc(100vw-6rem)] overflow-hidden rounded-l-none rounded-r-xl bg-[var(--purple-light)] py-3 shadow-[inset_-1px_0_0_var(--soft-border),inset_0_1px_0_var(--soft-border),inset_0_-1px_0_var(--soft-border),0_10px_24px_-12px_rgba(2,10,40,0.8)]`}
             onMouseEnter={() => setFlyout(flyout)}
             style={{ top: flyoutTop }}
           >
@@ -394,9 +497,9 @@ function NavList({ onNavigate, collapsed, onExpand, onCollapse }: { onNavigate?:
                 <Link
                   aria-current={child.href === activeHref ? "page" : undefined}
                   className={`flex min-h-9 items-center gap-3 px-4 py-2 text-sm transition ${
-                    child.href === activeHref
-                      ? "bg-[#3C3873] text-white"
-                      : "text-white/80 hover:bg-[#3C3873] hover:text-white"
+                    isHrefActive(pathname, child.href)
+                      ? "rounded-full bg-[var(--flyout-item-mid)] text-white"
+                      : "rounded-full text-white/80 hover:bg-[var(--flyout-item-mid)] hover:text-white"
                   }`}
                   href={child.href}
                   key={child.href}
@@ -405,8 +508,7 @@ function NavList({ onNavigate, collapsed, onExpand, onCollapse }: { onNavigate?:
                     onNavigate?.();
                   }}
                 >
-                  <span className={`shrink-0 ${child.href === activeHref ? "text-[#AFC6FF]" : "text-[#93ACFF]"}`}>{child.icon}</span>
-                  <span className="leading-snug">{child.label}</span>
+                  <span className="truncate text-[15.5px] font-[400] tracking-tight">{child.label}</span>
                   {child.premium ? (
                     <span className="ml-auto shrink-0 rounded-full bg-[#4F46E5]/25 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-[#C7CCFF]">
                       Premium
@@ -422,74 +524,62 @@ function NavList({ onNavigate, collapsed, onExpand, onCollapse }: { onNavigate?:
   }
 
   return (
-    <div className="relative flex min-h-0 flex-1" onMouseLeave={() => setFlyout(null)}>
-      <nav className="flex flex-1 flex-col gap-1 overflow-y-auto sidebar-scroll">
+    <div className="relative flex min-h-0 flex-1 overflow-visible">
+      <nav className="flex flex-1 flex-col gap-2 overflow-visible sidebar-scroll">
         {navRender.map((item) =>
           item.kind === "link" ? (
             <Link
-              aria-current={item.href === activeHref ? "page" : undefined}
-              className={`group/row flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-normal transition-all duration-200 ${
-                item.href === activeHref ? activeCard : idleRow
+              aria-current={isHrefActive(pathname, item.href) ? "page" : undefined}
+              className={`group/row flex items-center gap-3 rounded-xl px-4 py-2.5 text-[16px] font-[400] tracking-tight transition-all duration-200 ${
+                isHrefActive(pathname, item.href) ? activeCard : idleRow
               }`}
               href={item.href}
               key={item.href}
               onClick={() => {
-                setFlyout(null);
+                setHoverSection(null);
+                setOpenSection(null);
+                onCollapse?.();
                 onNavigate?.();
               }}
-              onMouseEnter={() => setFlyout(null)}
+              onMouseEnter={() => setHoverSection(null)}
             >
-              <span className={`shrink-0 transition-colors ${item.href === activeHref ? "text-[#AFC6FF]" : "text-[#8FB2FF] group-hover/row:text-white"}`}>
+              <span
+                className={`shrink-0 transition-all duration-200 ${
+                  isHrefActive(pathname, item.href)
+                    ? "text-[var(--icon-blue-active)]"
+                    : "text-[var(--icon-blue)] group-hover/row:text-[var(--icon-blue-active)] group-hover/row:drop-shadow-[0_0_8px_rgba(124,158,232,0.85)]"
+                }`}
+              >
                 {item.icon}
               </span>
-              {item.label}
+              <span
+                className={`flex-1 truncate text-left text-[16px] font-[400] tracking-tight transition-colors ${
+                  isHrefActive(pathname, item.href) ? "text-white" : "text-white/80"
+                }`}
+              >
+                {item.label}
+              </span>
             </Link>
           ) : (
-              <GroupRow
-                activeHref={activeHref}
-                isOpen={flyout?.item.key === item.key}
-                item={item}
-                key={item.key}
-                onOpen={(group, top) => setFlyout({ item: group, top })}
+            <GroupRow
+              activeGroupKey={activeGroupKey}
+              isOpen={hoverSection === item.key || openSection === item.key}
+              item={item}
+              key={item.key}
+              onClose={() => setHoverSection(null)}
+              onOpen={(group) => {
+                setHoverSection(group.key);
+                setOpenSection(group.key);
+              }}
+              onSelect={() => {
+                onCollapse?.();
+                onNavigate?.();
+              }}
+              pathname={pathname}
             />
           )
         )}
       </nav>
-
-      {flyout ? (
-        <div
-          className={`fixed ${flyoutLeft} z-40 w-72 max-w-[calc(100vw-17rem)] overflow-hidden rounded-r bg-[#2E2B5C] py-1.5 border-y border-r border-[#D7E3FF]/45 shadow-[0_12px_28px_-12px_rgba(2,10,40,0.82),inset_0_1px_0_rgba(255,255,255,0.18)]`}
-          onMouseEnter={() => setFlyout(flyout)}
-          style={{ top: flyoutTop }}
-        >
-          <div className="max-h-[calc(100vh-2rem)] overflow-y-auto py-1 sidebar-scroll">
-            {flyout.item.children.map((child) => (
-              <Link
-                aria-current={child.href === activeHref ? "page" : undefined}
-                className={`flex min-h-9 items-center gap-3 px-4 py-2 text-sm transition ${
-                  child.href === activeHref
-                    ? "bg-[#3C3873] text-white"
-                    : "text-white/80 hover:bg-[#3C3873] hover:text-white"
-                }`}
-                href={child.href}
-                key={child.href}
-                onClick={() => {
-                  setFlyout(null);
-                  onNavigate?.();
-                }}
-              >
-                <span className={`shrink-0 ${child.href === activeHref ? "text-[#AFC6FF]" : "text-[#93ACFF]"}`}>{child.icon}</span>
-                <span className="leading-snug">{child.label}</span>
-                {child.premium ? (
-                  <span className="ml-auto shrink-0 rounded-full bg-[#4F46E5]/25 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-[#C7CCFF]">
-                    Premium
-                  </span>
-                ) : null}
-              </Link>
-            ))}
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 }
@@ -507,7 +597,7 @@ function BrandBadge({ initials }: { initials: string }) {
 
   if (imgError) {
     return (
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#5A74E0] to-[#1B2A66] text-sm font-bold text-white shadow-sm ring-1 ring-white/20">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#1B2A66] text-sm font-bold text-white shadow-sm ring-1 ring-white/20">
         {initials}
       </span>
     );
@@ -594,8 +684,8 @@ function ShortcutsBlock({ collapsed, onNavigate, onCollapse }: { collapsed?: boo
         aria-label="Gerenciar atalhos"
         className={
           collapsed
-            ? "flex h-10 w-10 items-center justify-center rounded-xl text-white/50 transition hover:bg-[#252349] hover:text-white"
-            : "flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-[12px] font-medium text-white/60 transition hover:bg-[#252349] hover:text-white"
+            ? "flex h-10 w-10 items-center justify-center rounded-xl text-white/50 transition hover:bg-[var(--purple-light)] hover:text-white"
+            : "flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-[12px] font-[400] text-white/60 transition hover:bg-[var(--purple-light)] hover:text-white"
         }
         onClick={openDrawer}
         title="Gerenciar atalhos"
@@ -624,7 +714,7 @@ function ShortcutsBlock({ collapsed, onNavigate, onCollapse }: { collapsed?: boo
               <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-400/15 text-[11px] leading-none ring-1 ring-emerald-400/20 transition group-hover/sc:ring-emerald-400/35">
                 {shortcutEmoji(item.key)}
               </span>
-              {collapsed ? null : <span className="truncate text-[11px] font-medium text-emerald-400/70">{item.label}</span>}
+              {collapsed ? null : <span className="truncate text-[11px] font-[400] text-emerald-400/70">{item.label}</span>}
             </Link>
           ))}
         </div>
@@ -835,7 +925,7 @@ function UserMenu({ email, locale, avatarUrl, name, collapsed, onCollapse, onNav
         aria-expanded={open}
         aria-haspopup="menu"
         aria-label="Conta"
-        className={`flex w-full items-center gap-3 rounded-xl px-1 py-1.5 text-left transition hover:-translate-y-px hover:bg-[#252349] hover:text-white ${collapsed ? "justify-center" : ""}`}
+        className={`flex w-full items-center gap-3 rounded-xl px-1 py-1.5 text-left transition hover:bg-[var(--purple-light)] hover:text-white ${collapsed ? "justify-center" : ""}`}
         onClick={() => setOpen((value) => !value)}
         type="button"
       >
@@ -850,7 +940,7 @@ function UserMenu({ email, locale, avatarUrl, name, collapsed, onCollapse, onNav
         {collapsed ? null : (
           <>
             <span className="min-w-0 flex-1">
-              <span className="block truncate text-sm font-medium text-white">{displayName}</span>
+              <span className="block truncate text-sm font-[400] text-white">{displayName}</span>
               <span className="block truncate text-xs text-white/50">{email || t(locale, "menu.profile")}</span>
             </span>
             <svg aria-hidden="true" className={`shrink-0 text-white/40 transition-transform ${open ? "rotate-180" : ""}`} fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeWidth="2" viewBox="0 0 24 24" width="16">
@@ -867,11 +957,17 @@ function SidebarBody({ email, locale, avatarUrl, name, onNavigate, collapsed, on
   const initials = ((email.split("@")[0] ?? "").replace(/[^a-zA-Z]/g, "").slice(0, 2) || "PF").toUpperCase();
 
   return (
-    <div className={`sidebar-shell flex h-full flex-col gap-5 bg-[#001030] ${collapsed ? "px-2 py-4" : "p-4"}`}>
+    <div
+      className={`sidebar-shell flex h-full flex-col gap-5 border-r border-white/[0.08] bg-[var(--sidebar-bg)] [font-family:var(--font-lato)] ${
+        collapsed ? "px-2 py-4" : "p-4"
+      }`}
+    >
       <div className={`flex gap-2 ${collapsed ? "flex-col items-center" : "items-center"}`}>
         <Link
-          aria-label={collapsed ? "Expandir menu" : "Ir para Análise"}
-          className={`flex items-center gap-3 rounded-xl px-1 pt-1 transition hover:opacity-90 ${collapsed ? "justify-center" : "min-w-0 flex-1"}`}
+          aria-label={collapsed ? "Expandir menu" : "Ir para Dashboard"}
+          className={`flex items-center gap-3 rounded-xl px-1 pt-1 transition hover:opacity-90 ${
+            collapsed ? "justify-center" : "min-w-0 flex-1"
+          }`}
           href="/dashboard"
           onClick={() => {
             onSetCollapsed?.(false);
@@ -883,7 +979,7 @@ function SidebarBody({ email, locale, avatarUrl, name, onNavigate, collapsed, on
           {collapsed ? null : (
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-white">Oracle</p>
-              <p className="truncate text-[10px] font-medium uppercase tracking-wide text-white/40">
+              <p className="truncate text-[10px] font-medium uppercase tracking-[0.24em] text-white/40">
                 Sistema financeiro
               </p>
             </div>
@@ -891,12 +987,22 @@ function SidebarBody({ email, locale, avatarUrl, name, onNavigate, collapsed, on
         </Link>
         <button
           aria-label={collapsed ? "Abrir menu" : "Minimizar menu"}
-          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white/50 transition hover:bg-[#252349] hover:text-white"
+          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white/50 transition hover:bg-[var(--purple-light)] hover:text-white"
           onClick={() => onSetCollapsed?.(!collapsed)}
           title={collapsed ? "Abrir menu" : "Minimizar menu"}
           type="button"
         >
-          <svg className={collapsed ? "rotate-180" : ""} fill="none" height="18" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" width="18">
+          <svg
+            className={collapsed ? "rotate-180" : ""}
+            fill="none"
+            height="18"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="1.8"
+            viewBox="0 0 24 24"
+            width="18"
+          >
             <path d="m11 17-5-5 5-5" />
             <path d="m18 17-5-5 5-5" />
           </svg>
@@ -927,13 +1033,24 @@ export function AppSidebar({ email, locale, avatarUrl, name }: { email: string; 
 
   return (
     <>
-      <aside className={`fixed inset-y-0 left-0 z-30 hidden transition-[width] duration-300 md:block ${collapsed ? "w-20" : "w-64"}`}>
-        <SidebarBody avatarUrl={avatarUrl} collapsed={collapsed} email={email} locale={locale} name={name} onSetCollapsed={setCollapsed} />
+      <aside
+        className={`fixed inset-y-0 left-0 z-[80] hidden overflow-visible transition-[width] duration-300 md:block ${
+          collapsed ? "w-20" : "w-64"
+        }`}
+      >
+        <SidebarBody
+          avatarUrl={avatarUrl}
+          collapsed={collapsed}
+          email={email}
+          locale={locale}
+          name={name}
+          onSetCollapsed={setCollapsed}
+        />
       </aside>
 
       <div className="sticky top-0 z-20 flex items-center justify-between border-b border-black/5 bg-white/80 px-4 py-3 backdrop-blur md:hidden">
         <Link aria-label="Ir para Análise" className="flex items-center gap-2.5" href="/dashboard">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#5A74E0] to-[#1B2A66] text-xs font-bold text-white ring-1 ring-black/5">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#1B2A66] text-xs font-bold text-white ring-1 ring-black/5">
             {initials}
           </span>
           <p className="text-base font-semibold text-ink">Oracle</p>
