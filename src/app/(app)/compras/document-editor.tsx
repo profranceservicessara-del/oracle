@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { useToast } from "@/components/ui/toast";
 import { createClient } from "@/lib/supabase/client";
+import { todayLocalIso } from "@/lib/dates";
 import { PaymentsSection } from "./payments-section";
 import { purchaseDocumentSchema } from "./validation";
 import {
@@ -45,7 +46,6 @@ type LineForm = {
   reference: string;
   description: string;
   accounting_code_id: string;
-  quantity: string;
   amount_excl_tax: string;
   amount_incl_tax: string;
   vat_rate: string;
@@ -54,7 +54,7 @@ type LineForm = {
 const emptyHeader = (): HeaderForm => ({
   third_id: "",
   external_number: "",
-  document_date: new Date().toISOString().slice(0, 10),
+  document_date: todayLocalIso(),
   due_date: "",
   currency: "EUR",
   vat_method: "debit",
@@ -68,11 +68,17 @@ const emptyLine = (): LineForm => ({
   reference: "",
   description: "",
   accounting_code_id: "",
-  quantity: "1",
   amount_excl_tax: "",
   amount_incl_tax: "",
   vat_rate: "0"
 });
+
+// O gatilho do banco levanta P0001 com mensagem em português e segura para
+// exibir. Qualquer outro código pode vazar detalhe técnico, então fica genérico.
+function friendlyDbError(error: { code?: string; message?: string } | null, fallback: string): string {
+  if (error?.code === "P0001" && error.message) return error.message;
+  return fallback;
+}
 
 export function DocumentEditor({
   isOpen,
@@ -141,7 +147,6 @@ export function DocumentEditor({
               reference: l.reference ?? "",
               description: l.description ?? "",
               accounting_code_id: l.accounting_code_id ?? "",
-              quantity: String(l.quantity ?? 1),
               amount_excl_tax: String(l.amount_excl_tax ?? 0),
               amount_incl_tax: String(l.amount_incl_tax ?? 0),
               vat_rate: String(l.vat_rate ?? 0)
@@ -271,7 +276,7 @@ export function DocumentEditor({
         reference: l.reference || null,
         description: l.description || null,
         accounting_code_id: l.accounting_code_id || null,
-        quantity: Number(l.quantity) || 0,
+        quantity: 1,
         amount_excl_tax: c.excl,
         amount_incl_tax: c.incl,
         vat_rate: vat
@@ -317,7 +322,7 @@ export function DocumentEditor({
     const { error } = await supabase.from("purchase_documents").update({ status: "validated" }).eq("id", id);
     if (error) {
       setSaving(false);
-      showToast("Não foi possível validar o documento.", "error");
+      showToast(friendlyDbError(error, "Não foi possível validar o documento."), "error");
       return;
     }
     await load(id);
@@ -336,7 +341,7 @@ export function DocumentEditor({
     const { error } = await supabase.from("purchase_documents").update({ status: "cancelled" }).eq("id", currentId);
     setSaving(false);
     if (error) {
-      showToast("Não foi possível cancelar o documento.", "error");
+      showToast(friendlyDbError(error, "Não foi possível cancelar o documento."), "error");
       return;
     }
     await load(currentId);
@@ -377,7 +382,9 @@ export function DocumentEditor({
                 value={header.third_id}
               >
                 <option value="">Selecione um fornecedor</option>
-                {suppliers.map((s) => (
+                {suppliers
+                  .filter((s) => !s.archived || s.id === header.third_id)
+                  .map((s) => (
                   <option key={s.id} value={s.id}>
                     {s.name}
                   </option>
@@ -476,13 +483,9 @@ export function DocumentEditor({
                           ))}
                         </Select>
                       </label>
-                      <div className="grid grid-cols-3 gap-2 sm:col-span-2">
+                      <div className="grid grid-cols-2 gap-2 sm:col-span-2">
                         <label className="text-xs font-medium text-slate-500">
-                          Quantidade
-                          <Input className="mt-1" disabled={readOnly} min="0" onChange={(e) => updateLine(index, { quantity: e.target.value })} step="0.0001" type="number" value={line.quantity} />
-                        </label>
-                        <label className="text-xs font-medium text-slate-500">
-                          {header.amounts_include_tax ? "Valor TTC" : "Valor HT"}
+                          {header.amounts_include_tax ? "Valor TTC da linha" : "Valor HT da linha"}
                           <Input
                             className="mt-1"
                             disabled={readOnly}
@@ -552,10 +555,13 @@ export function DocumentEditor({
           {/* Ações */}
           <div className="flex flex-wrap items-center justify-between gap-2 border-t border-line pt-4">
             <div>
-              {currentId && status !== "cancelled" ? (
+              {currentId && (status === "draft" || status === "to_verify" || status === "validated") ? (
                 <Button disabled={saving} onClick={() => void handleCancelDocument()} type="button" variant="secondary">
                   Cancelar documento
                 </Button>
+              ) : null}
+              {currentId && (status === "partially_paid" || status === "paid") ? (
+                <p className="text-xs text-slate-500">Para cancelar, remova antes os pagamentos.</p>
               ) : null}
             </div>
             <div className="flex flex-wrap gap-2">

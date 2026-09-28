@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
+import { toLocalIsoDate, todayLocalIso } from "@/lib/dates";
 import { DocumentEditor } from "./document-editor";
 import {
   DOC_TYPE_META,
@@ -24,9 +25,8 @@ function periodBounds(key: PeriodKey): { start: string; end: string } | null {
   const now = new Date();
   const y = now.getFullYear();
   const m = now.getMonth();
-  const iso = (d: Date) => d.toISOString().slice(0, 10);
   if (key === "ano") return { start: `${y}-01-01`, end: `${y}-12-31` };
-  if (key === "mes") return { start: iso(new Date(y, m, 1)), end: iso(new Date(y, m + 1, 0)) };
+  if (key === "mes") return { start: toLocalIsoDate(new Date(y, m, 1)), end: toLocalIsoDate(new Date(y, m + 1, 0)) };
   return null;
 }
 
@@ -61,7 +61,7 @@ export function DocumentList({
   const [editorOpen, setEditorOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayLocalIso();
 
   const supplierName = useMemo(() => {
     const map = new Map<string, string>();
@@ -150,7 +150,7 @@ export function DocumentList({
         </div>
       </div>
 
-      {suppliers.length === 0 ? (
+      {suppliers.every((s) => s.archived) ? (
         <div className="mt-6 rounded-2xl bg-amber-50 px-5 py-4 text-sm text-amber-800 ring-1 ring-inset ring-amber-200">
           Nenhum fornecedor cadastrado. Cadastre um fornecedor em{" "}
           <Link className="font-semibold underline" href="/contatos">

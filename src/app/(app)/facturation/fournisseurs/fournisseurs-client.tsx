@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toLocalIsoDate, todayLocalIso } from "@/lib/dates";
 import { BillingNav } from "@/components/app/billing-nav";
 import { Button } from "@/components/ui/button";
 import { FormModal } from "@/components/ui/form-modal";
@@ -32,9 +33,8 @@ function periodBounds(key: PeriodKey): { start: string; end: string } | null {
   const now = new Date();
   const y = now.getFullYear();
   const m = now.getMonth();
-  const iso = (d: Date) => d.toISOString().slice(0, 10);
   if (key === "annee") return { start: `${y}-01-01`, end: `${y}-12-31` };
-  if (key === "mois") return { start: iso(new Date(y, m, 1)), end: iso(new Date(y, m + 1, 0)) };
+  if (key === "mois") return { start: toLocalIsoDate(new Date(y, m, 1)), end: toLocalIsoDate(new Date(y, m + 1, 0)) };
   return null;
 }
 
@@ -70,17 +70,19 @@ type InvoiceForm = {
   purchase_id: string;
 };
 
-const emptyInvoiceForm: InvoiceForm = {
-  fournisseur: "",
-  reference: "",
-  designation: "",
-  date_reception: new Date().toISOString().slice(0, 10),
-  date_echeance: "",
-  montant_ttc: "",
-  montant_tva: "",
-  status: "a_payer",
-  purchase_id: ""
-};
+function makeEmptyInvoiceForm(): InvoiceForm {
+  return {
+    fournisseur: "",
+    reference: "",
+    designation: "",
+    date_reception: todayLocalIso(),
+    date_echeance: "",
+    montant_ttc: "",
+    montant_tva: "",
+    status: "a_payer",
+    purchase_id: ""
+  };
+}
 
 function invoiceToForm(inv: SupplierInvoice): InvoiceForm {
   return {
@@ -118,14 +120,14 @@ function InvoiceFormModal({
 }) {
   const supabase = useMemo(() => createClient(), []);
   const { showToast } = useToast();
-  const [form, setForm] = useState<InvoiceForm>(emptyInvoiceForm);
+  const [form, setForm] = useState<InvoiceForm>(makeEmptyInvoiceForm);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [file, setFile] = useState<File | null>(null);
 
   useEffect(() => {
     if (isOpen) {
-      setForm(editing ? invoiceToForm(editing) : emptyInvoiceForm);
+      setForm(editing ? invoiceToForm(editing) : makeEmptyInvoiceForm());
       setErrors({});
       setFile(null);
     }
@@ -470,7 +472,7 @@ function InvoicesView({ invoices, purchases, userId }: { invoices: SupplierInvoi
   const [filter, setFilter] = useState<StatusFilter>("toutes");
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<SupplierInvoice | null>(null);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayLocalIso();
 
   const rows = useMemo(() => {
     if (filter === "toutes") return invoices;
@@ -594,7 +596,7 @@ function InvoicesView({ invoices, purchases, userId }: { invoices: SupplierInvoi
     const designation = inv.designation || inv.reference || `Fatura ${inv.fournisseur}`;
     const purchasePayload = {
       user_id: userId,
-      date_achat: new Date().toISOString().slice(0, 10),
+      date_achat: todayLocalIso(),
       fournisseur: inv.fournisseur,
       designation,
       montant: inv.montant_ttc,

@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { useToast } from "@/components/ui/toast";
 import { createClient } from "@/lib/supabase/client";
+import { todayLocalIso } from "@/lib/dates";
 import { purchasePaymentSchema } from "./validation";
 import {
   PAYMENT_METHOD_LABELS,
@@ -24,12 +25,12 @@ type PaymentForm = {
   reference: string;
 };
 
-const emptyForm: PaymentForm = {
+const makeEmptyForm = (): PaymentForm => ({
   amount: "",
-  payment_date: new Date().toISOString().slice(0, 10),
+  payment_date: todayLocalIso(),
   method: "transfer",
   reference: ""
-};
+});
 
 export function PaymentsSection({
   documentId,
@@ -48,7 +49,7 @@ export function PaymentsSection({
   const { showToast } = useToast();
   const enabled = isEffective(status);
   const [payments, setPayments] = useState<PurchasePayment[]>([]);
-  const [form, setForm] = useState<PaymentForm>(emptyForm);
+  const [form, setForm] = useState<PaymentForm>(makeEmptyForm);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -105,7 +106,7 @@ export function PaymentsSection({
       return;
     }
     showToast("Pagamento registrado.", "success");
-    setForm({ ...emptyForm, payment_date: new Date().toISOString().slice(0, 10) });
+    setForm(makeEmptyForm());
     await load();
     onChanged();
   }

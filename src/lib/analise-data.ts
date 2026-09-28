@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { creditsByFacture, outstandingBalance } from "@/lib/receivables";
 import type { Profile } from "@/lib/types";
 
 // Dados da Análise (Gestão/Resultados) — derivados read-only de payments,
@@ -19,13 +20,18 @@ export type AnaliseData = {
 export async function loadAnaliseData(userId: string): Promise<AnaliseData> {
   const supabase = createClient();
 
-  const [{ data: profile }, paymentsRes, purchasesRes, docsRes, paidRes, bankRes] = await Promise.all([
+  const [{ data: profile }, paymentsRes, purchasesRes, docsRes, paidRes, bankRes, avoirsRes] = await Promise.all([
     supabase.from("profiles").select("declaration_periodicite").eq("id", userId).maybeSingle(),
     supabase.from("payments").select("date_encaissement, montant"),
     supabase.from("purchases").select("date_achat, montant, fournisseur"),
     supabase.from("documents").select("id, total_ttc").eq("type", "facture").in("status", ["sent", "partial"]),
     supabase.from("payments").select("document_id, montant"),
-    supabase.from("bank_transactions").select("date, amount, direction").order("date", { ascending: true })
+    supabase.from("bank_transactions").select("date, amount, direction").order("date", { ascending: true }),
+    supabase
+      .from("documents")
+      .select("facture_origine_id, total_ttc")
+      .eq("type", "avoir")
+      .not("status", "in", "(draft,cancelled)")
   ]);
 
   const entradas: EntradaRow[] = ((paymentsRes.data ?? []) as Array<{ date_encaissement: string; montant: number }>).map(
@@ -39,8 +45,12 @@ export async function loadAnaliseData(userId: string): Promise<AnaliseData> {
   for (const p of (paidRes.data ?? []) as Array<{ document_id: string; montant: number }>) {
     paidByDoc.set(p.document_id, (paidByDoc.get(p.document_id) ?? 0) + (Number(p.montant) || 0));
   }
+  // Mesma conta do dashboard, prazos e vencimentos (lib/receivables).
+  const credits = creditsByFacture(
+    (avoirsRes.data ?? []) as Array<{ facture_origine_id: string | null; total_ttc: number }>
+  );
   const aReceber = ((docsRes.data ?? []) as Array<{ id: string; total_ttc: number }>)
-    .map((d) => (Number(d.total_ttc) || 0) - (paidByDoc.get(d.id) ?? 0))
+    .map((d) => outstandingBalance(d.total_ttc, paidByDoc.get(d.id) ?? 0, credits.get(d.id) ?? 0))
     .filter((v) => v > 0.01)
     .reduce((s, v) => s + v, 0);
 

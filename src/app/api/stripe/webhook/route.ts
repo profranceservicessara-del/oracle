@@ -135,8 +135,10 @@ export async function POST(request: NextRequest) {
       default:
         break;
     }
-  } catch {
-    // Não vaza detalhes; retorna 500 para o Stripe reenviar.
+  } catch (error) {
+    // A resposta não vaza detalhes (o Stripe reenvia), mas sem log ninguém sabe por
+    // que o evento falha e a assinatura pode ficar dessincronizada em silêncio.
+    console.error("[stripe/webhook] falha ao processar evento", event.type, error);
     return NextResponse.json({ error: "Falha ao processar evento." }, { status: 500 });
   }
 

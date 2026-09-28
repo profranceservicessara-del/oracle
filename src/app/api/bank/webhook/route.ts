@@ -38,7 +38,13 @@ export async function POST(request: NextRequest) {
     .insert({ provider: "bridge", event_id: payload.id });
   if (error) {
     // 23505 = unique violation => evento já processado (replay seguro).
-    return NextResponse.json({ received: true, duplicate: true });
+    if (error.code === "23505") {
+      return NextResponse.json({ received: true, duplicate: true });
+    }
+    // Qualquer outro erro (banco fora, RLS, coluna): 500 para o provedor reenviar.
+    // Responder 200 aqui perdia o evento para sempre.
+    console.error("[bank/webhook] falha ao registrar evento:", error.message);
+    return NextResponse.json({ error: "Falha ao registrar o evento." }, { status: 500 });
   }
 
   return NextResponse.json({ received: true });

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
+import { toLocalIsoDate, todayLocalIso } from "@/lib/dates";
 import { createClient } from "@/lib/supabase/client";
 import type { CrmTask, CrmTaskStatus } from "@/lib/crm/types";
 
@@ -17,12 +18,12 @@ type Tab = (typeof tabs)[number];
 type Task = Pick<CrmTask, "id" | "title" | "status" | "due_date" | "created_at">;
 
 function todayISO(): string {
-  return new Date().toISOString().slice(0, 10);
+  return todayLocalIso();
 }
 function addDaysISO(days: number): string {
   const d = new Date();
   d.setDate(d.getDate() + days);
-  return d.toISOString().slice(0, 10);
+  return toLocalIsoDate(d);
 }
 function fmtDate(iso: string | null): string {
   if (!iso) return "";

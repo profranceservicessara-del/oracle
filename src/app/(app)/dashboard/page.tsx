@@ -18,7 +18,9 @@ import {
   type CategoryTotals
 } from "@/lib/accounting";
 import { fetchRevenueBookRows } from "@/lib/accounting-data";
+import { toParisIsoDate } from "@/lib/dates";
 import { calculateResteAVivre } from "@/lib/document-calculations";
+import { creditsByFacture, outstandingBalance } from "@/lib/receivables";
 import { createClient } from "@/lib/supabase/server";
 import type { ActivityCategory, Document, Profile } from "@/lib/types";
 
@@ -90,7 +92,7 @@ function daysUntil(date: string) {
 function addDays(date: Date, days: number) {
   const next = new Date(date);
   next.setDate(next.getDate() + days);
-  return next.toISOString().slice(0, 10);
+  return toParisIsoDate(next);
 }
 
 function devisExpirationDate(document: Document) {
@@ -146,7 +148,8 @@ export default async function DashboardPage() {
   const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single();
   const typedProfile = profile as Profile | null;
   const periodicite = typedProfile?.declaration_periodicite ?? "trimestral";
-  const today = now.toISOString().slice(0, 10);
+  // O servidor roda em UTC; os prazos são datas do calendário de Paris.
+  const today = toParisIsoDate(now);
   const declarationPeriod =
     periodOptions(currentYear, periodicite).find(
       (period) => today >= period.start && today <= period.end
@@ -159,6 +162,7 @@ export default async function DashboardPage() {
     quarterRows,
     documentsResponse,
     paymentsResponse,
+    avoirsResponse,
     analiseData
   ] = await Promise.all([
     fetchRevenueBookRows(supabase, yearRange(currentYear)),
@@ -172,6 +176,11 @@ export default async function DashboardPage() {
       .in("status", ["sent", "partial"])
       .order("date_echeance", { ascending: true }),
     supabase.from("payments").select("document_id,montant"),
+    supabase
+      .from("documents")
+      .select("facture_origine_id,total_ttc")
+      .eq("type", "avoir")
+      .not("status", "in", "(draft,cancelled)"),
     loadAnaliseData(user.id)
   ]);
 
@@ -192,20 +201,22 @@ export default async function DashboardPage() {
 
   const projection = roundCurrency((annualTotal / Math.max(1, now.getMonth() + 1)) * 12);
 
+  // Saldo pela conta única (pago e notas de crédito emitidas abatem a fatura).
+  const credits = creditsByFacture(
+    (avoirsResponse.data ?? []) as Array<{ facture_origine_id: string | null; total_ttc: number }>
+  );
+  const balanceOf = (document: Document) =>
+    outstandingBalance(document.total_ttc, paidByDocument.get(document.id) ?? 0, credits.get(document.id) ?? 0);
+
   const pendingFactures = documents.filter(
-    (document) => document.type === "facture" && ["sent", "partial"].includes(document.status)
+    (document) => document.type === "facture" && ["sent", "partial"].includes(document.status) && balanceOf(document) > 0.005
   );
+  // Fatura parcial vencida também está em atraso (antes só entrava a "sent").
   const lateFactures = pendingFactures.filter(
-    (document) => document.status === "sent" && document.date_echeance && document.date_echeance < today
+    (document) => document.date_echeance && document.date_echeance < today
   );
-  const pendingAmount = pendingFactures.reduce(
-    (sum, document) => sum + Math.max(0, Number(document.total_ttc) - (paidByDocument.get(document.id) ?? 0)),
-    0
-  );
-  const lateAmount = lateFactures.reduce(
-    (sum, document) => sum + Math.max(0, Number(document.total_ttc) - (paidByDocument.get(document.id) ?? 0)),
-    0
-  );
+  const pendingAmount = pendingFactures.reduce((sum, document) => sum + balanceOf(document), 0);
+  const lateAmount = lateFactures.reduce((sum, document) => sum + balanceOf(document), 0);
 
   const devisExpiring = documents.filter((document) => {
     if (document.type !== "devis" || document.status !== "sent") {

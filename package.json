@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "test": "TZ=Europe/Paris vitest run",
+    "test:utc": "TZ=UTC vitest run",
     "vercel:link": "scripts/deploy-vercel.sh link",
     "vercel:pull": "scripts/deploy-vercel.sh pull",
     "deploy:preview": "scripts/deploy-vercel.sh preview",
@@ -33,6 +35,7 @@
     "postcss": "^8.5.15",
     "tailwindcss": "^3.4.17",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.2"
   }
 }

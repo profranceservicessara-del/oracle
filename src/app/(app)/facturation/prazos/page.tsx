@@ -1,20 +1,12 @@
 import { redirect } from "next/navigation";
+import { creditsByFacture, daysOverdue, dueReference, outstandingBalance } from "@/lib/receivables";
 import { createClient } from "@/lib/supabase/server";
 import type { Client, Document, Payment } from "@/lib/types";
 import { PrazosClient, type OutstandingRow } from "./prazos-client";
 
-const DAY = 24 * 60 * 60 * 1000;
-
-// Dias de atraso: positivo = vencido, negativo ou zero = a vencer.
-function daysOverdue(refDate: string | null, today: Date): number | null {
-  if (!refDate) return null;
-  const ref = new Date(refDate);
-  if (Number.isNaN(ref.getTime())) return null;
-  return Math.floor((today.getTime() - ref.getTime()) / DAY);
-}
-
 // Cobrança > Prazos — faturas de venda com saldo em aberto, uma linha por
-// documento. Saldo = total_ttc menos pagamentos registrados. A visão agregada
+// documento. Saldo = total_ttc menos pagamentos e notas de crédito emitidas, pela
+// mesma conta do /vencimentos (lib/receivables). A visão agregada
 // por cliente (balance âgée) fica em /vencimentos. Só leitura.
 export default async function PrazosPage() {
   const supabase = createClient();
@@ -31,15 +23,23 @@ export default async function PrazosPage() {
     "id" | "client_id" | "numero" | "date_emission" | "date_echeance" | "total_ttc" | "status"
   >;
 
-  const [facturesRes, paymentsRes, clientsRes] = await Promise.all([
+  const [facturesRes, paymentsRes, clientsRes, avoirsRes] = await Promise.all([
     supabase
       .from("documents")
       .select("id, client_id, numero, date_emission, date_echeance, total_ttc, status")
       .eq("type", "facture")
       .not("status", "in", "(draft,cancelled)"),
     supabase.from("payments").select("document_id, montant"),
-    supabase.from("clients").select("id, nom, raison_sociale")
+    supabase.from("clients").select("id, nom, raison_sociale"),
+    supabase
+      .from("documents")
+      .select("facture_origine_id, total_ttc")
+      .eq("type", "avoir")
+      .not("status", "in", "(draft,cancelled)")
   ]);
+  const credits = creditsByFacture(
+    (avoirsRes.data ?? []) as Array<{ facture_origine_id: string | null; total_ttc: number }>
+  );
 
   const paidByDoc = new Map<string, number>();
   for (const p of (paymentsRes.data ?? []) as Pick<Payment, "document_id" | "montant">[]) {
@@ -55,24 +55,27 @@ export default async function PrazosPage() {
 
   const rows: OutstandingRow[] = ((facturesRes.data ?? []) as RawFacture[])
     .map((doc) => {
-      const solde = Math.round(((Number(doc.total_ttc) || 0) - (paidByDoc.get(doc.id) ?? 0)) * 100) / 100;
+      const solde = outstandingBalance(doc.total_ttc, paidByDoc.get(doc.id) ?? 0, credits.get(doc.id) ?? 0);
       return {
         id: doc.id,
         numero: doc.numero,
         clientName: doc.client_id ? nameByClient.get(doc.client_id) ?? "Cliente sem nome" : "Sem cliente",
         dateEmission: doc.date_emission,
         dateEcheance: doc.date_echeance,
-        daysOverdue: daysOverdue(doc.date_echeance, today),
+        // Sem vencimento conta da emissão, igual ao /vencimentos.
+        daysOverdue: daysOverdue(dueReference(doc.date_echeance, doc.date_emission), today),
         solde
       };
     })
     .filter((r) => r.solde > 0.005)
-    // Vencimento ascendente; faturas sem vencimento vão para o fim.
+    // Do mais atrasado para o mais distante, pela data de referência do atraso.
     .sort((a, b) => {
-      if (!a.dateEcheance && !b.dateEcheance) return 0;
-      if (!a.dateEcheance) return 1;
-      if (!b.dateEcheance) return -1;
-      return a.dateEcheance.localeCompare(b.dateEcheance);
+      const refA = dueReference(a.dateEcheance, a.dateEmission);
+      const refB = dueReference(b.dateEcheance, b.dateEmission);
+      if (!refA && !refB) return 0;
+      if (!refA) return 1;
+      if (!refB) return -1;
+      return refA.localeCompare(refB);
     });
 
   return <PrazosClient rows={rows} />;

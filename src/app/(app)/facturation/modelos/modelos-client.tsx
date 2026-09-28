@@ -8,7 +8,13 @@ import { FormModal } from "@/components/ui/form-modal";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { useToast } from "@/components/ui/toast";
-import { calculateDocumentTotals, calculateLineHt, type EditorLine } from "@/lib/document-calculations";
+import {
+  calculateDocumentTotals,
+  calculateLineHt,
+  tvaFranchiseMention,
+  type EditorLine
+} from "@/lib/document-calculations";
+import { todayLocalIso } from "@/lib/dates";
 import { createClient } from "@/lib/supabase/client";
 import type { ActivityCategory, VatRegime } from "@/lib/types";
 
@@ -287,7 +293,8 @@ export function ModelosClient({
         user_id: userId,
         type: t.type,
         status: "draft",
-        date_emission: new Date().toISOString().slice(0, 10),
+        date_emission: todayLocalIso(),
+        mention_tva: regimeTva === "franchise" ? tvaFranchiseMention : null,
         conditions_paiement: t.conditions_paiement,
         notes_bas_page: t.notes_bas_page,
         total_ht: totals.totalHt,
@@ -311,7 +318,7 @@ export function ModelosClient({
       description: l.description,
       quantite: l.quantite,
       prix_unitaire_ht: l.prix_unitaire_ht,
-      taux_tva: l.taux_tva,
+      taux_tva: regimeTva === "franchise" ? 0 : l.taux_tva,
       categorie: l.categorie,
       total_ligne_ht: calculateLineHt({
         id: String(i),

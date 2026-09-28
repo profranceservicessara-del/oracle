@@ -5,6 +5,7 @@ import Link from "next/link";
 import { DeclarationsNav } from "@/components/app/declarations-nav";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
+import { toLocalIsoDate } from "@/lib/dates";
 
 const euro = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "EUR" });
 
@@ -18,11 +19,10 @@ function periodBounds(key: PeriodKey): { start: string; end: string; label: stri
   const now = new Date();
   const y = now.getFullYear();
   const m = now.getMonth();
-  const iso = (d: Date) => d.toISOString().slice(0, 10);
-  if (key === "mois") return { start: iso(new Date(y, m, 1)), end: iso(new Date(y, m + 1, 0)), label: "Mês atual" };
+  if (key === "mois") return { start: toLocalIsoDate(new Date(y, m, 1)), end: toLocalIsoDate(new Date(y, m + 1, 0)), label: "Mês atual" };
   if (key === "trimestre") {
     const q = Math.floor(m / 3);
-    return { start: iso(new Date(y, q * 3, 1)), end: iso(new Date(y, q * 3 + 3, 0)), label: "Trimestre atual" };
+    return { start: toLocalIsoDate(new Date(y, q * 3, 1)), end: toLocalIsoDate(new Date(y, q * 3 + 3, 0)), label: "Trimestre atual" };
   }
   return { start: `${y}-01-01`, end: `${y}-12-31`, label: "Ano atual" };
 }

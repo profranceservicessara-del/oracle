@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { todayParisIso } from "@/lib/dates";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { BillingNav } from "@/components/app/billing-nav";
@@ -51,7 +52,8 @@ export default async function FacturationPage() {
     redirect("/login");
   }
 
-  const today = new Date().toISOString().slice(0, 10);
+  // O servidor roda em UTC; os vencimentos são datas do calendário de Paris.
+  const today = todayParisIso();
   const [documentsResponse, paymentsResponse] = await Promise.all([
     supabase
       .from("documents")

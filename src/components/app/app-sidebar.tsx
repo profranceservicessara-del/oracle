@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { t, type Locale } from "@/lib/i18n/dictionaries";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/components/ui/toast";
@@ -124,8 +124,7 @@ const nav: NavItem[] = [
       { href: "/facturation/diario", label: "Diário de faturamento", icon: icons.dados },
       { href: "/facturation/produits", label: "Produtos e serviços", icon: icons.produtos },
       { href: "/catalogo", label: "Catálogo", icon: icons.catalogoLeaf },
-      { href: "/catalogo-pro/produtos", label: "Catálogo pro", icon: icons.catalogoLeaf },
-      { href: "/compras", label: "Compras", icon: icons.fornecedores }
+      { href: "/catalogo-pro/produtos", label: "Catálogo pro", icon: icons.catalogoLeaf }
     ]
   },
   {
@@ -223,12 +222,31 @@ function hrefPath(href: string): string {
   return href.split("?")[0] || href;
 }
 
-function isHrefActive(pathname: string, href: string): boolean {
+// Valor que a página assume quando o parâmetro não vem na URL. /documentos/novo
+// abre como orçamento sem ?type, então "Criar um orçamento" também vale nesse caso.
+const QUERY_DEFAULTS: Record<string, Record<string, string>> = {
+  "/documentos/novo": { type: "devis" }
+};
+
+// `current` é o caminho atual com a query, ex.: "/documentos/novo?type=facture".
+// Item com query só fica ativo se a query bater; sem isso os dois "Criar ..." de
+// Cobrança acendiam juntos porque o caminho é o mesmo.
+function isHrefActive(current: string, href: string): boolean {
+  const [pathname, search = ""] = current.split("?");
   const base = hrefPath(href);
-  return pathname === base || pathname.startsWith(`${base}/`);
+  if (!(pathname === base || pathname.startsWith(`${base}/`))) return false;
+
+  const wanted = new URLSearchParams(href.split("?")[1] ?? "");
+  const actual = new URLSearchParams(search);
+  for (const [key, value] of wanted) {
+    const got = actual.get(key) ?? QUERY_DEFAULTS[base]?.[key] ?? null;
+    if (got !== value) return false;
+  }
+  return true;
 }
 
-function activeHrefFor(pathname: string): string {
+function activeHrefFor(current: string): string {
+  const pathname = current.split("?")[0];
   if (pathname === "/declaracoes/auxiliares" || pathname.startsWith("/declaracoes/auxiliares/")) {
     return "/declaracoes/fiscais";
   }
@@ -236,7 +254,7 @@ function activeHrefFor(pathname: string): string {
   let best = "";
   for (const href of allHrefs) {
     const base = hrefPath(href);
-    if (isHrefActive(pathname, href) && base.length > hrefPath(best).length) {
+    if (isHrefActive(current, href) && base.length > hrefPath(best).length) {
       best = href;
     }
   }
@@ -412,7 +430,11 @@ function ownerGroupKey(activeHref: string): string | null {
 
 function NavList({ onNavigate, collapsed, onExpand, onCollapse }: { onNavigate?: () => void; collapsed?: boolean; onExpand?: () => void; onCollapse?: () => void }) {
   const pathname = usePathname();
-  const activeHref = activeHrefFor(pathname);
+  const searchParams = useSearchParams();
+  const search = searchParams.toString();
+  // Caminho atual com a query, para o destaque distinguir "?type=devis" de "?type=facture".
+  const current = search ? `${pathname}?${search}` : pathname;
+  const activeHref = activeHrefFor(current);
   const activeGroupKey = ownerGroupKey(activeHref);
   const [flyout, setFlyout] = useState<{
     item: Extract<NavItem, { kind: "group" }>;
@@ -527,7 +549,7 @@ function NavList({ onNavigate, collapsed, onExpand, onCollapse }: { onNavigate?:
                 <Link
                   aria-current={child.href === activeHref ? "page" : undefined}
                   className={`flex min-h-9 items-center gap-3 px-4 py-2 text-sm transition ${
-                    isHrefActive(pathname, child.href)
+                    isHrefActive(current, child.href)
                       ? "rounded-full bg-[var(--flyout-item-mid)] text-white"
                       : "rounded-full text-white/80 hover:bg-[var(--flyout-item-mid)] hover:text-white"
                   }`}
@@ -559,9 +581,9 @@ function NavList({ onNavigate, collapsed, onExpand, onCollapse }: { onNavigate?:
         {navRender.map((item) =>
           item.kind === "link" ? (
             <Link
-              aria-current={isHrefActive(pathname, item.href) ? "page" : undefined}
+              aria-current={isHrefActive(current, item.href) ? "page" : undefined}
               className={`group/row flex items-center gap-3 rounded-xl px-4 py-2.5 text-[16px] font-[400] tracking-tight transition-all duration-200 ${
-                isHrefActive(pathname, item.href) ? activeCard : idleRow
+                isHrefActive(current, item.href) ? activeCard : idleRow
               }`}
               href={item.href}
               key={item.href}
@@ -574,7 +596,7 @@ function NavList({ onNavigate, collapsed, onExpand, onCollapse }: { onNavigate?:
             >
               <span
                 className={`shrink-0 transition-all duration-200 ${
-                  isHrefActive(pathname, item.href)
+                  isHrefActive(current, item.href)
                     ? "text-[var(--icon-blue-active)]"
                     : "text-[var(--icon-blue)] group-hover/row:text-[var(--icon-blue-active)] group-hover/row:drop-shadow-[0_0_8px_rgba(124,158,232,0.85)]"
                 }`}
@@ -583,7 +605,7 @@ function NavList({ onNavigate, collapsed, onExpand, onCollapse }: { onNavigate?:
               </span>
               <span
                 className={`flex-1 truncate text-left text-[16px] font-[400] tracking-tight transition-colors ${
-                  isHrefActive(pathname, item.href) ? "text-white" : "text-white/80"
+                  isHrefActive(current, item.href) ? "text-white" : "text-white/80"
                 }`}
               >
                 {item.label}
@@ -603,7 +625,7 @@ function NavList({ onNavigate, collapsed, onExpand, onCollapse }: { onNavigate?:
                 onCollapse?.();
                 onNavigate?.();
               }}
-              pathname={pathname}
+              pathname={current}
             />
           )
         )}

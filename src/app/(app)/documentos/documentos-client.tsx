@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { todayLocalIso } from "@/lib/dates";
 import {
   documentStatusLabels,
   documentTypeUiLabels,
@@ -34,7 +35,7 @@ function clientName(client: Client | undefined) {
 }
 
 function isLateFacture(document: Document) {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayLocalIso();
   return (
     document.type === "facture" &&
     document.status === "sent" &&

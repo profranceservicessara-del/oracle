@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { todayParisIso } from "@/lib/dates";
 import { createClient } from "@/lib/supabase/server";
 import { FinanceiroClient, type CashMovement, type Receivable } from "./financeiro-client";
 
@@ -66,7 +67,8 @@ export default async function FinanceiroPage() {
   for (const p of (paidRows ?? []) as Array<{ document_id: string; montant: number }>) {
     paidByDoc.set(p.document_id, (paidByDoc.get(p.document_id) ?? 0) + (Number(p.montant) || 0));
   }
-  const today = new Date().toISOString().slice(0, 10);
+  // O servidor roda em UTC; os vencimentos são datas do calendário de Paris.
+  const today = todayParisIso();
 
   const receivables: Receivable[] = ((openFactures ?? []) as unknown as Array<{
     id: string;

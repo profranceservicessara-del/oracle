@@ -82,7 +82,7 @@ export function PrazosClient({ rows }: { rows: OutstandingRow[] }) {
   return (
     <main className="mx-auto max-w-6xl px-4 py-8">
       <div className="space-y-6">
-        <BillingNav active="" />
+        <BillingNav active="prazos" />
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-end justify-between gap-3">

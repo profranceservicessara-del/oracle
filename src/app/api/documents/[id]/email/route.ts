@@ -103,7 +103,8 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
   });
 
   if (logError) {
-    return NextResponse.json({ error: logError.message }, { status: 500 });
+    console.error("[documents/email] falha ao registrar o envio:", logError.message);
+    return NextResponse.json({ error: "O e-mail foi enviado, mas não foi possível registrar o envio." }, { status: 500 });
   }
 
   return NextResponse.json({ ok: true });

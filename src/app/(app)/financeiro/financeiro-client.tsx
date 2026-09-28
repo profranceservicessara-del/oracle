@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { useToast } from "@/components/ui/toast";
 import { createClient } from "@/lib/supabase/client";
+import { todayLocalIso } from "@/lib/dates";
 import { purchaseSchema } from "@/lib/validation";
 import { FluxoDeCaixaTab } from "./fluxo-caixa-tab";
 import { ResumoFinanceiro } from "./resumo-financeiro";
@@ -39,8 +40,12 @@ const methodLabels: Record<string, string> = {
   autre: "Outro"
 };
 
-const emptyForm = { date_achat: new Date().toISOString().slice(0, 10), fournisseur: "", designation: "", montant: "", moyen: "", reference_piece: "" };
-const emptyEntrada = { document_id: "", montant: "", moyen: "virement", date_encaissement: new Date().toISOString().slice(0, 10) };
+function makeEmptyForm() {
+  return { date_achat: todayLocalIso(), fournisseur: "", designation: "", montant: "", moyen: "", reference_piece: "" };
+}
+function makeEmptyEntrada() {
+  return { document_id: "", montant: "", moyen: "virement", date_encaissement: todayLocalIso() };
+}
 
 function yearsOf(movs: CashMovement[]): number[] {
   const set = new Set<number>();
@@ -67,12 +72,12 @@ export function FinanceiroClient({
   const years = useMemo(() => yearsOf(movements), [movements]);
   const [year, setYear] = useState<number>(years[0] ?? new Date().getFullYear());
   const [isOpen, setIsOpen] = useState(false);
-  const [form, setForm] = useState(emptyForm);
+  const [form, setForm] = useState(makeEmptyForm);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [tab, setTab] = useState<"geral" | "fluxo">("geral");
   const [isEntradaOpen, setIsEntradaOpen] = useState(false);
-  const [entradaForm, setEntradaForm] = useState(emptyEntrada);
+  const [entradaForm, setEntradaForm] = useState(makeEmptyEntrada);
   const [entradaErrors, setEntradaErrors] = useState<Record<string, string>>({});
   const [savingEntrada, setSavingEntrada] = useState(false);
 
@@ -93,7 +98,7 @@ export function FinanceiroClient({
   const saldoEstimado = saldo + totalReceber; // realizado + previsto
   const overdueCount = initialReceivables.filter((r) => r.overdue).length;
 
-  function set<K extends keyof typeof emptyForm>(key: K, value: string) {
+  function set<K extends keyof ReturnType<typeof makeEmptyForm>>(key: K, value: string) {
     setForm((c) => ({ ...c, [key]: value }));
   }
 
@@ -132,12 +137,12 @@ export function FinanceiroClient({
       },
       ...cur
     ]);
-    setForm(emptyForm);
+    setForm(makeEmptyForm());
     setIsOpen(false);
     showToast("Saída registrada.", "success");
   }
 
-  function setEnt<K extends keyof typeof emptyEntrada>(key: K, value: string) {
+  function setEnt<K extends keyof ReturnType<typeof makeEmptyEntrada>>(key: K, value: string) {
     setEntradaForm((c) => ({ ...c, [key]: value }));
   }
 
@@ -192,7 +197,7 @@ export function FinanceiroClient({
       },
       ...cur
     ]);
-    setEntradaForm(emptyEntrada);
+    setEntradaForm(makeEmptyEntrada());
     setIsEntradaOpen(false);
     showToast("Entrada registrada.", "success");
   }
@@ -227,14 +232,14 @@ export function FinanceiroClient({
         <div className="flex flex-wrap items-center gap-2">
           <button
             className="inline-flex h-10 items-center gap-1 rounded-2xl border border-emerald-200 bg-white px-4 text-sm font-semibold text-emerald-700 shadow-sm transition hover:bg-emerald-50 active:scale-[0.98]"
-            onClick={() => { setEntradaForm(emptyEntrada); setEntradaErrors({}); setIsEntradaOpen(true); }}
+            onClick={() => { setEntradaForm(makeEmptyEntrada()); setEntradaErrors({}); setIsEntradaOpen(true); }}
             type="button"
           >
             <span className="text-base leading-none">+</span> Entrada
           </button>
           <button
             className="inline-flex h-10 items-center gap-1 rounded-2xl border border-rose-200 bg-white px-4 text-sm font-semibold text-rose-700 shadow-sm transition hover:bg-rose-50 active:scale-[0.98]"
-            onClick={() => { setForm(emptyForm); setErrors({}); setIsOpen(true); }}
+            onClick={() => { setForm(makeEmptyForm()); setErrors({}); setIsOpen(true); }}
             type="button"
           >
             <span className="text-base leading-none">+</span> Saída

@@ -2,6 +2,12 @@
 // guardamos só o evento base e a regra, e calculamos as ocorrências que caem no
 // intervalo consultado. Overrides e cancelamentos de ocorrência são aplicados
 // por quem chama, comparando occurrence_original_start.
+//
+// Toda a conta de calendário é feita no relógio de parede de Paris (ver
+// paris-time.ts). Assim a reunião das 9h continua às 9h depois da troca de
+// horário de verão, e o dia da semana não erra perto da meia-noite.
+
+import { parisWallAsUtcMs, parisWallToInstant } from "@/lib/paris-time";
 
 export type RecurFrequency = "daily" | "weekly" | "monthly" | "yearly";
 export type RecurEndType = "after_count" | "on_date" | "never";
@@ -24,42 +30,33 @@ export type Occurrence = {
 
 // Teto de segurança: impede laço infinito se a regra vier inconsistente.
 const MAX_ITERATIONS = 2000;
+const DAY_MS = 24 * 60 * 60 * 1000;
 
-function addDays(date: Date, days: number): Date {
-  const next = new Date(date);
-  next.setDate(next.getDate() + days);
-  return next;
-}
-
-// Soma meses preservando o dia quando possível. Se o dia não existe no mês
-// destino (31 de fevereiro), a ocorrência daquele mês é descartada, que é o
-// comportamento do iCal.
-function addMonthsStrict(date: Date, months: number): Date | null {
-  const day = date.getDate();
-  const next = new Date(date);
-  next.setDate(1);
-  next.setMonth(next.getMonth() + months);
-  const daysInTargetMonth = new Date(next.getFullYear(), next.getMonth() + 1, 0).getDate();
+// Soma meses preservando o dia. Se o dia não existe no mês destino (31 de
+// fevereiro), a ocorrência daquele mês é descartada, que é o comportamento do iCal.
+// Recebe e devolve "wall-ms" (relógio de parede codificado como UTC).
+function addMonthsStrict(wallMs: number, months: number): number | null {
+  const base = new Date(wallMs);
+  const day = base.getUTCDate();
+  const target = new Date(
+    Date.UTC(
+      base.getUTCFullYear(),
+      base.getUTCMonth() + months,
+      1,
+      base.getUTCHours(),
+      base.getUTCMinutes(),
+      base.getUTCSeconds()
+    )
+  );
+  const daysInTargetMonth = new Date(Date.UTC(target.getUTCFullYear(), target.getUTCMonth() + 1, 0)).getUTCDate();
   if (day > daysInTargetMonth) return null;
-  next.setDate(day);
-  return next;
+  target.setUTCDate(day);
+  return target.getTime();
 }
 
-function addYearsStrict(date: Date, years: number): Date | null {
-  return addMonthsStrict(date, years * 12);
-}
-
-function startOfWeek(date: Date): Date {
-  const next = new Date(date);
-  next.setDate(next.getDate() - next.getDay());
-  next.setHours(date.getHours(), date.getMinutes(), date.getSeconds(), 0);
-  return next;
-}
-
-function withTimeFrom(reference: Date, target: Date): Date {
-  const next = new Date(target);
-  next.setHours(reference.getHours(), reference.getMinutes(), reference.getSeconds(), reference.getMilliseconds());
-  return next;
+// Domingo da semana do wall-ms, mantendo a hora.
+function startOfWeek(wallMs: number): number {
+  return wallMs - new Date(wallMs).getUTCDay() * DAY_MS;
 }
 
 /**
@@ -75,16 +72,24 @@ export function expandOccurrences(
 ): Occurrence[] {
   const durationMs = Math.max(0, baseEnd.getTime() - baseStart.getTime());
   const every = Math.max(1, Math.floor(rule.repeatEvery) || 1);
-  const untilDate = rule.endType === "on_date" && rule.until ? new Date(`${rule.until}T23:59:59`) : null;
+  const startWall = parisWallAsUtcMs(baseStart);
+
+  let untilWall: number | null = null;
+  if (rule.endType === "on_date" && rule.until) {
+    const [year, month, day] = rule.until.split("-").map(Number);
+    untilWall = Date.UTC(year, month - 1, day, 23, 59, 59);
+  }
   const maxCount = rule.endType === "after_count" ? rule.occurrenceCount ?? 0 : null;
 
   const out: Occurrence[] = [];
   let emitted = 0;
 
   // Aceita a ocorrência se estiver dentro dos limites da regra e cruzar o intervalo.
-  const consider = (start: Date): "stop" | "skip" | "taken" => {
-    if (untilDate && start.getTime() > untilDate.getTime()) return "stop";
+  const consider = (wallMs: number): "stop" | "skip" | "taken" => {
+    if (untilWall !== null && wallMs > untilWall) return "stop";
     if (maxCount !== null && emitted >= maxCount) return "stop";
+
+    const start = parisWallToInstant(wallMs);
     if (start.getTime() > rangeEnd.getTime()) return "stop";
 
     emitted += 1; // conta para o limite de ocorrências mesmo fora do intervalo visível
@@ -95,42 +100,54 @@ export function expandOccurrences(
     return "taken";
   };
 
-  if (rule.frequency === "weekly" && rule.byWeekday && rule.byWeekday.length > 0) {
+  const weekdays =
+    rule.frequency === "weekly" && rule.byWeekday && rule.byWeekday.length > 0
+      ? [...new Set(rule.byWeekday)].filter((d) => d >= 0 && d <= 6).sort((a, b) => a - b)
+      : null;
+
+  if (weekdays) {
     // Semanal com dias marcados: percorre semana a semana, emitindo os dias
     // escolhidos em ordem crescente dentro de cada semana elegível.
-    const weekdays = [...new Set(rule.byWeekday)].filter((d) => d >= 0 && d <= 6).sort((a, b) => a - b);
-    let weekCursor = startOfWeek(baseStart);
+    let weekCursor = startOfWeek(startWall);
     for (let i = 0; i < MAX_ITERATIONS; i++) {
       for (const weekday of weekdays) {
-        const candidate = withTimeFrom(baseStart, addDays(weekCursor, weekday));
-        if (candidate.getTime() < baseStart.getTime()) continue; // antes do início da série
-        const result = consider(candidate);
-        if (result === "stop") return out;
+        const candidate = weekCursor + weekday * DAY_MS;
+        if (candidate < startWall) continue; // antes do início da série
+        if (consider(candidate) === "stop") return out;
       }
-      weekCursor = addDays(weekCursor, 7 * every);
-      if (weekCursor.getTime() > rangeEnd.getTime()) break;
+      weekCursor += 7 * every * DAY_MS;
+      if (parisWallToInstant(weekCursor).getTime() > rangeEnd.getTime()) break;
     }
     return out;
   }
 
-  // Demais frequências: avança a partir do início da série.
-  for (let i = 0; i < MAX_ITERATIONS; i++) {
-    let candidate: Date | null;
-    if (rule.frequency === "daily") {
-      candidate = addDays(baseStart, i * every);
-    } else if (rule.frequency === "weekly") {
-      candidate = addDays(baseStart, i * every * 7);
+  // Diário e semanal simples são exatamente periódicos, então dá para pular direto
+  // para perto do intervalo visível. Sem isso, uma série diária sem fim sumia do
+  // calendário depois de ~5,5 anos (limite de iterações). As ocorrências puladas
+  // entram na contagem do limite (emitted começa no primeiro índice visitado).
+  const periodMs =
+    rule.frequency === "daily" ? every * DAY_MS : rule.frequency === "weekly" ? every * 7 * DAY_MS : null;
+  let firstIndex = 0;
+  if (periodMs !== null) {
+    const rangeStartWall = parisWallAsUtcMs(rangeStart);
+    firstIndex = Math.max(0, Math.floor((rangeStartWall - durationMs - startWall) / periodMs) - 1);
+    emitted = firstIndex;
+  }
+
+  for (let i = firstIndex; i < firstIndex + MAX_ITERATIONS; i++) {
+    let candidate: number | null;
+    if (rule.frequency === "daily" || rule.frequency === "weekly") {
+      candidate = startWall + i * (periodMs as number);
     } else if (rule.frequency === "monthly") {
-      candidate = addMonthsStrict(baseStart, i * every);
+      candidate = addMonthsStrict(startWall, i * every);
     } else {
-      candidate = addYearsStrict(baseStart, i * every);
+      candidate = addMonthsStrict(startWall, i * every * 12);
     }
 
     // Mês sem o dia correspondente: pula sem consumir uma ocorrência.
     if (candidate === null) continue;
 
-    const result = consider(candidate);
-    if (result === "stop") return out;
+    if (consider(candidate) === "stop") return out;
   }
 
   return out;

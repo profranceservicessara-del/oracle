@@ -43,7 +43,7 @@ const typeBadges: Record<DocumentType, string> = {
   avoir: "bg-amber-50 text-amber-700 ring-amber-200"
 };
 
-export function LinhasClient({ rows }: { rows: LineRow[] }) {
+export function LinhasClient({ rows, truncated }: { rows: LineRow[]; truncated: boolean }) {
   const [filter, setFilter] = useState<TypeFilter>("todos");
   const [search, setSearch] = useState("");
 
@@ -56,11 +56,11 @@ export function LinhasClient({ rows }: { rows: LineRow[] }) {
     });
   }, [rows, filter, search]);
 
-  const totalHt = visibleRows.reduce((sum, r) => sum + r.totalLigneHt, 0);
+  const totalHt = visibleRows.filter((r) => r.type !== "devis").reduce((sum, r) => sum + r.totalLigneHt, 0);
 
   const kpis = [
     { label: "Linhas", value: String(visibleRows.length), tone: "text-ink" },
-    { label: "Total HT", value: euro.format(totalHt), tone: "text-ink" }
+    { label: "Total HT (faturas e notas de crédito)", value: euro.format(totalHt), tone: "text-ink" }
   ];
 
   function exportCsv() {
@@ -101,7 +101,7 @@ export function LinhasClient({ rows }: { rows: LineRow[] }) {
   return (
     <main className="mx-auto max-w-6xl px-4 py-8">
       <div className="space-y-6">
-        <BillingNav active="" />
+        <BillingNav active="linhas" />
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-end justify-between gap-3">
@@ -115,6 +115,12 @@ export function LinhasClient({ rows }: { rows: LineRow[] }) {
               Exportar CSV
             </Button>
           </div>
+
+          {truncated ? (
+            <p className="mt-4 rounded-2xl bg-amber-50 p-4 text-sm text-amber-800 ring-1 ring-inset ring-amber-200" role="status">
+              Mostrando as primeiras 20.000 linhas. Refine o período para ver o resto.
+            </p>
+          ) : null}
 
           {/* KPIs */}
           <div className="mt-6 grid gap-4 sm:grid-cols-2">

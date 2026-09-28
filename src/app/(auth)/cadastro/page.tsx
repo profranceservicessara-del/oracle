@@ -1,7 +1,10 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { AuthBranding } from "../auth-branding";
 import { SignupForm } from "./signup-form";
+
+export const metadata: Metadata = { title: "Criar conta" };
 
 // Página de auth: renderizada sob demanda. Evita prerender no build
 // (que instanciaria o client Supabase e exigiria env em tempo de build).

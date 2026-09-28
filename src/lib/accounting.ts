@@ -1,3 +1,4 @@
+import { toLocalIsoDate } from "@/lib/dates";
 import { categoryLabels, type ActivityCategory, type Document, type DocumentLine } from "@/lib/types";
 
 export type CategoryTotals = Record<ActivityCategory, number>;
@@ -98,8 +99,8 @@ export function monthRanges(year: number) {
 
     return {
       label: new Intl.DateTimeFormat("pt-BR", { month: "short" }).format(start),
-      start: start.toISOString().slice(0, 10),
-      end: end.toISOString().slice(0, 10)
+      start: toLocalIsoDate(start),
+      end: toLocalIsoDate(end)
     };
   });
 }
@@ -111,8 +112,8 @@ export function currentQuarterRange(reference = new Date()) {
   const end = new Date(year, quarter * 3 + 3, 0);
 
   return {
-    start: start.toISOString().slice(0, 10),
-    end: end.toISOString().slice(0, 10)
+    start: toLocalIsoDate(start),
+    end: toLocalIsoDate(end)
   };
 }
 
@@ -124,8 +125,8 @@ export function periodOptions(year: number, periodicite: "mensal" | "trimestral"
       return {
         label: new Intl.DateTimeFormat("pt-BR", { month: "long" }).format(start),
         value: String(index + 1),
-        start: start.toISOString().slice(0, 10),
-        end: end.toISOString().slice(0, 10)
+        start: toLocalIsoDate(start),
+        end: toLocalIsoDate(end)
       };
     });
   }
@@ -136,21 +137,33 @@ export function periodOptions(year: number, periodicite: "mensal" | "trimestral"
     return {
       label: `${quarter + 1}º trimestre`,
       value: String(quarter + 1),
-      start: start.toISOString().slice(0, 10),
-      end: end.toISOString().slice(0, 10)
+      start: toLocalIsoDate(start),
+      end: toLocalIsoDate(end)
     };
   });
 }
 
+// Dia pedido dentro do mês, limitado ao último dia dele. new Date(2026, 1, 30)
+// vira 2 de março, então a data impossível empurrava o prazo para o mês seguinte.
+function clampedDay(year: number, monthIndex: number, day: number) {
+  const lastDay = new Date(year, monthIndex + 1, 0).getDate();
+  return new Date(year, monthIndex, Math.min(day, lastDay));
+}
+
+// ATENÇÃO: a regra de quando vence (qual mês e qual dia) NÃO está confirmada na
+// base de conhecimento, que é silenciosa sobre prazo de calendário. Aqui só está
+// corrigida a aritmética (data impossível e fuso); o dia e o mês pretendidos
+// continuam os do código original e dependem de confirmação em
+// autoentrepreneur.urssaf.fr antes de qualquer mudança (trava legal do projeto).
 export function nextUrssafDeadline(periodicite: "mensal" | "trimestral", reference = new Date()) {
   const year = reference.getFullYear();
 
   if (periodicite === "mensal") {
-    return new Date(year, reference.getMonth() + 1, 31).toISOString().slice(0, 10);
+    return toLocalIsoDate(clampedDay(year, reference.getMonth() + 1, 31));
   }
 
   const quarter = Math.floor(reference.getMonth() / 3);
-  return new Date(year, quarter * 3 + 4, 30).toISOString().slice(0, 10);
+  return toLocalIsoDate(clampedDay(year, quarter * 3 + 4, 30));
 }
 
 export function categoryLabel(category: ActivityCategory) {

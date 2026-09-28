@@ -2,8 +2,14 @@ import Link from "next/link";
 
 const items = [
   { key: "factures", label: "Faturas", href: "/facturation" },
+  { key: "rascunhos", label: "Rascunhos", href: "/facturation/rascunhos" },
+  { key: "notas-credito", label: "Notas de crédito", href: "/facturation/notas-credito" },
+  { key: "modelos", label: "Modelos", href: "/facturation/modelos" },
   { key: "recurrentes", label: "Faturas recorrentes", href: "/facturation/recurrentes" },
   { key: "fournisseurs", label: "Faturas recebidas", href: "/facturation/fournisseurs" },
+  { key: "prazos", label: "Prazos", href: "/facturation/prazos" },
+  { key: "linhas", label: "Linhas", href: "/facturation/linhas" },
+  { key: "diario", label: "Diário", href: "/facturation/diario" },
   { key: "aparencia", label: "Personalizar fatura", href: "/facturation/personnalisation" }
 ];
 

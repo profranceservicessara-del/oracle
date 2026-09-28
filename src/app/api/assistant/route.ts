@@ -55,7 +55,8 @@ export async function POST(request: NextRequest) {
         "Cache-Control": "no-store"
       }
     });
-  } catch {
+  } catch (error) {
+    console.error("[assistant] falha ao gerar resposta:", error);
     return NextResponse.json({ error: "Não foi possível responder agora." }, { status: 502 });
   }
 }

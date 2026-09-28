@@ -1,6 +1,8 @@
 import { loadDiarioData } from "./data";
 import { DiarioClient } from "./diario-client";
-import { isoDate, parseIsoDate, rangeFor, startOfDay, endOfDay } from "./date-utils";
+import { todayParisIso } from "@/lib/dates";
+import { parisEndOfDay, parisStartOfDay } from "@/lib/paris-time";
+import { isoDate, parseIsoDate, rangeFor, startOfDay } from "./date-utils";
 import type { DiarioMode, DiarioView } from "./types";
 
 // Diário: agenda de eventos. O período visível vem da URL (?anchor&view&mode),
@@ -15,7 +17,8 @@ export default async function DiarioPage({
 }: {
   searchParams: { anchor?: string; view?: string; mode?: string; from?: string; to?: string };
 }) {
-  const anchor = parseIsoDate(searchParams.anchor) ?? startOfDay(new Date());
+  // O servidor roda em UTC: o "hoje" padrão é o de Paris.
+  const anchor = parseIsoDate(searchParams.anchor) ?? parseIsoDate(todayParisIso()) ?? startOfDay(new Date());
   const mode: DiarioMode = MODES.includes(searchParams.mode as DiarioMode)
     ? (searchParams.mode as DiarioMode)
     : "calendar";
@@ -26,8 +29,12 @@ export default async function DiarioPage({
   const view: DiarioView = mode === "calendar" && requestedView === "year" ? "month" : requestedView;
 
   const fallback = rangeFor(anchor, view, mode);
-  const from = parseIsoDate(searchParams.from) ? startOfDay(parseIsoDate(searchParams.from)!) : fallback.from;
-  const to = parseIsoDate(searchParams.to) ? endOfDay(parseIsoDate(searchParams.to)!) : fallback.to;
+  // Os limites são o início e o fim do dia EM PARIS. Com meia-noite do servidor (UTC),
+  // um evento das 00h30 de Paris ficava fora do intervalo do próprio dia.
+  const fromDay = parseIsoDate(searchParams.from);
+  const toDay = parseIsoDate(searchParams.to);
+  const from = parisStartOfDay(fromDay ?? fallback.from);
+  const to = parisEndOfDay(toDay ?? fallback.to);
 
   const { events, categories, relatedOptions, userId } = await loadDiarioData(from, to);
 

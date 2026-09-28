@@ -1,5 +1,8 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { OffresClient } from "@/app/(app)/offres/offres-client";
+
+export const metadata: Metadata = { title: "Planos", description: "Escolha o plano de gestão mais adequado ao seu negócio. Cobrança mensal ou anual, cancele quando quiser." };
 
 // Página pública de planos. Os preços não aparecem na landing: só aqui, ao
 // clicar em "Planos". Reusa a mesma vitrine (OffresClient em publicMode).

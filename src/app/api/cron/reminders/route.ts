@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { nextUrssafDeadline, periodOptions, sumCategoryTotals, totalCategoryAmount } from "@/lib/accounting";
@@ -171,7 +172,8 @@ async function processEventReminders(
     .limit(200);
 
   if (error) {
-    return { sent, failed: [{ id: "query", error: error.message }] };
+    console.error("[cron/reminders] falha ao ler event_reminders:", error.message);
+    return { sent, failed: [{ id: "query", error: "Falha ao consultar os lembretes." }] };
   }
 
   for (const row of (data ?? []) as unknown as EventReminderRow[]) {
@@ -183,8 +185,9 @@ async function processEventReminders(
     }
 
     // Evento já começou: não faz sentido lembrar de algo passado (cron atrasado).
+    // Fecha a linha com sent_at nulo para a UI distinguir "pulado" de "enviado".
     if (new Date(event.starts_at).getTime() < now.getTime()) {
-      await supabase.from("event_reminders").update({ sent: true, sent_at: now.toISOString() }).eq("id", row.id);
+      await supabase.from("event_reminders").update({ sent: true, sent_at: null }).eq("id", row.id);
       continue;
     }
 
@@ -202,11 +205,36 @@ async function processEventReminders(
       await supabase.from("event_reminders").update({ sent: true, sent_at: now.toISOString() }).eq("id", row.id);
       sent.push(row.id);
     } catch (sendError) {
-      failed.push({ id: row.id, error: sendError instanceof Error ? sendError.message : "Unknown error" });
+      console.error("[cron/reminders] falha ao enviar lembrete de evento", row.id, sendError);
+      failed.push({ id: row.id, error: "Falha ao enviar o e-mail." });
     }
   }
 
   return { sent, failed };
+}
+
+// Comparação em tempo constante, como as assinaturas do Stripe e do Bridge.
+function secretMatches(received: string | null, expected: string) {
+  if (!received) return false;
+  const a = Buffer.from(received);
+  const b = Buffer.from(expected);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
+// listUsers sem parâmetros devolve só a primeira página (50 usuários); quem
+// ficasse fora do mapa era pulado em silêncio e nunca recebia lembrete.
+async function listAllUserEmails(supabase: ReturnType<typeof adminClient>) {
+  const emails = new Map<string, string>();
+  const perPage = 1000;
+  for (let page = 1; page <= 100; page += 1) {
+    const { data, error } = await supabase.auth.admin.listUsers({ page, perPage });
+    if (error) throw error;
+    for (const user of data.users) {
+      emails.set(user.id, user.email ?? "");
+    }
+    if (data.users.length < perPage) break;
+  }
+  return emails;
 }
 
 export async function GET(request: NextRequest) {
@@ -218,7 +246,7 @@ export async function GET(request: NextRequest) {
   const receivedSecret =
     request.headers.get("CRON_SECRET") ?? request.headers.get("x-cron-secret") ?? bearerSecret;
 
-  if (!expectedSecret || receivedSecret !== expectedSecret) {
+  if (!expectedSecret || !secretMatches(receivedSecret, expectedSecret)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -226,13 +254,17 @@ export async function GET(request: NextRequest) {
   const { data: profiles, error } = await supabase.from("profiles").select("*");
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("[cron/reminders] falha ao ler profiles:", error.message);
+    return NextResponse.json({ error: "Falha ao carregar os perfis." }, { status: 500 });
   }
 
-  const users = await supabase.auth.admin.listUsers();
-  const emailsByUserId = new Map(
-    (users.data.users ?? []).map((user) => [user.id, user.email ?? ""])
-  );
+  let emailsByUserId: Map<string, string>;
+  try {
+    emailsByUserId = await listAllUserEmails(supabase);
+  } catch (listError) {
+    console.error("[cron/reminders] falha ao listar usuários:", listError);
+    return NextResponse.json({ error: "Falha ao carregar os usuários." }, { status: 500 });
+  }
   const now = new Date();
   const todayDay = now.getDate();
   const sent: Array<{ kind: ReminderKind; user_id: string }> = [];
@@ -296,8 +328,9 @@ export async function GET(request: NextRequest) {
         });
         sent.push({ kind: reminder.kind, user_id: profile.id });
       } catch (sendError) {
+        console.error("[cron/reminders] falha no lembrete", reminder.kind, profile.id, sendError);
         failed.push({
-          error: sendError instanceof Error ? sendError.message : "Unknown error",
+          error: "Falha ao enviar o e-mail.",
           kind: reminder.kind,
           user_id: profile.id
         });

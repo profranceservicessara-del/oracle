@@ -28,9 +28,8 @@ export async function loadComprasData(type: PurchaseDocType): Promise<{
       .order("document_date", { ascending: false }),
     supabase
       .from("contact_thirds")
-      .select("id,name")
+      .select("id,name,archived")
       .eq("third_type", "supplier")
-      .eq("archived", false)
       .order("name", { ascending: true }),
     supabase
       .from("accounting_codes")

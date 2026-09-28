@@ -43,6 +43,7 @@ const PAYMENT_METHOD_OPTIONS: PaymentMethod[] = ["virement", "cheque", "especes"
 const euroFmt = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
 import { DocumentPreview } from "./document-preview";
 import { ResteAVivrePanel } from "./reste-a-vivre-panel";
+import { todayLocalIso } from "@/lib/dates";
 
 type DocumentEditorProps = {
   catalogItems: CatalogItem[];
@@ -68,7 +69,6 @@ type ClientFormState = {
   notes: string;
 };
 
-const today = new Date().toISOString().slice(0, 10);
 
 const emptyClientForm: ClientFormState = {
   type: "particulier",
@@ -118,7 +118,7 @@ function fromDbLine(line: DocumentLine): EditorLineWithUnit {
 }
 
 function dateOrDefault(value: string | null | undefined) {
-  return value ?? today;
+  return value ?? todayLocalIso();
 }
 
 function toDbDate(value: string) {

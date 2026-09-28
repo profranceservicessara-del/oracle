@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { Client, Document, DocumentLine } from "@/lib/types";
+import { fetchAllPages } from "../fetch-all";
 import { LinhasClient, type LineRow } from "./linhas-client";
 
 // Cobrança > Linhas — relatório item a item: cada linha de documento cruzada com
@@ -19,27 +20,6 @@ export default async function LinhasPage() {
 
   type RawDoc = Pick<Document, "id" | "type" | "numero" | "date_emission" | "client_id">;
 
-  const [linesRes, documentsRes, clientsRes] = await Promise.all([
-    supabase
-      .from("document_lines")
-      .select(
-        "id, document_id, ordre, designation, description, quantite, prix_unitaire_ht, taux_tva, categorie, total_ligne_ht"
-      )
-      .order("ordre", { ascending: true }),
-    supabase.from("documents").select("id, type, numero, date_emission, client_id"),
-    supabase.from("clients").select("id, nom, raison_sociale")
-  ]);
-
-  const nameByClient = new Map<string, string>();
-  for (const c of (clientsRes.data ?? []) as Pick<Client, "id" | "nom" | "raison_sociale">[]) {
-    nameByClient.set(c.id, c.raison_sociale || c.nom || "Cliente sem nome");
-  }
-
-  const docById = new Map<string, RawDoc>();
-  for (const d of (documentsRes.data ?? []) as RawDoc[]) {
-    docById.set(d.id, d);
-  }
-
   type RawLine = Pick<
     DocumentLine,
     | "id"
@@ -53,8 +33,43 @@ export default async function LinhasPage() {
     | "categorie"
     | "total_ligne_ht"
   >;
+  type RawClient = Pick<Client, "id" | "nom" | "raison_sociale">;
 
-  const rows: LineRow[] = ((linesRes.data ?? []) as RawLine[])
+  // Ordenação estável (desempate por id) é necessária para a paginação em blocos.
+  const [linesRes, documentsRes, clientsRes] = await Promise.all([
+    fetchAllPages<RawLine>((from, to) =>
+      supabase
+        .from("document_lines")
+        .select(
+          "id, document_id, ordre, designation, description, quantite, prix_unitaire_ht, taux_tva, categorie, total_ligne_ht"
+        )
+        .order("ordre", { ascending: true })
+        .order("id", { ascending: true })
+        .range(from, to)
+    ),
+    fetchAllPages<RawDoc>((from, to) =>
+      supabase
+        .from("documents")
+        .select("id, type, numero, date_emission, client_id")
+        .order("id", { ascending: true })
+        .range(from, to)
+    ),
+    fetchAllPages<RawClient>((from, to) =>
+      supabase.from("clients").select("id, nom, raison_sociale").order("id", { ascending: true }).range(from, to)
+    )
+  ]);
+
+  const nameByClient = new Map<string, string>();
+  for (const c of clientsRes.rows) {
+    nameByClient.set(c.id, c.raison_sociale || c.nom || "Cliente sem nome");
+  }
+
+  const docById = new Map<string, RawDoc>();
+  for (const d of documentsRes.rows) {
+    docById.set(d.id, d);
+  }
+
+  const rows: LineRow[] = linesRes.rows
     .flatMap((line) => {
       const doc = docById.get(line.document_id);
       // Linha sem documento visível (não deveria acontecer sob RLS) é ignorada.
@@ -88,5 +103,5 @@ export default async function LinhasPage() {
       return a.ordre - b.ordre;
     });
 
-  return <LinhasClient rows={rows} />;
+  return <LinhasClient rows={rows} truncated={linesRes.truncated || documentsRes.truncated} />;
 }

@@ -86,6 +86,7 @@ export type AccountingCode = {
 export type SupplierOption = {
   id: string;
   name: string;
+  archived: boolean;
 };
 
 // Estados nos quais o documento está efetivado: pagamentos permitidos e

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { BillingNav } from "@/components/app/billing-nav";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
+import { toLocalIsoDate } from "@/lib/dates";
 import type { DocumentType, PaymentMethod } from "@/lib/types";
 import { documentTypeUiLabels, paymentMethodLabels } from "@/lib/types";
 
@@ -42,9 +43,8 @@ function periodBounds(key: PeriodKey): { start: string; end: string } | null {
   const now = new Date();
   const y = now.getFullYear();
   const m = now.getMonth();
-  const iso = (d: Date) => d.toISOString().slice(0, 10);
   if (key === "annee") return { start: `${y}-01-01`, end: `${y}-12-31` };
-  if (key === "mois") return { start: iso(new Date(y, m, 1)), end: iso(new Date(y, m + 1, 0)) };
+  if (key === "mois") return { start: toLocalIsoDate(new Date(y, m, 1)), end: toLocalIsoDate(new Date(y, m + 1, 0)) };
   return null;
 }
 
@@ -57,7 +57,7 @@ function eventLabel(event: JournalEvent): string {
   return `Pagamento recebido de ${event.clientName} (${moyen})`;
 }
 
-export function DiarioClient({ events }: { events: JournalEvent[] }) {
+export function DiarioClient({ events, truncated }: { events: JournalEvent[]; truncated: boolean }) {
   const [kind, setKind] = useState<KindFilter>("todos");
   const [period, setPeriod] = useState<PeriodKey>("annee");
 
@@ -70,12 +70,14 @@ export function DiarioClient({ events }: { events: JournalEvent[] }) {
     });
   }, [events, kind, period]);
 
-  const totalEmitido = visibleEvents.filter((e) => e.kind === "emissao").reduce((s, e) => s + e.amount, 0);
+  const totalEmitido = visibleEvents
+    .filter((e) => e.kind === "emissao" && e.documentType !== "devis")
+    .reduce((s, e) => s + e.amount, 0);
   const totalRecebido = visibleEvents.filter((e) => e.kind === "pagamento").reduce((s, e) => s + e.amount, 0);
 
   const kpis = [
     { label: "Eventos", value: String(visibleEvents.length), tone: "text-ink" },
-    { label: "Total emitido", value: euro.format(totalEmitido), tone: "text-sky-600" },
+    { label: "Total emitido (faturas e notas de crédito)", value: euro.format(totalEmitido), tone: "text-sky-600" },
     { label: "Total recebido", value: euro.format(totalRecebido), tone: "text-emerald-600" }
   ];
 
@@ -101,7 +103,7 @@ export function DiarioClient({ events }: { events: JournalEvent[] }) {
   return (
     <main className="mx-auto max-w-6xl px-4 py-8">
       <div className="space-y-6">
-        <BillingNav active="" />
+        <BillingNav active="diario" />
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-end justify-between gap-3">
@@ -127,6 +129,12 @@ export function DiarioClient({ events }: { events: JournalEvent[] }) {
               </Button>
             </div>
           </div>
+
+          {truncated ? (
+            <p className="mt-4 rounded-2xl bg-amber-50 p-4 text-sm text-amber-800 ring-1 ring-inset ring-amber-200" role="status">
+              Mostrando as primeiras 20.000 linhas. Refine o período para ver o resto.
+            </p>
+          ) : null}
 
           {/* KPIs */}
           <div className="mt-6 grid gap-4 sm:grid-cols-3">

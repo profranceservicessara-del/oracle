@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { useToast } from "@/components/ui/toast";
+import { tvaFranchiseMention } from "@/lib/document-calculations";
 
 // ---------------------------------------------------------------------------
 // Editor de aparência de documentos (fatura/orçamento). Componente compartilhado
@@ -290,10 +291,11 @@ function PreviewDoc({ s }: { s: PreviewStyle }) {
           </div>
           <div className="w-52 shrink-0">
             <div className="flex items-center justify-between rounded-md px-3 py-2 text-white" style={{ background: accent }}>
-              <span className="text-[11px] font-semibold">Total (sem IVA)</span>
+              <span className="text-[11px] font-semibold">Total TTC</span>
               <span className="text-sm font-bold tabular-nums">{docData.total}</span>
             </div>
-            <p className="mt-2 text-right text-[10px] opacity-50">IVA não aplicável, art. 293 B do CGI</p>
+            {/* Mesma redação da fatura real (em francês), não uma tradução. */}
+            <p className="mt-2 text-right text-[10px] opacity-50">{tvaFranchiseMention}</p>
           </div>
         </div>
 

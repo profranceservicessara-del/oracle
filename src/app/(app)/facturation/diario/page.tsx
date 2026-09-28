@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { Client, Document, Payment } from "@/lib/types";
+import { fetchAllPages } from "../fetch-all";
 import { DiarioClient, type JournalEvent } from "./diario-client";
 
 // Cobrança > Diário — linha do tempo DERIVADA. Não existe tabela de log: os
@@ -19,18 +20,36 @@ export default async function DiarioPage() {
   type RawDoc = Pick<Document, "id" | "type" | "numero" | "date_emission" | "client_id" | "total_ttc">;
   type RawPayment = Pick<Payment, "id" | "document_id" | "date_encaissement" | "montant" | "moyen">;
 
+  type RawClient = Pick<Client, "id" | "nom" | "raison_sociale">;
+
+  // Ordenação estável (desempate por id) é necessária para a paginação em blocos.
   const [documentsRes, paymentsRes, clientsRes] = await Promise.all([
-    supabase.from("documents").select("id, type, numero, date_emission, client_id, total_ttc").not("numero", "is", null),
-    supabase.from("payments").select("id, document_id, date_encaissement, montant, moyen"),
-    supabase.from("clients").select("id, nom, raison_sociale")
+    fetchAllPages<RawDoc>((from, to) =>
+      supabase
+        .from("documents")
+        .select("id, type, numero, date_emission, client_id, total_ttc")
+        .not("numero", "is", null)
+        .order("id", { ascending: true })
+        .range(from, to)
+    ),
+    fetchAllPages<RawPayment>((from, to) =>
+      supabase
+        .from("payments")
+        .select("id, document_id, date_encaissement, montant, moyen")
+        .order("id", { ascending: true })
+        .range(from, to)
+    ),
+    fetchAllPages<RawClient>((from, to) =>
+      supabase.from("clients").select("id, nom, raison_sociale").order("id", { ascending: true }).range(from, to)
+    )
   ]);
 
   const nameByClient = new Map<string, string>();
-  for (const c of (clientsRes.data ?? []) as Pick<Client, "id" | "nom" | "raison_sociale">[]) {
+  for (const c of clientsRes.rows) {
     nameByClient.set(c.id, c.raison_sociale || c.nom || "Cliente sem nome");
   }
 
-  const documents = (documentsRes.data ?? []) as RawDoc[];
+  const documents = documentsRes.rows;
   const docById = new Map<string, RawDoc>();
   for (const d of documents) {
     docById.set(d.id, d);
@@ -57,7 +76,7 @@ export default async function DiarioPage() {
     ];
   });
 
-  const receipts: JournalEvent[] = ((paymentsRes.data ?? []) as RawPayment[]).map((p) => {
+  const receipts: JournalEvent[] = paymentsRes.rows.map((p) => {
     const doc = docById.get(p.document_id);
     return {
       id: `pay-${p.id}`,
@@ -74,5 +93,5 @@ export default async function DiarioPage() {
 
   const events = [...emissions, ...receipts].sort((a, b) => b.date.localeCompare(a.date));
 
-  return <DiarioClient events={events} />;
+  return <DiarioClient events={events} truncated={documentsRes.truncated || paymentsRes.truncated} />;
 }

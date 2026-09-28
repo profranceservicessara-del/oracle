@@ -77,7 +77,7 @@ export function NotasCreditoClient({ rows, eligibles }: { rows: AvoirRow[]; elig
   return (
     <main className="mx-auto max-w-6xl px-4 py-8">
       <div className="space-y-6">
-        <BillingNav active="" />
+        <BillingNav active="notas-credito" />
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-end justify-between gap-3">

@@ -12,6 +12,8 @@ export function ContactForm({ initialTipo }: { initialTipo: "ae" | "btp" }) {
   const [telefone, setTelefone] = useState("");
   const [tipo, setTipo] = useState<"ae" | "btp">(initialTipo);
   const [mensagem, setMensagem] = useState("");
+  // Honeypot: invisível para pessoas, preenchido por robôs que varrem formulários.
+  const [website, setWebsite] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "done">("idle");
   const [error, setError] = useState("");
 
@@ -26,7 +28,7 @@ export function ContactForm({ initialTipo }: { initialTipo: "ae" | "btp" }) {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nome, empresa, email, telefone, tipo, mensagem })
+        body: JSON.stringify({ nome, empresa, email, telefone, tipo, mensagem, website })
       });
       const data = (await res.json().catch(() => ({}))) as { error?: string };
       if (!res.ok && res.status !== 200) {
@@ -95,6 +97,13 @@ export function ContactForm({ initialTipo }: { initialTipo: "ae" | "btp" }) {
           Mensagem
           <textarea className="mt-1.5 min-h-[96px] w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-ink outline-none transition placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20" onChange={(e) => setMensagem(e.target.value)} placeholder="Conte um pouco sobre seu negócio (opcional)" value={mensagem} />
         </label>
+
+        <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
+          <label>
+            Não preencha este campo
+            <input autoComplete="off" name="website" onChange={(e) => setWebsite(e.target.value)} tabIndex={-1} type="text" value={website} />
+          </label>
+        </div>
 
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
 

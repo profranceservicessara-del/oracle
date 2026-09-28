@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
+import { todayLocalIso } from "@/lib/dates";
 import { paymentMethodLabels, type Document, type Payment, type PaymentMethod } from "@/lib/types";
 
 type PaymentsSectionProps = {
@@ -17,7 +18,6 @@ type PaymentsSectionProps = {
   payments: Payment[];
 };
 
-const today = new Date().toISOString().slice(0, 10);
 
 const euroFormatter = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -38,7 +38,7 @@ export function PaymentsSection({ document, payments }: PaymentsSectionProps) {
   const router = useRouter();
   const { showToast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
-  const [dateEncaissement, setDateEncaissement] = useState(today);
+  const [dateEncaissement, setDateEncaissement] = useState(todayLocalIso);
   const [montant, setMontant] = useState("");
   const [moyen, setMoyen] = useState<PaymentMethod>("virement");
   const [notes, setNotes] = useState("");
@@ -57,7 +57,7 @@ export function PaymentsSection({ document, payments }: PaymentsSectionProps) {
   const canMarkPaid = document.type === "facture" && ["sent", "partial"].includes(document.status);
 
   function openModal() {
-    setDateEncaissement(today);
+    setDateEncaissement(todayLocalIso());
     setMontant(remaining > 0 ? remaining.toFixed(2) : "");
     setMoyen("virement");
     setNotes("");

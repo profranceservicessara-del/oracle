@@ -287,9 +287,14 @@ export function EventDetailPanel({
                 {reminders.map((reminder) => (
                   <li className="flex items-center justify-between gap-2" key={reminder.id}>
                     <span>{REMINDER_LABELS[reminder.offset_kind]}</span>
-                    {reminder.sent ? (
+                    {reminder.sent && reminder.sent_at ? (
                       <span className="shrink-0 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
                         Enviado
+                      </span>
+                    ) : reminder.sent ? (
+                      // sent sem sent_at: o cron rodou depois do horário do evento e pulou o envio.
+                      <span className="shrink-0 rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
+                        Não enviado
                       </span>
                     ) : null}
                   </li>

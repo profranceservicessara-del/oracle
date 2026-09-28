@@ -1,6 +1,7 @@
 // Relatório de vencimentos (balance âgée). Agrupa saldos em aberto por faixa de
 // atraso, para clientes (a receber) e fornecedores (a pagar). Só leitura,
 // derivado dos dados que já existem. Sem partida dobrada, sem TVA cravada.
+import { creditsByFacture, daysOverdue, dueReference, outstandingBalance } from "@/lib/receivables";
 import { createClient } from "@/lib/supabase/server";
 
 export type AgingRow = {
@@ -18,18 +19,8 @@ export type AgingResult = {
   totals: Omit<AgingRow, "party">;
 };
 
-const DAY = 24 * 60 * 60 * 1000;
-
 function round2(n: number): number {
   return Math.round(n * 100) / 100;
-}
-
-// Dias de atraso positivos = vencido; <= 0 = ainda não vencido.
-function daysOverdue(refDate: string | null, today: Date): number {
-  if (!refDate) return 0;
-  const ref = new Date(refDate);
-  if (Number.isNaN(ref.getTime())) return 0;
-  return Math.floor((today.getTime() - ref.getTime()) / DAY);
 }
 
 // Acumula um valor em aberto no bucket certo de uma linha por terceiro.
@@ -37,7 +28,7 @@ function addToBucket(map: Map<string, AgingRow>, party: string, refDate: string 
   if (amount <= 0.005) return;
   const row =
     map.get(party) ?? { party, notDue: 0, d1_30: 0, d31_60: 0, d61_90: 0, d90plus: 0, total: 0 };
-  const days = daysOverdue(refDate, today);
+  const days = daysOverdue(refDate, today) ?? 0;
   if (days <= 0) row.notDue += amount;
   else if (days <= 30) row.d1_30 += amount;
   else if (days <= 60) row.d31_60 += amount;
@@ -91,15 +82,23 @@ export async function loadClientAging(): Promise<AgingResult> {
   const supabase = createClient();
   const today = new Date();
 
-  const [facturesRes, paymentsRes, clientsRes] = await Promise.all([
+  const [facturesRes, paymentsRes, clientsRes, avoirsRes] = await Promise.all([
     supabase
       .from("documents")
       .select("id, client_id, total_ttc, date_echeance, date_emission, status")
       .eq("type", "facture")
       .not("status", "in", "(draft,cancelled)"),
     supabase.from("payments").select("document_id, montant"),
-    supabase.from("clients").select("id, nom, raison_sociale")
+    supabase.from("clients").select("id, nom, raison_sociale"),
+    supabase
+      .from("documents")
+      .select("facture_origine_id, total_ttc")
+      .eq("type", "avoir")
+      .not("status", "in", "(draft,cancelled)")
   ]);
+  const credits = creditsByFacture(
+    (avoirsRes.data ?? []) as Array<{ facture_origine_id: string | null; total_ttc: number }>
+  );
 
   const paidByDoc = new Map<string, number>();
   for (const p of paymentsRes.data ?? []) {
@@ -122,9 +121,9 @@ export async function loadClientAging(): Promise<AgingResult> {
       date_echeance: string | null;
       date_emission: string | null;
     };
-    const outstanding = (Number(doc.total_ttc) || 0) - (paidByDoc.get(doc.id) ?? 0);
+    const outstanding = outstandingBalance(doc.total_ttc, paidByDoc.get(doc.id) ?? 0, credits.get(doc.id) ?? 0);
     const party = doc.client_id ? nameByClient.get(doc.client_id) ?? "Cliente sem nome" : "Sem cliente";
-    addToBucket(map, party, doc.date_echeance ?? doc.date_emission, outstanding, today);
+    addToBucket(map, party, dueReference(doc.date_echeance, doc.date_emission), outstanding, today);
   }
   return finalize(map);
 }

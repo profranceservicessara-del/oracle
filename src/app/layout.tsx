@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Lato, Playfair_Display } from "next/font/google";
+import { siteUrl } from "@/lib/site-url";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -19,8 +20,16 @@ const lato = Lato({
 });
 
 export const metadata: Metadata = {
-  title: "Oracle",
-  description: "Faturação para auto-entrepreneurs lusófonos na França"
+  metadataBase: new URL(siteUrl()),
+  title: { default: "Oracle", template: "%s | Oracle" },
+  description: "Faturação para auto-entrepreneurs lusófonos na França",
+  openGraph: {
+    type: "website",
+    siteName: "Oracle",
+    locale: "pt_BR",
+    title: "Oracle",
+    description: "Faturação para auto-entrepreneurs lusófonos na França"
+  }
 };
 
 export default function RootLayout({

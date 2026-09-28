@@ -4,6 +4,18 @@
 
 :root {
   color-scheme: light;
+  --sidebar-bg: #001030;
+  --purple-dark: #1d1b3b;
+  --purple-mid: #252349;
+  --purple-light: #2e2b5c;
+  --flyout-item-light: #454080;
+  --flyout-item-mid: #3c3873;
+  --flyout-item-dark: #353167;
+  --icon-blue: #7c9ee8;
+  --icon-blue-active: #8fb2ff;
+  --text-main: #ffffff;
+  --text-muted: rgba(255, 255, 255, 0.8);
+  --soft-border: rgba(215, 227, 255, 0.4);
 }
 
 * {
@@ -48,6 +60,12 @@ body {
 }
 .sidebar-shell .rounded-lg {
   border-radius: 0.5rem;
+}
+.sidebar-shell nav,
+.sidebar-shell nav a,
+.sidebar-shell nav button {
+  font-family: var(--font-lato), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-weight: 400;
 }
 
 a {

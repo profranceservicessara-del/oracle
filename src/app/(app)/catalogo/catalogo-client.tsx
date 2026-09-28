@@ -115,6 +115,7 @@ export function CatalogoClient({
 
     const payload = {
       ...parsed.data,
+      item_kind: parsed.data.categorie === "vente" ? "product" : "service",
       user_id: userId
     };
 

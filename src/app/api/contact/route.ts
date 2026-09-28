@@ -16,6 +16,21 @@ function escapeHtml(value: string): string {
     .replaceAll('"', "&quot;");
 }
 
+// Limite por IP em memória, melhor esforço: cada instância serverless tem o seu
+// próprio Map e ele zera no cold start, então só barra rajadas simples. O limite
+// durável precisa de tabela (padrão check_email_rate_limit) e fica para depois.
+const WINDOW_MS = 10 * 60 * 1000;
+const MAX_PER_WINDOW = 5;
+const recentByIp = new Map<string, number[]>();
+
+function tooManyRequests(ip: string): boolean {
+  const now = Date.now();
+  const recent = (recentByIp.get(ip) ?? []).filter((at) => now - at < WINDOW_MS);
+  recent.push(now);
+  recentByIp.set(ip, recent);
+  return recent.length > MAX_PER_WINDOW;
+}
+
 const tipoLabels: Record<string, string> = {
   ae: "Gestão completa para AE (auto-entrepreneur)",
   btp: "Gestão completa para BTP"
@@ -29,7 +44,18 @@ export async function POST(request: NextRequest) {
     telefone?: string;
     tipo?: string;
     mensagem?: string;
+    website?: string;
   };
+
+  // Honeypot preenchido = robô. Responde como sucesso para não dar pista.
+  if (typeof body.website === "string" && body.website.trim() !== "") {
+    return NextResponse.json({ sent: true });
+  }
+
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  if (tooManyRequests(ip)) {
+    return NextResponse.json({ error: "Muitas tentativas. Tente novamente em alguns minutos." }, { status: 429 });
+  }
 
   const nome = (body.nome ?? "").toString().slice(0, 200).trim();
   const empresa = (body.empresa ?? "").toString().slice(0, 200).trim();

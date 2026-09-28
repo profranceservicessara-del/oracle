@@ -8,6 +8,7 @@ import { FormModal } from "@/components/ui/form-modal";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { useToast } from "@/components/ui/toast";
+import { todayLocalIso } from "@/lib/dates";
 import { createClient } from "@/lib/supabase/client";
 import type { Purchase } from "@/lib/types";
 import { purchaseSchema } from "@/lib/validation";
@@ -21,15 +22,16 @@ type PurchaseForm = {
   reference_piece: string;
 };
 
-const today = new Date().toISOString().slice(0, 10);
-const emptyForm: PurchaseForm = {
-  date_achat: today,
-  fournisseur: "",
-  designation: "",
-  montant: "",
-  moyen: "",
-  reference_piece: ""
-};
+function makeEmptyForm(): PurchaseForm {
+  return {
+    date_achat: todayLocalIso(),
+    fournisseur: "",
+    designation: "",
+    montant: "",
+    moyen: "",
+    reference_piece: ""
+  };
+}
 
 const euroFormatter = new Intl.NumberFormat("fr-FR", {
   style: "currency",
@@ -67,7 +69,7 @@ export function RegistreDesAchatsClient({
   const [month, setMonth] = useState("todos");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPurchase, setEditingPurchase] = useState<Purchase | null>(null);
-  const [form, setForm] = useState<PurchaseForm>(emptyForm);
+  const [form, setForm] = useState<PurchaseForm>(makeEmptyForm);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSaving, setIsSaving] = useState(false);
 
@@ -97,7 +99,7 @@ export function RegistreDesAchatsClient({
 
   function openCreate() {
     setEditingPurchase(null);
-    setForm(emptyForm);
+    setForm(makeEmptyForm());
     setErrors({});
     setIsModalOpen(true);
   }

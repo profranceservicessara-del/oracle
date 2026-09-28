@@ -213,6 +213,9 @@ export function UrssafClient({
             <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ring-1 ring-inset ${statusBadge.cls}`}>{statusBadge.label}</span>
           </div>
           <p className="mt-1 text-sm text-muted">Prepare sua declaração com base nos valores realmente recebidos.</p>
+          <p className="mt-1 max-w-xl text-xs leading-5 text-muted">
+            Esta tela só prepara a base da declaração. Nada é enviado à URSSAF: a declaração oficial continua sendo feita no seu espaço pessoal em autoentrepreneur.urssaf.fr.
+          </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Select aria-label="Ano" className="w-24" onChange={(e) => setYear(Number(e.target.value))} value={year}>
