@@ -58,6 +58,7 @@ function finalize(map: Map<string, AgingRow>): AgingResult {
       d90plus: round2(r.d90plus),
       total: round2(r.total)
     }))
+    .filter((r) => r.total > 0.005)
     .sort((a, b) => b.total - a.total);
   const totals = rows.reduce(
     (acc, r) => ({
@@ -140,9 +141,11 @@ export async function loadSupplierAging(): Promise<AgingResult> {
       .from("supplier_invoices")
       .select("fournisseur, montant_ttc, date_echeance, date_reception, status")
       .eq("status", "a_payer"),
+    // Só fatura e nota de crédito entram: ordem de compra e entrega não são dívida.
     supabase
       .from("purchase_documents")
-      .select("id, third_id, total_incl_tax, due_date, document_date, status")
+      .select("id, type, third_id, total_incl_tax, due_date, document_date, status")
+      .in("type", ["invoice", "credit_note"])
       .in("status", ["validated", "partially_paid"]),
     supabase.from("purchase_payments").select("document_id, amount"),
     supabase.from("contact_thirds").select("id, name").eq("third_type", "supplier")
@@ -178,18 +181,43 @@ export async function loadSupplierAging(): Promise<AgingResult> {
     const row = s as { id: string; name: string };
     nameBySupplier.set(row.id, row.name);
   }
+  // Nota de crédito não é dívida: abate o que se deve ao mesmo fornecedor.
+  const creditByParty = new Map<string, number>();
   for (const d of purchaseDocsRes.data ?? []) {
     const doc = d as {
       id: string;
+      type: "invoice" | "credit_note";
       third_id: string | null;
       total_incl_tax: number;
       due_date: string | null;
       document_date: string;
     };
-    const outstanding = (Number(doc.total_incl_tax) || 0) - (paidByDoc.get(doc.id) ?? 0);
     const party = doc.third_id ? nameBySupplier.get(doc.third_id) ?? "Fornecedor" : "Fornecedor";
+    if (doc.type === "credit_note") {
+      creditByParty.set(party, (creditByParty.get(party) ?? 0) + (Number(doc.total_incl_tax) || 0));
+      continue;
+    }
+    const outstanding = (Number(doc.total_incl_tax) || 0) - (paidByDoc.get(doc.id) ?? 0);
     addToBucket(map, party, doc.due_date ?? doc.document_date, outstanding, today);
   }
 
+  // Sem vínculo entre nota e fatura no esquema, o crédito consome primeiro a
+  // dívida mais antiga. Crédito sem dívida correspondente não gera linha.
+  for (const [party, credit] of creditByParty) {
+    const row = map.get(party);
+    if (row) applyCredit(row, credit);
+  }
+
   return finalize(map);
+}
+
+function applyCredit(row: AgingRow, credit: number) {
+  let remaining = credit;
+  for (const key of ["d90plus", "d61_90", "d31_60", "d1_30", "notDue"] as const) {
+    if (remaining <= 0.005) break;
+    const take = Math.min(row[key], remaining);
+    row[key] -= take;
+    row.total -= take;
+    remaining -= take;
+  }
 }

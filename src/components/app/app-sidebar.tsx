@@ -303,19 +303,48 @@ function GroupRow({
 }) {
   const hasActiveChild = item.key === activeGroupKey;
   const highlighted = hasActiveChild || isOpen;
+  const rowRef = useRef<HTMLDivElement>(null);
+  const [flyoutBox, setFlyoutBox] = useState<{ top: number; left: number; maxHeight: number } | null>(null);
+
+  // Posiciona a janela pela viewport: nasce na altura do botão, sobe se faltar
+  // espaço embaixo e rola por dentro se ainda assim não couber. Grupos grandes
+  // (Cobrança) ficavam com os últimos itens inacessíveis em telas de notebook.
+  function measure() {
+    const el = rowRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const margin = 16;
+    const count = item.children.length;
+    // min-h-10 (40px) por item + space-y-1 (4px) + py-3 (24px) do painel.
+    const naturalHeight = count * 40 + Math.max(0, count - 1) * 4 + 24;
+    const available = window.innerHeight - margin * 2;
+    const height = Math.min(naturalHeight, available);
+    const top = Math.max(margin, Math.min(rect.top, window.innerHeight - height - margin));
+    setFlyoutBox({ top, left: rect.right, maxHeight: available });
+  }
 
   return (
     <div
       className="relative"
-      onFocusCapture={() => onHoverOpen(item)}
-      onMouseEnter={() => onHoverOpen(item)}
+      onFocusCapture={() => {
+        measure();
+        onHoverOpen(item);
+      }}
+      onMouseEnter={() => {
+        measure();
+        onHoverOpen(item);
+      }}
       onMouseLeave={onHoverClose}
+      ref={rowRef}
     >
       <button
         className={`group/row flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-[16px] font-[400] tracking-tight transition-all duration-200 ${
           isOpen ? openCard : highlighted ? activeCard : idleRow
         } ${isOpen ? "!rounded-r-none" : ""}`}
-        onClick={() => onToggle(item)}
+        onClick={() => {
+          measure();
+          onToggle(item);
+        }}
         type="button"
       >
         <span
@@ -330,9 +359,10 @@ function GroupRow({
         </span>
       </button>
       <div
-        className={`pointer-events-none absolute left-full top-0 z-[70] w-72 -translate-x-1 overflow-hidden rounded-l-none rounded-r-xl bg-[var(--purple-light)] px-3 py-3 opacity-0 shadow-[inset_-1px_0_0_var(--soft-border),inset_0_1px_0_var(--soft-border),inset_0_-1px_0_var(--soft-border),0_10px_24px_-12px_rgba(2,10,40,0.8)] transition-all duration-200 ease-out ${
+        className={`sidebar-scroll pointer-events-none fixed z-[70] w-72 -translate-x-1 overflow-y-auto overflow-x-hidden rounded-l-none rounded-r-xl bg-[var(--purple-light)] px-3 py-3 opacity-0 shadow-[inset_-1px_0_0_var(--soft-border),inset_0_1px_0_var(--soft-border),inset_0_-1px_0_var(--soft-border),0_10px_24px_-12px_rgba(2,10,40,0.8)] transition-[opacity,transform] duration-200 ease-out ${
           isOpen ? "pointer-events-auto translate-x-0 opacity-100" : ""
         }`}
+        style={flyoutBox ? { top: flyoutBox.top, left: flyoutBox.left, maxHeight: flyoutBox.maxHeight } : undefined}
       >
         <ul className="space-y-1">
           {item.children.map((child) => {

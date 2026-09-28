@@ -1,6 +1,7 @@
 import {
+  applyDocumentSign,
   calculateDocumentTotals,
-  calculateLineHt,
+  signedLineTotal,
   tvaFranchiseMention,
   type EditorLine
 } from "@/lib/document-calculations";
@@ -78,7 +79,7 @@ export function DocumentPreview({
   regimeTva,
   validiteJours
 }: DocumentPreviewProps) {
-  const totals = calculateDocumentTotals(lines, regimeTva);
+  const totals = applyDocumentSign(calculateDocumentTotals(lines, regimeTva), documentType);
   const isProfessionalClient = client?.type === "professionnel";
 
   return (
@@ -171,7 +172,7 @@ export function DocumentPreview({
                 {regimeTva === "assujetti" ? (
                   <td className="py-3 pr-3 text-right">{line.taux_tva}%</td>
                 ) : null}
-                <td className="py-3 text-right">{euroFormatter.format(calculateLineHt(line))}</td>
+                <td className="py-3 text-right">{euroFormatter.format(signedLineTotal(line, documentType))}</td>
               </tr>
             ))}
           </tbody>

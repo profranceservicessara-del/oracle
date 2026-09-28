@@ -1,6 +1,7 @@
 import chromium from "@sparticuz/chromium";
 import { fiscalConfig } from "@/config/fiscal";
 import {
+  applyDocumentSign,
   calculateDocumentTotals,
   type EditorLine,
   tvaFranchiseMention
@@ -13,7 +14,8 @@ import {
   type Document,
   type DocumentLine,
   type PaymentMethod,
-  type Profile
+  type Profile,
+  type VatRegime
 } from "@/lib/types";
 
 const MOYEN_FR: Record<PaymentMethod, string> = {
@@ -94,8 +96,17 @@ function renderDocumentHtml({
   profile: Profile | null;
 }) {
   const editorLines = lines.map(toEditorLine);
-  const regimeTva = profile?.regime_tva ?? "franchise";
-  const totals = calculateDocumentTotals(editorLines, regimeTva);
+  // Documento já emitido é imutável, então o regime tem que sair do que foi gravado
+  // nele, não do perfil de hoje (senão mudar de regime reescreve faturas antigas).
+  // Só sobrescrevo com evidência gravada: menção 293 B ou TVA diferente de zero.
+  // Sem evidência (legado, rascunho) mantém o regime atual do perfil.
+  const persistedRegime: VatRegime | null =
+    document.status === "draft" ? null : document.mention_tva ? "franchise" : Number(document.total_tva) !== 0 ? "assujetti" : null;
+  const regimeTva: VatRegime = persistedRegime ?? profile?.regime_tva ?? "franchise";
+  // Avoir imprime valores negativos (como gravados no banco); quantidade e preço
+  // unitário seguem positivos. Zero fica 0, nunca -0.
+  const totals = applyDocumentSign(calculateDocumentTotals(editorLines, regimeTva), document.type);
+  const signAmount = (value: number) => (document.type === "avoir" && value !== 0 ? -Math.abs(value) : value);
   const color = profile?.couleur_principale || "#0f766e";
   const isProfessionalClient = client?.type === "professionnel";
   const title = documentTypeLabels[document.type];
@@ -106,8 +117,8 @@ function renderDocumentHtml({
 
   const rows = editorLines
     .map((line) => {
-      const lineHt = line.quantite * line.prix_unitaire_ht;
-      const lineTva = lineHt * (line.taux_tva / 100);
+      const lineHt = signAmount(line.quantite * line.prix_unitaire_ht);
+      const lineTva = signAmount(line.quantite * line.prix_unitaire_ht * (line.taux_tva / 100));
       return `
         <tr>
           <td>

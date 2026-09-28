@@ -14,7 +14,9 @@ import { emitDocumentAction } from "@/app/(app)/documentos/actions";
 import { fiscalConfig } from "@/config/fiscal";
 import { createClient } from "@/lib/supabase/client";
 import {
+  applyDocumentSign,
   calculateDocumentTotals,
+  signedLineTotal,
   tvaFranchiseMention,
   type EditorLine
 } from "@/lib/document-calculations";
@@ -301,6 +303,8 @@ export function DocumentEditor({
   async function saveDraft() {
     setSaveState("saving");
     const mentionTva = regimeTva === "franchise" ? tvaFranchiseMention : null;
+    // Avoir grava totais negativos (check do banco); demais tipos seguem positivos.
+    const persistedTotals = applyDocumentSign(totals, documentType);
     const documentPayload = {
       user_id: userId,
       client_id: clientId || null,
@@ -310,9 +314,9 @@ export function DocumentEditor({
       date_prestation: toDbDate(datePrestation),
       date_echeance: documentType !== "devis" ? toDbDate(dateEcheance) : null,
       validite_jours: documentType === "devis" ? validiteJours : null,
-      total_ht: totals.totalHt,
-      total_tva: totals.totalTva,
-      total_ttc: totals.totalTtc,
+      total_ht: persistedTotals.totalHt,
+      total_tva: persistedTotals.totalTva,
+      total_ttc: persistedTotals.totalTtc,
       mention_tva: mentionTva,
       conditions_paiement: conditionsPaiement || null,
       notes_bas_page: notesBasPage || null,
@@ -373,7 +377,7 @@ export function DocumentEditor({
           taux_tva: regimeTva === "franchise" ? 0 : line.taux_tva,
           categorie: line.categorie,
           unite: line.unite || DEFAULT_UNIT,
-          total_ligne_ht: Number((line.quantite * line.prix_unitaire_ht).toFixed(2))
+          total_ligne_ht: signedLineTotal(line, documentType)
         }))
       );
 

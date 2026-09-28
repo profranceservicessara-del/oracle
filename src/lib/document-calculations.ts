@@ -1,5 +1,5 @@
 import { fiscalConfig } from "@/config/fiscal";
-import type { ActivityCategory, Profile, VatRegime } from "./types";
+import type { ActivityCategory, DocumentType, Profile, VatRegime } from "./types";
 
 export type EditorLine = {
   id: string;
@@ -56,6 +56,31 @@ export function calculateDocumentTotals(lines: EditorLine[], regimeTva: VatRegim
     totalTva,
     totalTtc: roundCurrency(totalHt + totalTva)
   };
+}
+
+// Nota de crédito (avoir): o banco exige totais <= 0 (documents_total_*_by_type_check)
+// e create_avoir já grava assim. O editor trabalha com valores positivos (o que a
+// pessoa digita); o sinal é aplicado só ao persistir e ao imprimir. Zero fica 0,
+// nunca -0, senão o Intl.NumberFormat exibiria "-0,00 €".
+export function applyDocumentSign(totals: DocumentTotals, type: DocumentType): DocumentTotals {
+  if (type !== "avoir") return totals;
+  const negate = (value: number) => (value === 0 ? 0 : -Math.abs(value));
+  return {
+    byCategory: {
+      vente: negate(totals.byCategory.vente),
+      service_bic: negate(totals.byCategory.service_bic),
+      service_bnc: negate(totals.byCategory.service_bnc)
+    },
+    totalHt: negate(totals.totalHt),
+    totalTva: negate(totals.totalTva),
+    totalTtc: negate(totals.totalTtc)
+  };
+}
+
+// Total de uma linha já com o sinal do documento (avoir grava negativo).
+export function signedLineTotal(line: EditorLine, type: DocumentType) {
+  const total = calculateLineHt(line);
+  return type === "avoir" && total !== 0 ? -Math.abs(total) : total;
 }
 
 function categoryRate(category: ActivityCategory) {
